@@ -6,6 +6,7 @@ Camera::Camera(const std::string& name) :
 	m_fov(DEFAULT_FOV),
 	m_nearPlane(DEFAULT_NEAR_PLANE),
 	m_farPlane(DEFAULT_FAR_PLANE),
+	m_clearColor(glm::vec3(0.0f)),
 	Object(name)
 {
 }

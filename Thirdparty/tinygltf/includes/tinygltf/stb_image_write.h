@@ -170,6 +170,8 @@ LICENSE
 #endif
 #endif
 
+#pragma warning(disable:4996)
+
 #ifndef STB_IMAGE_WRITE_STATIC  // C++ forbids static forward declarations
 extern int stbi_write_tga_with_rle;
 extern int stbi_write_png_compression_level;
