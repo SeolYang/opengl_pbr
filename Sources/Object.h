@@ -10,6 +10,9 @@ class Object
 {
 public:
 	Object(const std::string& name) :
+		m_position(glm::vec3(0.0f)),
+		m_scale(glm::vec3(1.0f)),
+		m_rotation(glm::quat()),
 		m_name(name)
 	{
 	}
@@ -25,12 +28,13 @@ public:
 	glm::vec3 GetScale() const { return m_scale; }
 	void SetScale(glm::vec3 scale) { m_scale = scale; }
 
-	glm::mat4 GetWorldMatrix() const 
+	glm::mat4 GetWorldMatrix() const
 	{
-		glm::mat4 res = glm::mat4(1.0f);
-		res = glm::scale(res, m_scale);
-		res = glm::toMat4(m_rotation) * res;
-		res = glm::translate(res, m_position);
+		glm::mat4 identity = glm::mat4(1.0f);
+		auto scale = glm::scale(identity, m_scale);
+		auto rotate = glm::toMat4(m_rotation);
+		auto translate = glm::translate(identity, m_position);
+		auto res = translate * rotate * scale;
 		return res;
 	}
 

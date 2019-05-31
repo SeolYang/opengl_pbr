@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Sources">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
@@ -14,6 +10,9 @@
     </Filter>
     <Filter Include="Thirdparty\gl3w">
       <UniqueIdentifier>{01ac3f8f-cc7a-4d8e-9a22-f6114565fda5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{c7d95f49-1829-471f-adc9-b1e1d706d8d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -68,6 +67,9 @@
     <ClInclude Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\KHR\khrplatform.h">
       <Filter>Thirdparty\gl3w</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\TestApp.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
@@ -109,5 +111,16 @@
     <ClCompile Include="..\Sources\Viewport.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\Sources\TestApp.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Shaders\test.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\test.fs">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
 </Project>

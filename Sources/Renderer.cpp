@@ -27,7 +27,12 @@ Renderer::~Renderer()
 
 bool Renderer::Init()
 {
-	m_basicShader = new Shader("test.vs", "test.fs");
+	m_basicShader = new Shader(
+		"../Resources/Shaders/test.vs", 
+		"../Resources/Shaders/test.fs");
+
+	glEnable(GL_DEPTH_TEST);
+
 	return true;
 }
 
@@ -36,11 +41,12 @@ void Renderer::Render(Scene* scene, Viewport* viewport)
 	bool isValidRenderRequest = scene != nullptr && viewport != nullptr;
 	if (isValidRenderRequest)
 	{
+		m_targetScene = scene;
+		m_targetCamera = scene->GetMainCamera();
+		m_targetViewport = viewport;
+
 		std::vector<Model*>& models = scene->GetModels();
 		std::vector<Light*>& lights = scene->GetLights();
-
-		m_targetScene = scene;
-		m_targetViewport = viewport;
 
 		m_targetViewport->Bind();
 
@@ -49,8 +55,20 @@ void Renderer::Render(Scene* scene, Viewport* viewport)
 			(float)m_targetViewport->GetWidth(),
 			(float)m_targetViewport->GetHeight());
 
+		m_basicShader->Bind();
+		m_basicShader->SetMat4f("viewMatrix", viewMat);
+		m_basicShader->SetMat4f("projMatrix", projMat);
+
+		// ########### TEST CODE ##############
+		m_basicShader->SetVec3f("LightPosition", glm::vec3{ 3.0f, 5.0f, 0.0f });
+
+		glm::vec3 clearColor = m_targetCamera->GetClearColor();
+		glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		for (auto model : models)
 		{
+			m_basicShader->SetMat4f("worldMatrix", model->GetWorldMatrix());
 			if (model != nullptr)
 			{
 				model->Render(m_basicShader);
@@ -59,5 +77,6 @@ void Renderer::Render(Scene* scene, Viewport* viewport)
 
 		m_targetScene = nullptr;
 		m_targetViewport = nullptr;
+		m_targetCamera = nullptr;
 	}
 }

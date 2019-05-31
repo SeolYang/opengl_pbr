@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "Viewport.h"
 
+#include "GL/gl3w.h"
 #include "GLFW/glfw3.h"
 
 #include <chrono>
@@ -15,7 +16,7 @@ Application::Application(const std::string& title, unsigned int width, unsigned 
 	m_renderer(nullptr),
 	m_mainViewport(0)
 {
-	this->CreateViewport(0, 0, width, height);
+	this->CreateViewport(width, height);
 }
 
 Application::~Application()
@@ -56,17 +57,36 @@ bool Application::InitBase()
 
 bool Application::InitWindows()
 {
-	//GLFWwindow* window = glfwCreateWindow()
+	glfwInit();
+	const char* glslVersion = "#version 330 core";
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	Viewport* mainViewport = this->GetMainViewport();
+	m_window = glfwCreateWindow(mainViewport->GetWidth(), mainViewport->GetHeight(),
+		m_title.c_str(), nullptr, nullptr);
+	if (m_window == nullptr)
+	{
+		std::cout << "Failed to init glfw window" << std::endl;
+		return false;
+	}
+
+	glfwMakeContextCurrent(m_window);
+
+	int err = gl3wInit();
+	int version = gl3wIsSupported(3, 3);
+
 	return true;
 }
 
 int Application::Run()
 {
-	if (!InitBase())
+	if (!InitWindows())
 	{
 		return 1;
 	}
-	if (!InitWindows())
+	if (!InitBase())
 	{
 		return 1;
 	}
@@ -75,7 +95,7 @@ int Application::Run()
 		return 1;
 	}
 
-	if (m_viewports.size() > 0)
+	if (m_viewports.size() <= 0)
 	{
 		std::cout << "Error: Cannot find viewport" << std::endl;
 		return 1;
@@ -89,6 +109,9 @@ int Application::Run()
 
 		Update(deltaTime);
 		m_renderer->Render(m_scene, m_viewports[m_mainViewport]);
+
+		glfwSwapBuffers(m_window);
+		glfwPollEvents();
 
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<float> dt = (end - begin);

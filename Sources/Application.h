@@ -19,6 +19,7 @@ public:
 
 	Viewport* CreateViewport(unsigned int width, unsigned int height, unsigned int x = 0, unsigned int y = 0);
 	void SetMainViewport(unsigned int idx) { m_mainViewport = idx; }
+	Viewport* GetMainViewport() const { return m_viewports[m_mainViewport]; }
 
 	Scene* GetScene() const { return m_scene; }
 	Renderer* GetRenderer() const { return m_renderer; }

@@ -1,12 +1,8 @@
 #pragma once
 #include "Object.h"
+#include "Rendering.h"
 
 #include <vector>
-
-namespace tinygltf
-{
-	class Model;
-}
 
 class Material;
 class Texture;
@@ -31,15 +27,21 @@ private:
 
 	void LoadTextures(tinygltf::Model& model);
 	void LoadMaterials(tinygltf::Model& model);
+	void LoadModel(tinygltf::Model& model);
 	void LoadMeshes(tinygltf::Model& model);
 
-	void ProcessNode(int node, tinygltf::Model& model);
-	void ProcessMesh(int mesh, tinygltf::Model& model);
-	
+	void ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Node& node);
+	std::map<int, GLuint> ProcessMesh(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Mesh& mesh);
+
+	void RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& node);
+	void RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& mesh);
+
 private:
+	tinygltf::Model m_model;
 	std::string m_filePath;
 	std::vector<Texture*> m_textures;
 	std::vector<Material*> m_materials;
 	std::vector<Mesh*> m_meshes;
+	unsigned int m_vao;
 
 };

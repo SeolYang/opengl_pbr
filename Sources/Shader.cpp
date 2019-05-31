@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iostream>
 
+constexpr unsigned int INVALID_LOC = 0xFFFFFFFF;
+
 Shader::Shader(
 	const std::string& vsPath,
 	const std::string& fsPath) :
@@ -93,36 +95,51 @@ void Shader::Bind()
 void Shader::SetInt(const std::string& name, int value)
 {
 	unsigned int loc = FindLoc(name);
-	glUniform1i(loc, value);
+	if (loc != INVALID_LOC)
+	{
+		glUniform1i(loc, value);
+	}
 }
 
 void Shader::SetFloat(const std::string& name, float value)
 {
 	unsigned int loc = FindLoc(name);
-	glUniform1f(loc, value);
+	if (loc != INVALID_LOC)
+	{
+		glUniform1f(loc, value);
+	}
 }
 
 void Shader::SetVec3f(const std::string& name, glm::vec3 value)
 {
 	unsigned int loc = FindLoc(name);
-	glUniform3fv(loc, 1, &value[0]);
+	if (loc != INVALID_LOC)
+	{
+		glUniform3fv(loc, 1, &value[0]);
+	}
 }
 
 void Shader::SetVec4f(const std::string& name, glm::vec4 value)
 {
 	unsigned int loc = FindLoc(name);
-	glUniform4fv(loc, 1, &value[0]);
+	if (loc != INVALID_LOC)
+	{
+		glUniform4fv(loc, 1, &value[0]);
+	}
 }
 
 void Shader::SetMat4f(const std::string& name, glm::mat4 value)
 {
 	unsigned int loc = FindLoc(name);
-	glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
+	if (loc != INVALID_LOC)
+	{
+		glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
+	}
 }
 
 unsigned int Shader::FindLoc(const std::string& name)
 {
-	unsigned int loc = -1;
+	unsigned int loc = INVALID_LOC;
 	auto found = m_locs.find(name);
 	if (found != m_locs.end())
 	{

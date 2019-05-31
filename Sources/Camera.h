@@ -32,6 +32,8 @@ private:
 	float m_nearPlane;
 	float m_farPlane;
 
+	glm::vec3 m_lookAt;
+
 	glm::vec3 m_clearColor;
 
 };

@@ -26,6 +26,7 @@
     <ClInclude Include="..\Sources\Scene.h" />
     <ClInclude Include="..\Sources\Settings.h" />
     <ClInclude Include="..\Sources\Shader.h" />
+    <ClInclude Include="..\Sources\TestApp.h" />
     <ClInclude Include="..\Sources\Texture.h" />
     <ClInclude Include="..\Sources\Viewport.h" />
   </ItemGroup>
@@ -41,8 +42,13 @@
     <ClCompile Include="..\Sources\Renderer.cpp" />
     <ClCompile Include="..\Sources\Scene.cpp" />
     <ClCompile Include="..\Sources\Shader.cpp" />
+    <ClCompile Include="..\Sources\TestApp.cpp" />
     <ClCompile Include="..\Sources\Texture.cpp" />
     <ClCompile Include="..\Sources\Viewport.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Shaders\test.fs" />
+    <None Include="..\Resources\Shaders\test.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

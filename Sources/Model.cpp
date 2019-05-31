@@ -2,12 +2,11 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "Rendering.h"
 #include "Shader.h"
 
 #include <iostream>
 
-#define BUFFER_OFFSET(idx) ((char *)nullptr + (idx))
+#define BUFFER_OFFSET(idx) ((char *)NULL + (idx))
 
 Model::Model(const std::string& filePath,
 	const std::string& name) :
@@ -46,24 +45,22 @@ Model::~Model()
 
 void Model::Render(Shader* shader)
 {
-	for (auto mesh : m_meshes)
+	glBindVertexArray(m_vao);
+	const tinygltf::Scene& scene = m_model.scenes[m_model.defaultScene];
+	for (size_t idx = 0; idx < m_model.nodes.size(); ++idx)
 	{
-		if (mesh != nullptr)
-		{
-			shader->SetMat4f("worldMatrix", this->GetWorldMatrix());
-			mesh->Render(shader);
-		}
+		RenderNode(shader, m_model, m_model.nodes[idx]);
 	}
+	glBindVertexArray(0);
 }
 
 void Model::Init()
 {
-	tinygltf::Model model;
-	if (LoadGLTFModel(model))
+	if (LoadGLTFModel(m_model))
 	{
-		LoadTextures(model);
-		LoadMaterials(model);
-		LoadMeshes(model);
+		LoadTextures(m_model);
+		LoadMaterials(m_model);
+		LoadModel(m_model);
 	}
 }
 
@@ -151,58 +148,73 @@ void Model::LoadMaterials(tinygltf::Model& model)
 	}
 }
 
-void Model::LoadMeshes(tinygltf::Model& model)
-{
-	const int defaultScene = model.defaultScene;
-	for (auto node : model.scenes[defaultScene].nodes)
-	{
-		ProcessNode(node, model);
-	}
-
-}
-
-void Model::ProcessNode(int node, tinygltf::Model& model)
-{
-	const auto targetNode = model.nodes[node];
-	ProcessMesh(targetNode.mesh, model);
-	for (auto child : targetNode.children)
-	{
-		ProcessNode(child, model);
-	}
-}
-
-void Model::ProcessMesh(int mesh, tinygltf::Model& model)
+void Model::LoadModel(tinygltf::Model& model)
 {
 	std::map<int, GLuint> vbos;
-	auto targetMesh = model.meshes[mesh];
-	tinygltf::BufferView bufferView;
+	glGenVertexArrays(1, &m_vao);
+	glBindVertexArray(m_vao);
+
+	const tinygltf::Scene& scene = model.scenes[model.defaultScene];
+	for (size_t idx = 0; idx < scene.nodes.size(); ++idx)
+	{
+		ProcessNode(vbos, model, model.nodes[idx]);
+	}
+
+	glBindVertexArray(0);
+	for (size_t idx = 0; idx < vbos.size(); ++idx)
+	{
+		glDeleteBuffers(1, &vbos[idx]);
+	}
+}
+
+void Model::ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Node& node)
+{
+	ProcessMesh(vbos, model, model.meshes[node.mesh]);
+	for (size_t idx = 0; idx < node.children.size(); ++idx)
+	{
+		ProcessNode(vbos, model, model.nodes[node.children[idx]]);
+	}
+}
+
+std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Mesh& mesh)
+{
 	for (size_t idx = 0; idx < model.bufferViews.size(); ++idx)
 	{
-		bufferView = model.bufferViews[idx];
+		const tinygltf::BufferView& bufferView = model.bufferViews[idx];
 		if (bufferView.target == 0)
 		{
-			std::cout << "Warn: bufferView.target is zero" << std::endl;
+			std::cout << "WARN: BufferView.Target is zero" << std::endl;
 			continue;
 		}
 
 		tinygltf::Buffer buffer = model.buffers[bufferView.buffer];
-		std::cout << "BufferView.target " << bufferView.target << std::endl;
+		std::cout << "BufferView.target: ";
+		switch (bufferView.target)
+		{
+		case GL_ARRAY_BUFFER:
+			std::cout << "GL_ARRAY_BUFFER:";
+			break;
+		case GL_ELEMENT_ARRAY_BUFFER:
+			std::cout << "GL_ELEMENT_ARRAY_BUFFER:";
+		}
+		std::cout << bufferView.target << std::endl;
 
 		GLuint vbo;
 		glGenBuffers(1, &vbo);
-		vbos[idx] = vbo; // 만약 bufferView.target == 0 이면 중간에 공백이 생기기에
+		vbos[idx] = vbo;
 		glBindBuffer(bufferView.target, vbo);
+
+		std::cout << "Buffer.data.size: " << buffer.data.size()
+			<< ", BufferView.byteoffset: " << bufferView.byteOffset << std::endl;
+
 		glBufferData(bufferView.target, bufferView.byteLength,
 			&buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
 	}
 
-	for (size_t idx = 0; idx < targetMesh.primitives.size(); ++idx)
+	for (size_t idx = 0; idx < mesh.primitives.size(); ++idx)
 	{
-		GLuint vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		auto primitive = targetMesh.primitives[idx];
-		auto idxAccessor = model.accessors[primitive.indices];
+		tinygltf::Primitive primitive = mesh.primitives[idx];
+		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
 
 		for (auto& attrib : primitive.attributes)
 		{
@@ -232,15 +244,40 @@ void Model::ProcessMesh(int mesh, tinygltf::Model& model)
 
 			if (vaa > -1)
 			{
-				glEnableVertexAttribArray(vaa);
 				glVertexAttribPointer(vaa, size, accessor.componentType,
-					accessor.normalized ? GL_TRUE : GL_FALSE, byteStride,
-					BUFFER_OFFSET(accessor.byteOffset));
+					accessor.normalized ? GL_TRUE : GL_FALSE,
+					byteStride, BUFFER_OFFSET(accessor.byteOffset));
+				glEnableVertexAttribArray(vaa);
+			}
+			else
+			{
+				std::cout << "Unknwon vaa: " << attrib.first << std::endl;
 			}
 		}
+	}
 
-		Mesh* newMesh = new Mesh(m_materials[primitive.material], vao, primitive.mode, idxAccessor.count, idxAccessor.type,
+	return vbos;
+}
+
+void Model::RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& node)
+{
+	RenderMesh(shader, model, model.meshes[node.mesh]);
+	for (size_t idx = 0; idx < node.children.size(); ++idx)
+	{
+		RenderNode(shader, model, model.nodes[node.children[idx]]);
+	}
+}
+
+void Model::RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& mesh)
+{
+	for (size_t idx = 0; idx < mesh.primitives.size(); ++idx)
+	{
+		tinygltf::Primitive primitive = mesh.primitives[idx];
+		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
+
+		m_materials[primitive.material]->Bind(shader);
+		glDrawElements(primitive.mode, idxAccessor.count,
+			idxAccessor.componentType,
 			BUFFER_OFFSET(idxAccessor.byteOffset));
-		m_meshes.push_back(newMesh);
 	}
 }
