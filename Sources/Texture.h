@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace tinygltf
 {
@@ -16,8 +17,11 @@ public:
 
 	void Bind(unsigned int slot);
 
+	std::string GetURI() const { return m_uri; }
+
 private:
 	unsigned int m_id;
 	unsigned int m_latestSlot;
+	std::string	 m_uri;
 
 };

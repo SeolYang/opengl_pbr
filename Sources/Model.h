@@ -39,7 +39,7 @@ private:
 private:
 	tinygltf::Model m_model;
 	std::string m_filePath;
-	std::vector<Texture*> m_textures;
+	std::map<unsigned int, Texture*> m_textures;
 	std::vector<Material*> m_materials;
 	std::vector<Mesh*> m_meshes;
 	unsigned int m_vao;

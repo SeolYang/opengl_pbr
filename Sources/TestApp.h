@@ -20,6 +20,8 @@ public:
 
 private:
 	Model* m_helmet;
+	Model* m_avocado;
+	Model* m_duck;
 	Camera* m_cam;
 	float m_movePower = 50.0f;
 	float m_rotateRad = 6.0f;

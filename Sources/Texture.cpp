@@ -2,10 +2,10 @@
 #include "Rendering.h"
 
 Texture::Texture(tinygltf::Image& image, tinygltf::Sampler& sampler) :
+	m_uri(image.uri),
 	m_latestSlot(0)
 {
 	glGenTextures(1, &m_id);
-
 	glBindTexture(GL_TEXTURE_2D, m_id);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -48,6 +48,7 @@ Texture::Texture(tinygltf::Image& image, tinygltf::Sampler& sampler) :
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height,
 		0, format, type, &image.image.at(0));
+	glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void Texture::Bind(unsigned int slot)

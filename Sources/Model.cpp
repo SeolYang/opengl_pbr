@@ -36,10 +36,7 @@ Model::~Model()
 
 	for (auto texture : m_textures)
 	{
-		if (texture != nullptr)
-		{
-			delete texture;
-		}
+		delete texture.second;
 	}
 }
 
@@ -95,11 +92,28 @@ bool Model::LoadGLTFModel(tinygltf::Model& model)
 
 void Model::LoadTextures(tinygltf::Model& model)
 {
+	int samplerSize = model.samplers.size();
 	for (auto texture : model.textures)
 	{
-		m_textures.push_back(new Texture{
-			model.images[texture.source],
-			model.samplers[texture.sampler] });
+		int source = texture.source;
+		int sampler = texture.sampler;
+
+		tinygltf::Sampler targetSampler;
+		targetSampler.minFilter = GL_LINEAR;
+		targetSampler.magFilter = GL_LINEAR;
+		targetSampler.wrapS = GL_REPEAT;
+		targetSampler.wrapT = GL_REPEAT;
+		targetSampler.wrapR = GL_REPEAT;
+
+		bool bValidSampler = (samplerSize > 0 && samplerSize > texture.sampler);
+		if (bValidSampler)
+		{
+			targetSampler = model.samplers[texture.sampler];
+		}
+
+		m_textures[source] = new Texture{
+			model.images[source],
+			targetSampler };
 	}
 }
 
@@ -111,25 +125,40 @@ void Model::LoadMaterials(tinygltf::Model& model)
 		// Think about non textured object
 		Texture* baseColorTexture = nullptr;
 		Texture* metallicRoughnessTexture = nullptr;
+		glm::vec4 baseColorFactor{ 0.0f };
 		float metallicFactor = 0.0f;
 		float roughnessFactor = 0.0f;
 		for (auto value : material.values)
 		{
-			if (value.first.compare("baseColorTexture"))
+			int textureIdx = 0;
+			if (value.first.compare("baseColorTexture") == 0)
 			{
+				textureIdx = model.textures[value.second.TextureIndex()].source;
 				baseColorTexture =
-					m_textures[value.second.TextureIndex()];
+					m_textures[textureIdx];
 			}
-			if (value.first.compare("metallicRoughnessTexture"))
+			else if (value.first.compare("baseColorFactor") == 0)
 			{
-				metallicRoughnessTexture =
-					m_textures[value.second.TextureIndex()];
+				auto colorFactor = value.second.ColorFactor();
+				baseColorFactor.r = colorFactor[0];
+				baseColorFactor.g = colorFactor[1];
+				baseColorFactor.b = colorFactor[2];
+				if (colorFactor.size() >= 4)
+				{
+					baseColorFactor.a = colorFactor[3];
+				}
 			}
-			if (value.first.compare("metallicFactor"))
+			else if (value.first.compare("metallicRoughnessTexture") == 0)
+			{
+				textureIdx = model.textures[value.second.TextureIndex()].source;
+				metallicRoughnessTexture =
+					m_textures[textureIdx];
+			}
+			else if (value.first.compare("metallicFactor") == 0)
 			{
 				metallicFactor = value.second.Factor();
 			}
-			if (value.first.compare("roughnessFactor"))
+			else if (value.first.compare("roughnessFactor") == 0)
 			{
 				roughnessFactor = value.second.Factor();
 			}
@@ -141,7 +170,9 @@ void Model::LoadMaterials(tinygltf::Model& model)
 
 		}
 
-		m_materials.push_back(new Material{ baseColorTexture,
+		m_materials.push_back(new Material{ 
+			baseColorTexture,
+			baseColorFactor,
 			metallicRoughnessTexture,
 			metallicFactor,
 			roughnessFactor });
@@ -169,7 +200,10 @@ void Model::LoadModel(tinygltf::Model& model)
 
 void Model::ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Node& node)
 {
-	ProcessMesh(vbos, model, model.meshes[node.mesh]);
+	if (node.mesh != -1)
+	{
+		ProcessMesh(vbos, model, model.meshes[node.mesh]);
+	}
 	for (size_t idx = 0; idx < node.children.size(); ++idx)
 	{
 		ProcessNode(vbos, model, model.nodes[node.children[idx]]);
@@ -244,10 +278,10 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 
 			if (vaa > -1)
 			{
+				glEnableVertexAttribArray(vaa);
 				glVertexAttribPointer(vaa, size, accessor.componentType,
 					accessor.normalized ? GL_TRUE : GL_FALSE,
 					byteStride, BUFFER_OFFSET(accessor.byteOffset));
-				glEnableVertexAttribArray(vaa);
 			}
 			else
 			{
@@ -261,7 +295,10 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 
 void Model::RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& node)
 {
-	RenderMesh(shader, model, model.meshes[node.mesh]);
+	if (node.mesh != -1)
+	{
+		RenderMesh(shader, model, model.meshes[node.mesh]);
+	}
 	for (size_t idx = 0; idx < node.children.size(); ++idx)
 	{
 		RenderNode(shader, model, model.nodes[node.children[idx]]);

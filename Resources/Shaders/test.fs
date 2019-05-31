@@ -7,9 +7,20 @@ in vec2 Texcoord;
 
 uniform vec3 LightPosition;
 
+uniform sampler2D baseColor;
+uniform vec4 baseColorFactor;
+
 void main()
 {
+	vec3 color = texture(baseColor, Texcoord).rgb + baseColorFactor.rgb;
 	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(LightPosition - Position);
-	FragColor = vec4(vec3(1.0, 1.0, 1.0)*dot(lightDir, normal), 1.0);
+
+	float ambientFactor = 0.1;
+	vec3 ambient = ambientFactor*color;
+
+	float diffuseFactor = clamp(dot(lightDir, normal), 0.0, 1.0);
+	vec3 diffuse = diffuseFactor*color;
+
+	FragColor = vec4(ambient+diffuse, 1.0);
 }
