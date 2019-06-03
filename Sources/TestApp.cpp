@@ -24,17 +24,26 @@ bool TestApp::Init()
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 
+	m_metalRoughSpheres = scene->LoadModel("../Resources/Models/MetalRoughSpheres/MetalRoughSpheres.gltf", "Spheres");
+	m_metalRoughSpheres->SetPosition(glm::vec3(0.0f, 0.0f, -1.5f));
+	m_metalRoughSpheres->SetScale(glm::vec3(0.5f));
+	m_metalRoughSpheres->SetRotation(glm::rotate(glm::quat(),
+		glm::radians(-90.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(0.0f, 2.0f, 5.0f));
+	m_cam->SetPosition(glm::vec3(0.0f, 3.0f, 8.0f));
 	return true;
 }
 
 void TestApp::Update(float dt)
 {
 	m_elasedTime += dt;
-	glm::vec3 camPos = m_cam->GetPosition();
-	m_rotateRad += dt*0.01f;
+	m_duckAngle += dt * m_rotatePower;
+	glm::vec3 camPos = m_duck->GetPosition();
+	//m_rotateRad += dt*0.01f;
 	camPos.x = m_rotateRad * glm::sin(m_elasedTime);
 	camPos.z = m_rotateRad * glm::cos(m_elasedTime);
-	m_cam->SetPosition(camPos);
+	//m_cam->SetPosition(camPos);
+	m_duck->SetRotation(glm::rotate(glm::quat(),
+		glm::radians(m_duckAngle), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 }

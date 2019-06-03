@@ -22,9 +22,15 @@ private:
 	Model* m_helmet;
 	Model* m_avocado;
 	Model* m_duck;
+	Model* m_metalRoughSpheres;
+
 	Camera* m_cam;
+
 	float m_movePower = 50.0f;
 	float m_rotateRad = 6.0f;
 	float m_elasedTime = 0.0f;
+
+	float m_rotatePower = 50.0f;
+	float m_duckAngle = 0.0f;
 
 };
