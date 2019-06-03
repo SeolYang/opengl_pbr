@@ -15,7 +15,7 @@ void main()
 {
 	vec4 worldPosition = worldMatrix * vec4(aPos, 1.0);
 	Position = worldPosition.xyz;
-	gl_Position = projMatrix * viewMatrix * worldPosition;
-	Normal = aNormal;
+	Normal = normalize(worldMatrix * vec4(aNormal, 0.0)).xyz;
 	Texcoord = aTexcoord;
+	gl_Position = projMatrix * viewMatrix * worldPosition;
 }
