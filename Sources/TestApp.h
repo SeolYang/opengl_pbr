@@ -38,8 +38,4 @@ private:
 	float m_duckRoughnessScale = 0.03f;
 	Material* m_duckMat = nullptr;
 
-	float m_spheresMetallic = 0.0f;
-	float m_spheresMetallicScale = 0.02f;
-	Material* m_spheresMat = nullptr;
-
 };
