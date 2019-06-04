@@ -3,6 +3,8 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Material.h"
+#include "Light.h"
+
 #include <iostream>
 
 bool TestApp::Init()
@@ -37,8 +39,16 @@ bool TestApp::Init()
 	m_spheres->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
+	m_mainLight = scene->CreateLight("Main");
+	m_mainLight->SetPosition(glm::vec3{ 0.0f, 2.0f, 1.0f });
+	m_mainLight->SetRadiance(glm::vec3{ 25.0f });
+
+	m_secondaryLight = scene->CreateLight("Secondary");
+	m_secondaryLight->SetPosition(glm::vec3{ -1.5f, 3.0f, -2.5f });
+	m_secondaryLight->SetRadiance(glm::vec3{ 30.0f, 5.0f, 5.0f });
+
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 4.f));
+	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 5.f));
 	return true;
 }
 

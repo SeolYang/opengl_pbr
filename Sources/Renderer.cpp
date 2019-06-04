@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Viewport.h"
 #include "Shader.h"
+#include "Light.h"
 
 #include "GL/gl3w.h"
 
@@ -62,7 +63,14 @@ void Renderer::Render(Scene* scene, Viewport* viewport)
 		m_basicShader->SetVec3f("camPos", m_targetCamera->GetPosition());
 
 		// ########### TEST CODE ##############
-		m_basicShader->SetVec3f("lightPos", glm::vec3{ 0.0f, 2.0f, 1.0f });
+		auto numOfLights = (lights.size() <= MaximumLights) ? lights.size() : MaximumLights;
+		m_basicShader->SetInt("numOfLights", numOfLights);
+		for (size_t idx = 0; idx < numOfLights; ++idx)
+		{
+			auto indexingStr = "lights[" + std::to_string(idx) + "]";
+			m_basicShader->SetVec3f(indexingStr + ".position", lights[idx]->GetPosition());
+			m_basicShader->SetVec3f(indexingStr + ".radiance", lights[idx]->GetRadiance());
+		}
 
 		glm::vec3 clearColor = m_targetCamera->GetClearColor();
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.0f);

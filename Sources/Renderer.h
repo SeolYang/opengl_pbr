@@ -1,5 +1,7 @@
 #pragma once
 
+constexpr unsigned int MaximumLights = 16;
+
 class Scene;
 class Mesh;
 class Model;
