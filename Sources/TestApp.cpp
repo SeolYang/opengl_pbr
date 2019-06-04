@@ -26,9 +26,12 @@ bool TestApp::Init()
 	m_duck->SetScale(glm::vec3{ 0.008f, 0.008f, 0.008f });
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+	Material* duckMat = m_duck->GetMaterial(0);
+	duckMat->SetMetallicFactor(0.5f);
+	duckMat->SetRoughnessFactor(0.9f);
 
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 4.f));
 	return true;
 }
 
@@ -40,7 +43,7 @@ void TestApp::Update(float dt)
 	glm::vec3 camPos = m_cam->GetPosition();
 	camPos.x = m_rotateRad * glm::sin(m_elasedTime);
 	camPos.z = m_rotateRad * glm::cos(m_elasedTime);
-	//m_cam->SetPosition(camPos);
+	m_cam->SetPosition(camPos);
 
 	m_duckAngle += dt * m_rotatePower;
 	m_duck->SetRotation(glm::rotate(glm::quat(),

@@ -352,7 +352,6 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 		glm::vec3* vertices = 
 			reinterpret_cast<glm::vec3*>(&verticesGLTF.data[0]
 				+ verticesView.byteOffset);
-		std::cout << vertices[0].x << ", " << vertices[0].y << ", " << vertices[0].z << std::endl;
 
 		glm::vec2* texcoords =
 			reinterpret_cast<glm::vec2*>(&indicesGLTF.data[0]
