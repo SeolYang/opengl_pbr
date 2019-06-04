@@ -74,6 +74,20 @@ bool Application::InitWindows()
 
 	glfwMakeContextCurrent(m_window);
 
+	/* Initialize Callbacks */
+	glfwSetWindowUserPointer(m_window, this);
+
+	const auto keyCallback = [](GLFWwindow * window, int key, int scanCode, int action, int mods) {
+		auto* app = (Application*)glfwGetWindowUserPointer(window);
+		app->KeyCallback(window, key, scanCode, action, mods); };
+	glfwSetKeyCallback(m_window, keyCallback);
+
+	const auto framebufferSizeCallback = [](GLFWwindow * window, int width, int height) {
+		auto* app = (Application*)glfwGetWindowUserPointer(window);
+		app->WindowResizeCallback(window, width, height);
+	};
+	glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback);
+
 	int err = gl3wInit();
 	int version = gl3wIsSupported(3, 3);
 

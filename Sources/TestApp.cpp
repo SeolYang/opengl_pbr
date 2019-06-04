@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Light.h"
+#include "Viewport.h"
 
 #include <iostream>
 
@@ -72,4 +73,12 @@ void TestApp::Update(float dt)
 		m_duckRoughnessScale = -m_duckRoughnessScale;
 	}
 	m_duckMat->SetRoughnessFactor(m_duckRoughness);
+}
+
+void TestApp::WindowResizeCallback(GLFWwindow* window, int width, int height)
+{
+	auto* mainViewport = GetMainViewport();
+	mainViewport->SetWidth((unsigned int)width);
+	mainViewport->SetHeight((unsigned int)height);
+	std::cout << "Window resized: " << width << " , " << height << std::endl;
 }

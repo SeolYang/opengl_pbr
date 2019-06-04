@@ -28,6 +28,9 @@ protected:
 	virtual bool Init() = 0;
 	virtual void Update(float dt) = 0;
 
+	virtual void WindowResizeCallback(GLFWwindow* window, int width, int height) {}
+	virtual void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods) {}
+
 private:
 	bool InitBase();
 	bool InitWindows();
