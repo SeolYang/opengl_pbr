@@ -6,6 +6,9 @@
 #include "Light.h"
 #include "Viewport.h"
 
+#include "GLFW/glfw3.h"
+#include <cmath>
+
 #include <iostream>
 
 bool TestApp::Init()
@@ -22,8 +25,8 @@ bool TestApp::Init()
 	m_avocado->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(135.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	Material* avocadoMat = m_avocado->GetMaterial(0);
-	avocadoMat->SetUseNormal(false);
-
+	avocadoMat->SetUseNormal(true);
+	//avocadoMat->SetUseNormal(false);
 
 	m_duck = scene->LoadModel("../Resources/Models/Duck/Duck.gltf", "Duck");
 	m_duck->SetPosition(glm::vec3(-2.0f,-1.0f, 0.0f));
@@ -55,15 +58,17 @@ bool TestApp::Init()
 
 void TestApp::Update(float dt)
 {
-	m_elasedTime += dt;
+	if (m_bRotateCam)
+	{
+		m_elasedTime += dt;
+		m_rotateRad += dt * 0.01f;
+		glm::vec3 camPos = m_cam->GetPosition();
+		camPos.x = m_rotateRad * glm::sin(m_elasedTime);
+		camPos.z = m_rotateRad * glm::cos(m_elasedTime);
+		m_cam->SetPosition(camPos);
+	}
 
-	m_rotateRad += dt*0.01f;
-	glm::vec3 camPos = m_cam->GetPosition();
-	camPos.x = m_rotateRad * glm::sin(m_elasedTime);
-	camPos.z = m_rotateRad * glm::cos(m_elasedTime);
-	m_cam->SetPosition(camPos);
-
-	m_duckAngle += dt * m_rotatePower;
+	m_duckAngle += dt * m_duckRotatePower;
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(m_duckAngle), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 
@@ -81,4 +86,31 @@ void TestApp::WindowResizeCallback(GLFWwindow* window, int width, int height)
 	mainViewport->SetWidth((unsigned int)width);
 	mainViewport->SetHeight((unsigned int)height);
 	std::cout << "Window resized: " << width << " , " << height << std::endl;
+}
+
+void TestApp::KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		switch (key)
+		{
+		case GLFW_KEY_SPACE:
+			m_bRotateCam = !m_bRotateCam;
+			break;
+
+		case GLFW_KEY_UP:
+			m_duckRotatePower += m_powerDiff;
+			break;
+		case GLFW_KEY_DOWN:
+			m_duckRotatePower -= m_powerDiff;
+			break;
+
+		case GLFW_KEY_W:
+			m_rotateRad -= m_rotateRadDiff;
+			break;
+		case GLFW_KEY_S:
+			m_rotateRad += m_rotateRadDiff;
+			break;
+		}
+	}
 }

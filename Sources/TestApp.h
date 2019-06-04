@@ -30,6 +30,8 @@ protected:
 	virtual void WindowResizeCallback(GLFWwindow* window,
 		int width, int height) override;
 
+	virtual void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods);
+
 private:
 	Model*		m_helmet;
 	Model*		m_avocado;
@@ -42,12 +44,16 @@ private:
 	Camera*		m_cam;
 				
 	float		m_movePower = 50.0f;
-	float		m_rotateRad = 5.0f;
+
 	float		m_elasedTime = 0.0f;
-				
-	float		m_rotatePower = 50.0f;
+	
+	bool		m_bRotateCam = true;
+	float		m_rotateRad = 5.0f;
+	float		m_rotateRadDiff = 0.5f;
+
+	float		m_duckRotatePower = 50.0f;
+	float		m_powerDiff = 10.0f;
 	float		m_duckAngle = 0.0f;
-				
 	float		m_duckRoughness = 0.0f;
 	float		m_duckRoughnessScale = 0.03f;
 	Material*	m_duckMat = nullptr;
