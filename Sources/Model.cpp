@@ -124,13 +124,22 @@ void Model::LoadMaterials(tinygltf::Model& model)
 		// PBR Workflow
 		// Think about non textured object
 		Texture* baseColorTexture = nullptr;
-		Texture* metallicRoughnessTexture = nullptr;
 		glm::vec4 baseColorFactor{ 0.0f };
+
+		Texture* metallicRoughnessTexture = nullptr;
 		float metallicFactor = 0.0f;
 		float roughnessFactor = 0.0f;
+
+		Texture* ao = nullptr;
+
+		Texture* emissive = nullptr;
+		glm::vec3 emissiveFactor{ 0.0f };
+
+		Texture* normal = nullptr;
+
+		int textureIdx = 0;
 		for (auto value : material.values)
 		{
-			int textureIdx = 0;
 			if (value.first.compare("baseColorTexture") == 0)
 			{
 				textureIdx = model.textures[value.second.TextureIndex()].source;
@@ -167,15 +176,41 @@ void Model::LoadMaterials(tinygltf::Model& model)
 		// Addition properties
 		for (auto value : material.additionalValues)
 		{
-
+			if (value.first.compare("normalTexture") == 0)
+			{
+				textureIdx = model.textures[value.second.TextureIndex()].source;
+				normal = m_textures[textureIdx];
+			}
+			else if (value.first.compare("occlusionTexture") == 0)
+			{
+				textureIdx = model.textures[value.second.TextureIndex()].source;
+				ao = m_textures[textureIdx];
+			}
+			
+			else if (value.first.compare("emissiveTexture") == 0)
+			{
+				textureIdx = model.textures[value.second.TextureIndex()].source;
+				emissive = m_textures[textureIdx];
+			}
+			else if (value.first.compare("emissiveFactor") == 0)
+			{
+				auto colorFactor = value.second.ColorFactor();
+				emissiveFactor.r = colorFactor[0];
+				emissiveFactor.g = colorFactor[1];
+				emissiveFactor.b = colorFactor[2];
+			}
 		}
 
 		m_materials.push_back(new Material{ 
 			baseColorTexture,
 			baseColorFactor,
+			normal,
 			metallicRoughnessTexture,
 			metallicFactor,
-			roughnessFactor });
+			roughnessFactor,
+			ao,
+			emissive,
+			emissiveFactor});
 	}
 }
 
@@ -316,5 +351,6 @@ void Model::RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& m
 		glDrawElements(primitive.mode, idxAccessor.count,
 			idxAccessor.componentType,
 			BUFFER_OFFSET(idxAccessor.byteOffset));
+		m_materials[primitive.material]->Unbind(shader);
 	}
 }

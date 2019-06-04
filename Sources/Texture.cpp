@@ -57,3 +57,10 @@ void Texture::Bind(unsigned int slot)
 	glBindTexture(GL_TEXTURE_2D, m_id);
 	m_latestSlot = slot;
 }
+
+void Texture::Unbind()
+{
+	glActiveTexture(GL_TEXTURE0 + m_latestSlot);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	m_latestSlot = 0;
+}

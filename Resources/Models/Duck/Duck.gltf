@@ -156,10 +156,10 @@
     "materials": [
         {
             "pbrMetallicRoughness": {
-                "baseColorTexture": {
-                    "index": 0
-                },
-                "metallicFactor": 0.0
+              "baseColorTexture": {
+                "index": 0
+              },
+                "roughnessFactor":  0.0
             },
             "emissiveFactor": [
                 0.0,

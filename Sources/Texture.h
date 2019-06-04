@@ -16,6 +16,7 @@ public:
 	unsigned int GetBoundedSlot() const { return m_latestSlot; }
 
 	void Bind(unsigned int slot);
+	void Unbind();
 
 	std::string GetURI() const { return m_uri; }
 

@@ -28,8 +28,8 @@ Renderer::~Renderer()
 bool Renderer::Init()
 {
 	m_basicShader = new Shader(
-		"../Resources/Shaders/test.vs", 
-		"../Resources/Shaders/test.fs");
+		"../Resources/Shaders/PBR.vs", 
+		"../Resources/Shaders/PBR.fs");
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -59,8 +59,10 @@ void Renderer::Render(Scene* scene, Viewport* viewport)
 		m_basicShader->SetMat4f("viewMatrix", viewMat);
 		m_basicShader->SetMat4f("projMatrix", projMat);
 
+		m_basicShader->SetVec3f("camPos", m_targetCamera->GetPosition());
+
 		// ########### TEST CODE ##############
-		m_basicShader->SetVec3f("LightPosition", glm::vec3{ 3.0f, 5.0f, 0.0f });
+		m_basicShader->SetVec3f("lightPos", glm::vec3{ 2.0f, 3.0f, -0.5f });
 
 		glm::vec3 clearColor = m_targetCamera->GetClearColor();
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.0f);

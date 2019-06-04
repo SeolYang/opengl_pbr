@@ -7,14 +7,22 @@
 Material::Material(
 	Texture* baseColor,
 	glm::vec4 baseColorFactor,
+	Texture* normal,
 	Texture* metallicRoughness,
 	float metallicFactor,
-	float roughnessFactor) :
+	float roughnessFactor,
+	Texture* ao,
+	Texture* emissive,
+	glm::vec3 emissiveFactor) :
 	m_baseColor(baseColor),
 	m_baseColorFactor(baseColorFactor),
+	m_normal(normal),
 	m_metallicRoughness(metallicRoughness),
 	m_metallicFactor(metallicFactor),
-	m_roughnessFactor(roughnessFactor)
+	m_roughnessFactor(roughnessFactor),
+	m_ao(ao),
+	m_emissive(emissive),
+	m_emissiveFactor(emissiveFactor)
 {
 }
 
@@ -24,21 +32,86 @@ void Material::Bind(Shader* shader)
 	{
 		if (m_baseColor != nullptr)
 		{
-			m_baseColor->Bind(BASECOLOR_TEX_SLOT);
-			shader->SetVec4f("baseColorFactor", glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+			m_baseColor->Bind(EMaterialTextureSlot::BaseColor);
+			shader->SetInt("baseColorMap", EMaterialTextureSlot::BaseColor);
+			shader->SetVec4f("baseColorFactor", glm::vec4(0.0f));
 		}
 		else
 		{
 			shader->SetVec4f("baseColorFactor", m_baseColorFactor);
 		}
-		if (m_metallicRoughness != nullptr)
+
+		if (m_normal != nullptr)
 		{
-			m_metallicRoughness->Bind(METALLIC_ROUGHNESS_TEX_SLOT);
+			m_normal->Bind(EMaterialTextureSlot::Normal);
+			shader->SetInt("normalMap", EMaterialTextureSlot::Normal);
 		}
 
-		shader->SetInt("baseColor", BASECOLOR_TEX_SLOT);
-		shader->SetInt("metallicRoughness", METALLIC_ROUGHNESS_TEX_SLOT);
-		shader->SetFloat("metallicFactor", m_metallicFactor);
-		shader->SetFloat("roughnessFactor", m_roughnessFactor);
+		if (m_metallicRoughness != nullptr)
+		{
+			m_metallicRoughness->Bind(EMaterialTextureSlot::MetallicRoughness);
+			shader->SetInt("metallicRoughnessMap", EMaterialTextureSlot::MetallicRoughness);
+			shader->SetFloat("metallicFactor", 0.0f);
+			shader->SetFloat("roughnessFactor", 0.0f);
+		}
+		else
+		{
+
+			shader->SetFloat("metallicFactor", m_metallicFactor);
+			shader->SetFloat("roughnessFactor", m_roughnessFactor);
+		}
+
+		if (m_ao != nullptr)
+		{
+			m_ao->Bind(EMaterialTextureSlot::AO);
+			shader->SetInt("aoMap", EMaterialTextureSlot::AO);
+		}
+
+		if (m_emissive != nullptr)
+		{
+			m_emissive->Bind(EMaterialTextureSlot::Emissive);
+			shader->SetInt("emissiveMap", EMaterialTextureSlot::Emissive);
+			shader->SetVec3f("emissiveFactor", glm::vec3(0.0f));
+		}
+		else
+		{
+			shader->SetVec3f("emissiveFactor", m_emissiveFactor);
+		}
+	}
+}
+
+void Material::Unbind(Shader* shader)
+{
+	if (shader != nullptr)
+	{
+		if (m_baseColor != nullptr)
+		{
+			m_baseColor->Unbind();
+		}
+
+		if (m_normal != nullptr)
+		{
+			m_normal->Unbind();
+		}
+
+		if (m_metallicRoughness != nullptr)
+		{
+			m_metallicRoughness->Unbind();
+		}
+
+		if (m_ao != nullptr)
+		{
+			m_ao->Unbind();
+		}
+
+		if (m_emissive != nullptr)
+		{
+			m_emissive->Unbind();
+		}
+
+		shader->SetVec4f("baseColorFactor", glm::vec4(0.0f));
+		shader->SetFloat("metallicFactor", 0.0f);
+		shader->SetFloat("roughnessFactor", 0.0f);
+		shader->SetVec3f("emissiveFactor", glm::vec3(0.0f));
 	}
 }

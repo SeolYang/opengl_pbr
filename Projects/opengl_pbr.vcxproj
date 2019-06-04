@@ -47,6 +47,8 @@
     <ClCompile Include="..\Sources\Viewport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Resources\Shaders\PBR.fs" />
+    <None Include="..\Resources\Shaders\PBR.vs" />
     <None Include="..\Resources\Shaders\test.fs" />
     <None Include="..\Resources\Shaders\test.vs" />
   </ItemGroup>

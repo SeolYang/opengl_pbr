@@ -22,7 +22,6 @@ private:
 	Model* m_helmet;
 	Model* m_avocado;
 	Model* m_duck;
-	Model* m_metalRoughSpheres;
 
 	Camera* m_cam;
 
