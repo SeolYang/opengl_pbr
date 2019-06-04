@@ -247,6 +247,13 @@ void Model::ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tiny
 
 std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Mesh& mesh)
 {
+	tinygltf::Buffer verticesGLTF;
+	tinygltf::BufferView verticesView;
+	tinygltf::Buffer indicesGLTF;
+	tinygltf::BufferView indicesView;
+	tinygltf::Buffer texcoordsGLTF;
+	tinygltf::BufferView texcoordsView;
+
 	for (size_t idx = 0; idx < model.bufferViews.size(); ++idx)
 	{
 		const tinygltf::BufferView& bufferView = model.bufferViews[idx];
@@ -264,6 +271,8 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 			std::cout << "GL_ARRAY_BUFFER:";
 			break;
 		case GL_ELEMENT_ARRAY_BUFFER:
+			indicesGLTF = buffer;
+			indicesView = bufferView;
 			std::cout << "GL_ELEMENT_ARRAY_BUFFER:";
 		}
 		std::cout << bufferView.target << std::endl;
@@ -284,11 +293,14 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 	{
 		tinygltf::Primitive primitive = mesh.primitives[idx];
 		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
+		indicesView.byteStride = idxAccessor.ByteStride(indicesView);
 
 		for (auto& attrib : primitive.attributes)
 		{
 			tinygltf::Accessor accessor = model.accessors[attrib.second];
-			int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+			tinygltf::BufferView bufferView = model.bufferViews[accessor.bufferView];
+			tinygltf::Buffer buffer = model.buffers[bufferView.buffer];
+			int byteStride = accessor.ByteStride(bufferView);
 			glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
 
 			int size = 1;
@@ -300,15 +312,21 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 			int vaa = -1;
 			if (attrib.first.compare("POSITION") == 0)
 			{
-				vaa = 0;
+				verticesGLTF = buffer;
+				verticesView = bufferView;
+				verticesView.byteStride = byteStride;
+				vaa = EVertexAttrib::PositionAttrib;
 			}
 			else if (attrib.first.compare("NORMAL") == 0)
 			{
-				vaa = 1;
+				vaa = EVertexAttrib::NormalAttrib;
 			}
 			else if (attrib.first.compare("TEXCOORD_0") == 0)
 			{
-				vaa = 2;
+				texcoordsGLTF = buffer;
+				texcoordsView = bufferView;
+				texcoordsView.byteStride = byteStride;
+				vaa = EVertexAttrib::TexcoordsAttrib;
 			}
 
 			if (vaa > -1)
@@ -323,6 +341,92 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 				std::cout << "Unknwon vaa: " << attrib.first << std::endl;
 			}
 		}
+
+		size_t verticesNum = verticesView.byteLength / verticesView.byteStride;
+		size_t texcoordsNum = texcoordsView.byteLength / texcoordsView.byteStride;
+		size_t indicesNum = (indicesView.byteLength / indicesView.byteStride);
+		size_t trianglesNum = indicesNum / 3;
+		std::cout << "#Vertices: " << verticesNum << "\t#Indices: " << indicesNum << "\t#Triangles: " << trianglesNum << std::endl;
+
+		// Tagent space generation
+		glm::vec3* vertices = 
+			reinterpret_cast<glm::vec3*>(&verticesGLTF.data[0]
+				+ verticesView.byteOffset);
+		std::cout << vertices[0].x << ", " << vertices[0].y << ", " << vertices[0].z << std::endl;
+
+		glm::vec2* texcoords =
+			reinterpret_cast<glm::vec2*>(&indicesGLTF.data[0]
+				+ indicesView.byteOffset);
+
+		std::vector<glm::vec3> tangents;
+		tangents.reserve(verticesNum);
+		tangents.resize(verticesNum);
+
+		unsigned char* indicesRaw = &indicesGLTF.data[0] + indicesView.byteOffset;
+		// Indices must be unsigned (byte | short | int)
+		for (size_t idx = 0; idx < indicesNum; idx += 3)
+		{
+			unsigned int face[3];
+			unsigned int vertexIdx = 0;
+			switch (indicesView.byteStride)
+			{
+			case 1:
+				face[0] = (unsigned int)(indicesRaw)[idx];
+				face[1] = (unsigned int)(indicesRaw)[idx+1];
+				face[2] = (unsigned int)(indicesRaw)[idx+2];
+				break;
+			case 2:
+				face[0] = (unsigned int)((unsigned short*)indicesRaw)[idx];
+				face[1] = (unsigned int)((unsigned short*)indicesRaw)[idx+1];
+				face[2] = (unsigned int)((unsigned short*)indicesRaw)[idx+2];
+				break;
+			case 4:
+				face[0] = ((unsigned int*)indicesRaw)[idx];
+				face[1] = ((unsigned int*)indicesRaw)[idx + 1];
+				face[2] = ((unsigned int*)indicesRaw)[idx + 2];
+				break;
+			}
+
+			glm::vec3 edge[2]{
+				(vertices[face[1]] - vertices[face[0]]),
+				(vertices[face[2]] - vertices[face[0]])
+			};
+			glm::vec2 deltaUV[2]{
+				(texcoords[face[1]] - texcoords[face[0]]),
+				(texcoords[face[2]] - texcoords[face[0]])
+			};
+			float dirCorrection = (deltaUV[1].x * deltaUV[0].y - deltaUV[1].y * deltaUV[0].x) < 0.0f ? -1.0f : 1.0f;
+
+			if (deltaUV[0].x * deltaUV[1].y == deltaUV[0].y * deltaUV[1].x)
+			{
+				deltaUV[0] = { 0.0f, 1.0f };
+				deltaUV[1] = { 1.0f, 0.0f };
+			}
+
+			glm::vec3 tangent{
+				dirCorrection * (deltaUV[1].y * edge[0].x - deltaUV[0].y * edge[1].x),
+				dirCorrection * (deltaUV[1].y * edge[0].y - deltaUV[0].y * edge[1].y),
+				dirCorrection * (deltaUV[1].y * edge[0].z - deltaUV[0].y * edge[1].z)
+			};
+
+			tangent = glm::normalize(tangent);
+			tangents[face[0]] = tangent;
+			tangents[face[1]] = tangent;
+			tangents[face[2]] = tangent;
+		}
+
+		std::cout << "#Tangents: " << tangents.size() << std::endl;
+		glGenBuffers(1, &m_tanVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
+
+		glBufferData(GL_ARRAY_BUFFER, 3*sizeof(float)*tangents.size(),
+			&tangents[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(EVertexAttrib::TangentAttrib);
+		glVertexAttribPointer(EVertexAttrib::TangentAttrib,
+			3, GL_FLOAT,
+			GL_FALSE,
+			3 * sizeof(float), 0);
 	}
 
 	return vbos;
@@ -348,6 +452,7 @@ void Model::RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& m
 		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
 
 		m_materials[primitive.material]->Bind(shader);
+		glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
 		glDrawElements(primitive.mode, idxAccessor.count,
 			idxAccessor.componentType,
 			BUFFER_OFFSET(idxAccessor.byteOffset));

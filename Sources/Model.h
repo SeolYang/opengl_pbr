@@ -4,6 +4,14 @@
 
 #include <vector>
 
+enum EVertexAttrib
+{
+	PositionAttrib,
+	NormalAttrib,
+	TangentAttrib,
+	TexcoordsAttrib
+};
+
 class Material;
 class Texture;
 class Sampler;
@@ -43,5 +51,5 @@ private:
 	std::vector<Material*> m_materials;
 	std::vector<Mesh*> m_meshes;
 	unsigned int m_vao;
-
+	unsigned int m_tanVBO;
 };

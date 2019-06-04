@@ -17,6 +17,7 @@ Material::Material(
 	m_baseColor(baseColor),
 	m_baseColorFactor(baseColorFactor),
 	m_normal(normal),
+	m_bUseNormal(normal != nullptr),
 	m_metallicRoughness(metallicRoughness),
 	m_metallicFactor(metallicFactor),
 	m_roughnessFactor(roughnessFactor),
@@ -45,6 +46,11 @@ void Material::Bind(Shader* shader)
 		{
 			m_normal->Bind(EMaterialTextureSlot::Normal);
 			shader->SetInt("normalMap", EMaterialTextureSlot::Normal);
+			shader->SetInt("bUseNormalMap", (m_bUseNormal) ? 1 : 0);
+		}
+		else
+		{
+			shader->SetInt("bUseNormalMap", 0);
 		}
 
 		if (m_metallicRoughness != nullptr)

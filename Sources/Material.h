@@ -33,6 +33,27 @@ public:
 	void SetBaseColor(Texture* baseColor) { m_baseColor = baseColor; }
 	Texture* GetBaseColor() const { return m_baseColor; }
 
+	void SetNormal(Texture* normal) { m_normal = normal; }
+	Texture* GetNormal() const { return m_normal; }
+
+	void SetMetallicRoughness(Texture* metallicRoughness) { m_metallicRoughness = metallicRoughness; }
+	Texture* GetMetallicRoughness() const { return m_metallicRoughness; }
+
+	void SetMetallicFactor(float factor) { m_metallicFactor = factor; }
+	float GetMetallicFactor() const { return m_metallicFactor; }
+
+	void SetRoughnessFactor(float factor) { m_roughnessFactor = factor; }
+	float GetRoughnessFactor() const { return m_roughnessFactor; }
+
+	void SetAmbientOcclusion(Texture* ao) { m_ao = ao; }
+	Texture* GetAmbientOcclusion() const { return m_ao; }
+
+	void SetEmissive(Texture* emissive) { m_emissive = emissive; }
+	Texture* GetEmissive() const { return m_emissive; }
+
+	void SetEmissiveFactor(const glm::vec3& factor) { m_emissiveFactor = factor; }
+	glm::vec3 GetEmissiveFactor() const { return m_emissiveFactor; }
+
 private:
 	Texture* m_baseColor;
 	glm::vec4 m_baseColorFactor;
@@ -47,5 +68,6 @@ private:
 	glm::vec3 m_emissiveFactor;
 
 	Texture* m_normal;
+	bool	m_bUseNormal;
 
 };

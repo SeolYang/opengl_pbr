@@ -3,8 +3,9 @@
 out vec4 fragColor;
 
 in vec3 worldPos;
-in vec3 normal;
 in vec2 texcoord;
+in vec3 worldNormal;
+in mat3 tbn;
 
 // baseColorMap: sRGB
 uniform sampler2D baseColorMap;
@@ -26,6 +27,8 @@ uniform vec3 emissiveFactor;
 
 uniform vec3 camPos;
 uniform vec3 lightPos;
+
+uniform int bUseNormalMap;
 
 const float PI = 3.14159265359;
 
@@ -78,8 +81,18 @@ void main()
 {
 	//vec3 albedo = baseColorFactor.rgb + texture(baseColor, texcoord).rgb;
 	float ao = texture(aoMap, texcoord).r;
+
 	vec3 albedo = pow3(texture(baseColorMap, texcoord).rgb, 2.2);
 	albedo += pow3(baseColorFactor.rgb, 2.2);
+
+	vec3 normal = worldNormal;
+	if (bUseNormalMap == 1)
+	{
+		normal = texture(normalMap, texcoord).rgb;
+		normal = normalize(normal*2.0-1.0);
+		normal = normalize(tbn * normal);
+	}
+	
 	vec3 N = normalize(normal);
 	vec3 V = normalize(camPos - worldPos);
 
