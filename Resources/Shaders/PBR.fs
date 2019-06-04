@@ -106,7 +106,7 @@ void main()
 	float distance = length(lightPos - worldPos);
 	float attenuation = 1.0/(distance*distance);
 	// assume white light
-	vec3 radiance = vec3(40.0) * attenuation;
+	vec3 radiance = vec3(25.0);
 
 	float metallic = metallicFactor + texture(metallicRoughnessMap, texcoord).b;
 	float roughness = roughnessFactor + texture(metallicRoughnessMap, texcoord).g;

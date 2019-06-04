@@ -3,6 +3,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Material.h"
+#include <iostream>
 
 bool TestApp::Init()
 {
@@ -26,9 +27,15 @@ bool TestApp::Init()
 	m_duck->SetScale(glm::vec3{ 0.008f, 0.008f, 0.008f });
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-	Material* duckMat = m_duck->GetMaterial(0);
-	duckMat->SetMetallicFactor(0.5f);
-	duckMat->SetRoughnessFactor(0.9f);
+	m_duckMat = m_duck->GetMaterial(0);
+	m_duckMat->SetMetallicFactor(0.0f);
+	m_duckMat->SetRoughnessFactor(0.0f);
+
+	m_spheres = scene->LoadModel("../Resources/Models/MetalRoughSpheres/MetalRoughSpheres.gltf", "Spheres");
+	m_spheres->SetPosition(glm::vec3(0.0f, -1.f, -5.5f));
+	m_spheres->SetScale(glm::vec3{ 0.3f, 0.3f, 0.3f });
+	m_spheres->SetRotation(glm::rotate(glm::quat(),
+		glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 4.f));
@@ -48,4 +55,11 @@ void TestApp::Update(float dt)
 	m_duckAngle += dt * m_rotatePower;
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(m_duckAngle), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+
+	m_duckRoughness += (dt * m_duckRoughnessScale);
+	if (m_duckRoughness > 1.0f || m_duckRoughness < 0.0f)
+	{
+		m_duckRoughnessScale = -m_duckRoughnessScale;
+	}
+	m_duckMat->SetRoughnessFactor(m_duckRoughness);
 }
