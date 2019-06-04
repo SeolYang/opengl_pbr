@@ -36,6 +36,9 @@ public:
 	void SetNormal(Texture* normal) { m_normal = normal; }
 	Texture* GetNormal() const { return m_normal; }
 
+	void SetUseNormal(bool bUseNormal) { m_bUseNormal = bUseNormal; }
+	bool IsUseNormal() const { return m_bUseNormal; }
+
 	void SetMetallicRoughness(Texture* metallicRoughness) { m_metallicRoughness = metallicRoughness; }
 	Texture* GetMetallicRoughness() const { return m_metallicRoughness; }
 

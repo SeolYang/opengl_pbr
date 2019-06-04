@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "Model.h"
 #include "Camera.h"
+#include "Material.h"
 
 bool TestApp::Init()
 {
@@ -16,6 +17,8 @@ bool TestApp::Init()
 	m_avocado->SetScale(glm::vec3{ 15.0f, 15.0f, 15.0f });
 	m_avocado->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(135.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+	Material* avocadoMat = m_avocado->GetMaterial(0);
+	avocadoMat->SetUseNormal(false);
 
 
 	m_duck = scene->LoadModel("../Resources/Models/Duck/Duck.gltf", "Duck");
@@ -25,7 +28,7 @@ bool TestApp::Init()
 		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(0.0f, 3.5f, 4.0f));
+	m_cam->SetPosition(glm::vec3(5.0f, 1.0f, 0.0f));
 	return true;
 }
 
@@ -37,7 +40,7 @@ void TestApp::Update(float dt)
 	glm::vec3 camPos = m_cam->GetPosition();
 	camPos.x = m_rotateRad * glm::sin(m_elasedTime);
 	camPos.z = m_rotateRad * glm::cos(m_elasedTime);
-	m_cam->SetPosition(camPos);
+	//m_cam->SetPosition(camPos);
 
 	m_duckAngle += dt * m_rotatePower;
 	m_duck->SetRotation(glm::rotate(glm::quat(),

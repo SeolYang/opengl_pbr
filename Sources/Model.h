@@ -25,6 +25,7 @@ public:
 	~Model();
 
 	std::string GetFilePath() const { return m_filePath; }
+	Material* GetMaterial(size_t idx) const { return m_materials[idx]; }
 
 	void Render(Shader* shader);
 
