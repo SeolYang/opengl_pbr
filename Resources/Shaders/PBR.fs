@@ -79,7 +79,6 @@ vec3 pow3(vec3 v, float power)
 
 void main()
 {
-	//vec3 albedo = baseColorFactor.rgb + texture(baseColor, texcoord).rgb;
 	float ao = texture(aoMap, texcoord).r;
 
 	vec3 albedo = pow3(texture(baseColorMap, texcoord).rgb, 2.2);
@@ -106,7 +105,7 @@ void main()
 	float distance = length(lightPos - worldPos);
 	float attenuation = 1.0/(distance*distance);
 	// assume white light
-	vec3 radiance = vec3(25.0);
+	vec3 radiance = vec3(25.0)*attenuation;
 
 	float metallic = metallicFactor + texture(metallicRoughnessMap, texcoord).b;
 	float roughness = roughnessFactor + texture(metallicRoughnessMap, texcoord).g;
