@@ -40,17 +40,6 @@ Model::~Model()
 	}
 }
 
-void Model::Render(Shader* shader)
-{
-	glBindVertexArray(m_vao);
-	const tinygltf::Scene& scene = m_model.scenes[m_model.defaultScene];
-	for (size_t idx = 0; idx < m_model.nodes.size(); ++idx)
-	{
-		RenderNode(shader, m_model, m_model.nodes[idx]);
-	}
-	glBindVertexArray(0);
-}
-
 void Model::Init()
 {
 	if (LoadGLTFModel(m_model))
@@ -217,19 +206,10 @@ void Model::LoadMaterials(tinygltf::Model& model)
 void Model::LoadModel(tinygltf::Model& model)
 {
 	std::map<int, GLuint> vbos;
-	glGenVertexArrays(1, &m_vao);
-	glBindVertexArray(m_vao);
-
 	const tinygltf::Scene& scene = model.scenes[model.defaultScene];
 	for (size_t idx = 0; idx < scene.nodes.size(); ++idx)
 	{
 		ProcessNode(vbos, model, model.nodes[idx]);
-	}
-
-	glBindVertexArray(0);
-	for (size_t idx = 0; idx < vbos.size(); ++idx)
-	{
-		glDeleteBuffers(1, &vbos[idx]);
 	}
 }
 
@@ -237,7 +217,13 @@ void Model::ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tiny
 {
 	if (node.mesh != -1)
 	{
+		GLuint vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
 		ProcessMesh(vbos, model, model.meshes[node.mesh]);
+		glBindVertexArray(0);
+
+		m_vaos[node.mesh] = vao;
 	}
 	for (size_t idx = 0; idx < node.children.size(); ++idx)
 	{
@@ -346,7 +332,7 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 		size_t texcoordsNum = texcoordsView.byteLength / texcoordsView.byteStride;
 		size_t indicesNum = (indicesView.byteLength / indicesView.byteStride);
 		size_t trianglesNum = indicesNum / 3;
-		std::cout << "#Vertices: " << verticesNum << "\t#Indices: " << indicesNum << "\t#Triangles: " << trianglesNum << std::endl;
+		std::cout << "Vertices: " << verticesNum << "\tIndices: " << indicesNum << "\tTriangles: " << trianglesNum << std::endl;
 
 		// Tagent space generation
 		glm::vec3* vertices = 
@@ -414,7 +400,7 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 			tangents[face[2]] = tangent;
 		}
 
-		std::cout << "#Tangents: " << tangents.size() << std::endl;
+		std::cout << "Tangents: " << tangents.size() << std::endl;
 		glGenBuffers(1, &m_tanVBO);
 		glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
 
@@ -431,11 +417,22 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 	return vbos;
 }
 
+void Model::Render(Shader* shader)
+{
+	const tinygltf::Scene& scene = m_model.scenes[m_model.defaultScene];
+	for (size_t idx = 0; idx < m_model.nodes.size(); ++idx)
+	{
+		RenderNode(shader, m_model, m_model.nodes[idx]);
+	}
+}
+
 void Model::RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& node)
 {
 	if (node.mesh != -1)
 	{
+		glBindVertexArray(m_vaos[node.mesh]);
 		RenderMesh(shader, model, model.meshes[node.mesh]);
+		glBindVertexArray(0);
 	}
 	for (size_t idx = 0; idx < node.children.size(); ++idx)
 	{
@@ -451,7 +448,6 @@ void Model::RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& m
 		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
 
 		m_materials[primitive.material]->Bind(shader);
-		glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
 		glDrawElements(primitive.mode, idxAccessor.count,
 			idxAccessor.componentType,
 			BUFFER_OFFSET(idxAccessor.byteOffset));

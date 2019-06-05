@@ -42,6 +42,12 @@ bool TestApp::Init()
 	m_spheres->SetScale(glm::vec3{ 0.3f, 0.3f, 0.3f });
 	m_spheres->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	
+	m_madoka = scene->LoadModel("../Resources/Models/madoka_machida/scene.gltf", "Madoka");
+	m_madoka->SetPosition(glm::vec3(0.0f, -0.5f, 1.0f));
+	m_madoka->SetScale(glm::vec3(0.1f, 0.1f, 0.1f));
+
+	//m_mikuStand = scene->LoadModel("../Resources/Models/mikuStand/scene.gltf", "Miku Stand");
 
 	m_mainLight = scene->CreateLight("Main");
 	m_mainLight->SetPosition(glm::vec3{ 0.0f, 2.0f, 1.0f });

@@ -18,6 +18,8 @@ public:
 		m_cam(nullptr),
 		m_secondaryCam(nullptr),
 		m_duckMat(nullptr),
+		m_madoka(nullptr),
+		m_mikuStand(nullptr),
 		Application(title, 
 			width, height)
 	{
@@ -40,6 +42,8 @@ private:
 	Model*		m_avocado;
 	Model*		m_duck;
 	Model*		m_spheres;
+	Model*		m_madoka;
+	Model*		m_mikuStand;
 				
 	Light*		m_mainLight;
 				
