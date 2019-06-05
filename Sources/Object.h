@@ -10,6 +10,7 @@ class Object
 {
 public:
 	Object(const std::string& name) :
+		m_bIsActive(true),
 		m_position(glm::vec3(0.0f)),
 		m_scale(glm::vec3(1.0f)),
 		m_rotation(glm::quat()),
@@ -28,6 +29,9 @@ public:
 	glm::vec3 GetScale() const { return m_scale; }
 	void SetScale(glm::vec3 scale) { m_scale = scale; }
 
+	bool IsActivated() const { return m_bIsActive; }
+	void SetActive(bool bIsActive) { m_bIsActive = bIsActive; }
+
 	glm::mat4 GetWorldMatrix() const
 	{
 		glm::mat4 identity = glm::mat4(1.0f);
@@ -45,5 +49,6 @@ protected:
 
 private:
 	std::string m_name;
+	bool m_bIsActive;
 
 };

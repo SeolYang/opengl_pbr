@@ -7,10 +7,12 @@ constexpr float DEFAULT_FOV = 45.0f;
 constexpr float DEFAULT_NEAR_PLANE = 1.0e-01f;
 constexpr float DEFAULT_FAR_PLANE = 1.0e+03f;
 
+class Viewport;
 class Camera : public Object
 {
 public:
 	Camera(const std::string& name);
+	~Camera();
 
 	void SetNearPlane(float nearPlane) { m_nearPlane = nearPlane; }
 	float GetNearPlane() const { return m_nearPlane; }
@@ -24,8 +26,10 @@ public:
 	void SetClearColor(glm::vec3 color) { m_clearColor = color; }
 	glm::vec3 GetClearColor() const { return m_clearColor; }
 
+	Viewport* GetViewport() const { return m_viewport; }
+
 	glm::mat4 GetViewMatrix() const;
-	glm::mat4 GetProjMatrix(float width, float height) const;
+	glm::mat4 GetProjMatrix() const;
 
 private:
 	float m_fov;
@@ -33,7 +37,8 @@ private:
 	float m_farPlane;
 
 	glm::vec3 m_lookAt;
-
 	glm::vec3 m_clearColor;
+
+	Viewport* m_viewport;
 
 };

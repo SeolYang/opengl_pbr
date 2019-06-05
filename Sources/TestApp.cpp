@@ -7,9 +7,10 @@
 #include "Viewport.h"
 
 #include "GLFW/glfw3.h"
-#include <cmath>
 
 #include <iostream>
+#include <cmath>
+#include <random>
 
 bool TestApp::Init()
 {
@@ -26,10 +27,9 @@ bool TestApp::Init()
 		glm::radians(135.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	Material* avocadoMat = m_avocado->GetMaterial(0);
 	avocadoMat->SetUseNormal(true);
-	//avocadoMat->SetUseNormal(false);
 
 	m_duck = scene->LoadModel("../Resources/Models/Duck/Duck.gltf", "Duck");
-	m_duck->SetPosition(glm::vec3(-2.0f,-1.0f, 0.0f));
+	m_duck->SetPosition(glm::vec3(-2.0f, -1.0f, 0.0f));
 	m_duck->SetScale(glm::vec3{ 0.008f, 0.008f, 0.008f });
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
@@ -45,28 +45,40 @@ bool TestApp::Init()
 
 	m_mainLight = scene->CreateLight("Main");
 	m_mainLight->SetPosition(glm::vec3{ 0.0f, 2.0f, 1.0f });
-	m_mainLight->SetRadiance(glm::vec3{ 25.0f });
-
-	m_secondaryLight = scene->CreateLight("Secondary");
-	m_secondaryLight->SetPosition(glm::vec3{ -1.5f, 3.0f, -2.5f });
-	m_secondaryLight->SetRadiance(glm::vec3{ 30.0f, 5.0f, 5.0f });
+	m_mainLight->SetRadiance(glm::vec3{ 5.0f });
 
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 5.f));
+
+	unsigned int halfWinWidth = this->GetWidth() / 2;
+	unsigned int height = this->GetHeight();
+	Viewport* mainViewport = m_cam->GetViewport();
+	mainViewport->SetWidth(halfWinWidth);
+	mainViewport->SetHeight(height);
+
+	m_secondaryCam = scene->CreateCamera("SecondaryCam");
+	m_secondaryCam->SetPosition(glm::vec3(1.0f, 2.0f, 3.0f));
+
+	Viewport* secondaryViewport = m_secondaryCam->GetViewport();
+	secondaryViewport->SetWidth(halfWinWidth);
+	secondaryViewport->SetHeight(height);
+	secondaryViewport->SetX(halfWinWidth);
+
 	return true;
 }
 
 void TestApp::Update(float dt)
 {
+	glm::vec3 camPos = m_cam->GetPosition();
 	if (m_bRotateCam)
 	{
 		m_elasedTime += dt;
 		m_rotateRad += dt * 0.01f;
-		glm::vec3 camPos = m_cam->GetPosition();
 		camPos.x = m_rotateRad * glm::sin(m_elasedTime);
 		camPos.z = m_rotateRad * glm::cos(m_elasedTime);
-		m_cam->SetPosition(camPos);
 	}
+	camPos.y = m_camY;
+	m_cam->SetPosition(camPos);
 
 	m_duckAngle += dt * m_duckRotatePower;
 	m_duck->SetRotation(glm::rotate(glm::quat(),
@@ -80,15 +92,22 @@ void TestApp::Update(float dt)
 	m_duckMat->SetRoughnessFactor(m_duckRoughness);
 }
 
-void TestApp::WindowResizeCallback(GLFWwindow* window, int width, int height)
+void TestApp::WindowResizeCallback(GLFWwindow * window, int width, int height)
 {
-	auto* mainViewport = GetMainViewport();
-	mainViewport->SetWidth((unsigned int)width);
-	mainViewport->SetHeight((unsigned int)height);
+	unsigned int halfWinWidth = width / 2;
+	Viewport* mainViewport = m_cam->GetViewport();
+	mainViewport->SetWidth(halfWinWidth);
+	mainViewport->SetHeight(height);
+
+	Viewport* secondaryViewport = m_secondaryCam->GetViewport();
+	secondaryViewport->SetWidth(halfWinWidth);
+	secondaryViewport->SetHeight(height);
+	secondaryViewport->SetX(halfWinWidth);
+
 	std::cout << "Window resized: " << width << " , " << height << std::endl;
 }
 
-void TestApp::KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods)
+void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{
@@ -111,6 +130,40 @@ void TestApp::KeyCallback(GLFWwindow* window, int key, int scanCode, int action,
 		case GLFW_KEY_S:
 			m_rotateRad += m_rotateRadDiff;
 			break;
+		case GLFW_KEY_A:
+			m_camY -= m_camYDiff;
+			break;
+		case GLFW_KEY_D:
+			m_camY += m_camYDiff;
+			break;
+
+		case GLFW_KEY_L:
+			RandomLightGen();
+			break;
+
+		case GLFW_KEY_C:
+			m_secondaryCam->SetActive(!m_secondaryCam->IsActivated());
+			break;
 		}
 	}
+}
+
+void TestApp::RandomLightGen()
+{
+	static unsigned int count = 0;
+	static std::random_device device;
+	static std::mt19937 engine(device());
+
+	std::uniform_real_distribution<float> rad_dist(0.0f, 25.0f);
+	std::uniform_real_distribution<float> pos_dist(-5.0f, 5.0f);
+
+	auto* newLight = GetScene()->CreateLight("Random" + std::to_string(count));
+	newLight->SetRadiance(glm::vec3(
+		rad_dist(engine),
+		rad_dist(engine),
+		rad_dist(engine)));
+	newLight->SetPosition(glm::vec3(
+		pos_dist(engine),
+		pos_dist(engine),
+		pos_dist(engine)));
 }

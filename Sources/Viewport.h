@@ -4,7 +4,7 @@ class Viewport
 {
 public:
 	Viewport(
-		unsigned int width, unsigned int height,
+		unsigned int width = 800, unsigned int height = 600,
 		unsigned int x = 0, unsigned y = 0) :
 		m_x(x), m_y(y),
 		m_width(width), m_height(height)

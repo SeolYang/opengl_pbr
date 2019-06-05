@@ -17,12 +17,11 @@ public:
 	int Run();
 	void Stop() { m_bIsRunning = false; }
 
-	Viewport* CreateViewport(unsigned int width, unsigned int height, unsigned int x = 0, unsigned int y = 0);
-	void SetMainViewport(unsigned int idx) { m_mainViewport = idx; }
-	Viewport* GetMainViewport() const { return m_viewports[m_mainViewport]; }
-
 	Scene* GetScene() const { return m_scene; }
 	Renderer* GetRenderer() const { return m_renderer; }
+
+	unsigned int GetWidth() const { return m_windowWidth; }
+	unsigned int GetHeight() const { return m_windowHeight; }
 
 protected:
 	virtual bool Init() = 0;
@@ -30,6 +29,10 @@ protected:
 
 	virtual void WindowResizeCallback(GLFWwindow* window, int width, int height) {}
 	virtual void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods) {}
+
+private:
+	void _WindowResizeCallback(GLFWwindow* window, int width, int height);
+	void _KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods);
 
 private:
 	bool InitBase();
@@ -44,7 +47,7 @@ private:
 	Scene* m_scene;
 	Renderer* m_renderer;
 
-	std::vector<Viewport*> m_viewports;
-	unsigned int m_mainViewport;
+	unsigned int m_windowWidth;
+	unsigned int m_windowHeight;
 
 };

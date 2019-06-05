@@ -14,9 +14,9 @@ Application::Application(const std::string& title, unsigned int width, unsigned 
 	m_title(title),
 	m_scene(nullptr),
 	m_renderer(nullptr),
-	m_mainViewport(0)
+	m_windowWidth(width),
+	m_windowHeight(height)
 {
-	this->CreateViewport(width, height);
 }
 
 Application::~Application()
@@ -30,14 +30,6 @@ Application::~Application()
 	{
 		delete m_renderer;
 		m_renderer = nullptr;
-	}
-
-	for (auto viewport : m_viewports)
-	{
-		if (viewport != nullptr)
-		{
-			delete viewport;
-		}
 	}
 }
 
@@ -63,8 +55,7 @@ bool Application::InitWindows()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	Viewport* mainViewport = this->GetMainViewport();
-	m_window = glfwCreateWindow(mainViewport->GetWidth(), mainViewport->GetHeight(),
+	m_window = glfwCreateWindow(m_windowWidth, m_windowHeight,
 		m_title.c_str(), nullptr, nullptr);
 	if (m_window == nullptr)
 	{
@@ -79,12 +70,12 @@ bool Application::InitWindows()
 
 	const auto keyCallback = [](GLFWwindow * window, int key, int scanCode, int action, int mods) {
 		auto* app = (Application*)glfwGetWindowUserPointer(window);
-		app->KeyCallback(window, key, scanCode, action, mods); };
+		app->_KeyCallback(window, key, scanCode, action, mods); };
 	glfwSetKeyCallback(m_window, keyCallback);
 
 	const auto framebufferSizeCallback = [](GLFWwindow * window, int width, int height) {
 		auto* app = (Application*)glfwGetWindowUserPointer(window);
-		app->WindowResizeCallback(window, width, height);
+		app->_WindowResizeCallback(window, width, height);
 	};
 	glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback);
 
@@ -109,12 +100,6 @@ int Application::Run()
 		return 1;
 	}
 
-	if (m_viewports.size() <= 0)
-	{
-		std::cout << "Error: Cannot find viewport" << std::endl;
-		return 1;
-	}
-
 	m_bIsRunning = true;
 	float deltaTime = 0.0f;
 	while (m_bIsRunning && !glfwWindowShouldClose(m_window))
@@ -122,7 +107,7 @@ int Application::Run()
 		auto begin = std::chrono::system_clock::now();
 
 		Update(deltaTime);
-		m_renderer->Render(m_scene, m_viewports[m_mainViewport]);
+		m_renderer->Render(m_scene);
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
@@ -135,9 +120,14 @@ int Application::Run()
 	return 0;
 }
 
-Viewport* Application::CreateViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y)
+void Application::_WindowResizeCallback(GLFWwindow* window, int width, int height)
 {
-	Viewport* newViewport = new Viewport(width, height, x, y);
-	m_viewports.push_back(newViewport);
-	return newViewport;
+	m_windowWidth = width;
+	m_windowHeight = height;
+	WindowResizeCallback(window, width, height);
+}
+
+void Application::_KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods)
+{
+	KeyCallback(window, key, scanCode, action, mods);
 }

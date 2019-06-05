@@ -15,8 +15,8 @@ public:
 		m_duck(nullptr),
 		m_spheres(nullptr),
 		m_mainLight(nullptr),
-		m_secondaryLight(nullptr),
 		m_cam(nullptr),
+		m_secondaryCam(nullptr),
 		m_duckMat(nullptr),
 		Application(title, 
 			width, height)
@@ -32,6 +32,8 @@ protected:
 
 	virtual void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods);
 
+	void RandomLightGen();
+
 private:
 	Model*		m_helmet;
 	Model*		m_avocado;
@@ -39,9 +41,9 @@ private:
 	Model*		m_spheres;
 				
 	Light*		m_mainLight;
-	Light*		m_secondaryLight;
 				
 	Camera*		m_cam;
+	Camera*		m_secondaryCam;
 				
 	float		m_movePower = 50.0f;
 
@@ -50,6 +52,9 @@ private:
 	bool		m_bRotateCam = true;
 	float		m_rotateRad = 5.0f;
 	float		m_rotateRadDiff = 0.5f;
+
+	float		m_camYDiff = 0.5f;
+	float		m_camY = 0.0f;
 
 	float		m_duckRotatePower = 50.0f;
 	float		m_powerDiff = 10.0f;

@@ -2,7 +2,7 @@
 #version 330 core
 out vec4 fragColor;
 
-const int maxLightsNum = 16;
+const int maxLightsNum = 32;
 
 struct Light{
 	vec3 position;
@@ -116,7 +116,7 @@ void main()
 
 		float distance = length(lights[idx].position - worldPos);
 		float attenuation = 1.0/(distance*distance);
-		// assume white light
+		
 		vec3 radiance = lights[idx].radiance*attenuation;
 
 		float metallic = metallicFactor + texture(metallicRoughnessMap, texcoord).b;

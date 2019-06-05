@@ -1,6 +1,7 @@
 #pragma once
+#include "glm/vec4.hpp"
 
-constexpr unsigned int MaximumLights = 16;
+constexpr unsigned int MaximumLights = 32;
 
 class Scene;
 class Mesh;
@@ -16,12 +17,12 @@ public:
 	~Renderer();
 
 	bool Init();
-	void Render(Scene* scene, Viewport* viewport);
+	void Render(Scene* scene);
+
+	void Clear(const glm::vec4& color, bool clearDepth = true);
 
 private:
 	Shader* m_basicShader;
 	Scene* m_targetScene;
-	Viewport* m_targetViewport;
-	Camera* m_targetCamera;
 
 };
