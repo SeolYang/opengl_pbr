@@ -1,4 +1,5 @@
 #pragma once
+#include "glm/matrix.hpp"
 
 class Material;
 class Shader;
@@ -12,11 +13,11 @@ public:
 	void Render(Shader* shader);
 
 private:
-	Material* m_material;
+	Material*	 m_material;
 	unsigned int m_vao;
 	unsigned int m_mode;
-	int m_count;
+	int			 m_count;
 	unsigned int m_type;
-	char* m_offset;
+	char*		 m_offset;
 
 };

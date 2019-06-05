@@ -205,34 +205,61 @@ void Model::LoadMaterials(tinygltf::Model& model)
 
 void Model::LoadModel(tinygltf::Model& model)
 {
-	std::map<int, GLuint> vbos;
 	const tinygltf::Scene& scene = model.scenes[model.defaultScene];
 	for (size_t idx = 0; idx < scene.nodes.size(); ++idx)
 	{
-		ProcessNode(vbos, model, model.nodes[idx]);
+		ProcessNode(model, model.nodes[idx]);
 	}
 }
 
-void Model::ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Node& node)
+void Model::ProcessNode(tinygltf::Model& model, tinygltf::Node& node)
 {
+	/*
+	const auto& translation = node.translation;
+	const auto& scale = node.scale;
+	const auto& rotation = node.rotation;
+
+	// T*R*S
+	glm::mat4 local{ 1.0f };
+	if (scale.size() > 0)
+	{
+		local = glm::scale(local, glm::vec3{ scale[0], scale[1], scale[2] });
+	}
+	if (rotation.size() > 0)
+	{
+		auto rotate = glm::toMat4(glm::quat{ 
+			static_cast<float>(rotation[0]),
+			static_cast<float>(rotation[1]),
+			static_cast<float>(rotation[2]),
+			static_cast<float>(rotation[3]) });
+		local = rotate * local;
+	}
+	if (translation.size() > 0)
+	{
+		local = glm::translate(local, glm::vec3{ translation[0], translation[1], translation[2] });
+	}
+
+	glm::mat4 glob = local * transform;
+	*/
+
 	if (node.mesh != -1)
 	{
-		GLuint vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		ProcessMesh(vbos, model, model.meshes[node.mesh]);
-		glBindVertexArray(0);
-
-		m_vaos[node.mesh] = vao;
+		ProcessMesh(model, model.meshes[node.mesh]);
 	}
 	for (size_t idx = 0; idx < node.children.size(); ++idx)
 	{
-		ProcessNode(vbos, model, model.nodes[node.children[idx]]);
+		ProcessNode(model, model.nodes[node.children[idx]]);
 	}
 }
 
-std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Mesh& mesh)
+void Model::ProcessMesh(tinygltf::Model& model, tinygltf::Mesh& mesh)
 {
+	std::map<int, GLuint> vbos;
+
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	tinygltf::Buffer verticesGLTF;
 	tinygltf::BufferView verticesView;
 	tinygltf::Buffer indicesGLTF;
@@ -275,146 +302,149 @@ std::map<int, GLuint> Model::ProcessMesh(std::map<int, GLuint> vbos, tinygltf::M
 			&buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
 	}
 
-	for (size_t idx = 0; idx < mesh.primitives.size(); ++idx)
+	/* @TODO: Multiple Primitives per mesh!!!!! */
+	tinygltf::Primitive primitive = mesh.primitives[0];
+	tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
+	indicesView.byteStride = idxAccessor.ByteStride(indicesView);
+
+	for (auto& attrib : primitive.attributes)
 	{
-		tinygltf::Primitive primitive = mesh.primitives[idx];
-		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
-		indicesView.byteStride = idxAccessor.ByteStride(indicesView);
+		tinygltf::Accessor accessor = model.accessors[attrib.second];
+		tinygltf::BufferView bufferView = model.bufferViews[accessor.bufferView];
+		tinygltf::Buffer buffer = model.buffers[bufferView.buffer];
+		int byteStride = accessor.ByteStride(bufferView);
+		glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
 
-		for (auto& attrib : primitive.attributes)
+		int size = 1;
+		if (accessor.type != TINYGLTF_TYPE_SCALAR)
 		{
-			tinygltf::Accessor accessor = model.accessors[attrib.second];
-			tinygltf::BufferView bufferView = model.bufferViews[accessor.bufferView];
-			tinygltf::Buffer buffer = model.buffers[bufferView.buffer];
-			int byteStride = accessor.ByteStride(bufferView);
-			glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-
-			int size = 1;
-			if (accessor.type != TINYGLTF_TYPE_SCALAR)
-			{
-				size = accessor.type;
-			}
-
-			int vaa = -1;
-			if (attrib.first.compare("POSITION") == 0)
-			{
-				verticesGLTF = buffer;
-				verticesView = bufferView;
-				verticesView.byteStride = byteStride;
-				vaa = EVertexAttrib::PositionAttrib;
-			}
-			else if (attrib.first.compare("NORMAL") == 0)
-			{
-				vaa = EVertexAttrib::NormalAttrib;
-			}
-			else if (attrib.first.compare("TEXCOORD_0") == 0)
-			{
-				texcoordsGLTF = buffer;
-				texcoordsView = bufferView;
-				texcoordsView.byteStride = byteStride;
-				vaa = EVertexAttrib::TexcoordsAttrib;
-			}
-
-			if (vaa > -1)
-			{
-				glEnableVertexAttribArray(vaa);
-				glVertexAttribPointer(vaa, size, accessor.componentType,
-					accessor.normalized ? GL_TRUE : GL_FALSE,
-					byteStride, BUFFER_OFFSET(accessor.byteOffset));
-			}
-			else
-			{
-				std::cout << "Unknwon vaa: " << attrib.first << std::endl;
-			}
+			size = accessor.type;
 		}
 
-		size_t verticesNum = verticesView.byteLength / verticesView.byteStride;
-		size_t texcoordsNum = texcoordsView.byteLength / texcoordsView.byteStride;
-		size_t indicesNum = (indicesView.byteLength / indicesView.byteStride);
-		size_t trianglesNum = indicesNum / 3;
-		std::cout << "Vertices: " << verticesNum << "\tIndices: " << indicesNum << "\tTriangles: " << trianglesNum << std::endl;
-
-		// Tagent space generation
-		glm::vec3* vertices = 
-			reinterpret_cast<glm::vec3*>(&verticesGLTF.data[0]
-				+ verticesView.byteOffset);
-
-		glm::vec2* texcoords =
-			reinterpret_cast<glm::vec2*>(&indicesGLTF.data[0]
-				+ indicesView.byteOffset);
-
-		std::vector<glm::vec3> tangents;
-		tangents.reserve(verticesNum);
-		tangents.resize(verticesNum);
-
-		unsigned char* indicesRaw = &indicesGLTF.data[0] + indicesView.byteOffset;
-		// Indices must be unsigned (byte | short | int)
-		for (size_t idx = 0; idx < indicesNum; idx += 3)
+		int vaa = -1;
+		if (attrib.first.compare("POSITION") == 0)
 		{
-			unsigned int face[3];
-			unsigned int vertexIdx = 0;
-			switch (indicesView.byteStride)
-			{
-			case 1:
-				face[0] = (unsigned int)(indicesRaw)[idx];
-				face[1] = (unsigned int)(indicesRaw)[idx+1];
-				face[2] = (unsigned int)(indicesRaw)[idx+2];
-				break;
-			case 2:
-				face[0] = (unsigned int)((unsigned short*)indicesRaw)[idx];
-				face[1] = (unsigned int)((unsigned short*)indicesRaw)[idx+1];
-				face[2] = (unsigned int)((unsigned short*)indicesRaw)[idx+2];
-				break;
-			case 4:
-				face[0] = ((unsigned int*)indicesRaw)[idx];
-				face[1] = ((unsigned int*)indicesRaw)[idx + 1];
-				face[2] = ((unsigned int*)indicesRaw)[idx + 2];
-				break;
-			}
-
-			glm::vec3 edge[2]{
-				(vertices[face[1]] - vertices[face[0]]),
-				(vertices[face[2]] - vertices[face[0]])
-			};
-			glm::vec2 deltaUV[2]{
-				(texcoords[face[1]] - texcoords[face[0]]),
-				(texcoords[face[2]] - texcoords[face[0]])
-			};
-			float dirCorrection = (deltaUV[1].x * deltaUV[0].y - deltaUV[1].y * deltaUV[0].x) < 0.0f ? -1.0f : 1.0f;
-
-			if (deltaUV[0].x * deltaUV[1].y == deltaUV[0].y * deltaUV[1].x)
-			{
-				deltaUV[0] = { 0.0f, 1.0f };
-				deltaUV[1] = { 1.0f, 0.0f };
-			}
-
-			glm::vec3 tangent{
-				dirCorrection * (deltaUV[1].y * edge[0].x - deltaUV[0].y * edge[1].x),
-				dirCorrection * (deltaUV[1].y * edge[0].y - deltaUV[0].y * edge[1].y),
-				dirCorrection * (deltaUV[1].y * edge[0].z - deltaUV[0].y * edge[1].z)
-			};
-
-			tangent = glm::normalize(tangent);
-			tangents[face[0]] = tangent;
-			tangents[face[1]] = tangent;
-			tangents[face[2]] = tangent;
+			verticesGLTF = buffer;
+			verticesView = bufferView;
+			verticesView.byteStride = byteStride;
+			vaa = EVertexAttrib::PositionAttrib;
+		}
+		else if (attrib.first.compare("NORMAL") == 0)
+		{
+			vaa = EVertexAttrib::NormalAttrib;
+		}
+		else if (attrib.first.compare("TEXCOORD_0") == 0)
+		{
+			texcoordsGLTF = buffer;
+			texcoordsView = bufferView;
+			texcoordsView.byteStride = byteStride;
+			vaa = EVertexAttrib::TexcoordsAttrib;
 		}
 
-		std::cout << "Tangents: " << tangents.size() << std::endl;
-		glGenBuffers(1, &m_tanVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
-
-		glBufferData(GL_ARRAY_BUFFER, 3*sizeof(float)*tangents.size(),
-			&tangents[0], GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(EVertexAttrib::TangentAttrib);
-		glVertexAttribPointer(EVertexAttrib::TangentAttrib,
-			3, GL_FLOAT,
-			GL_FALSE,
-			3 * sizeof(float), 0);
+		if (vaa > -1)
+		{
+			glEnableVertexAttribArray(vaa);
+			glVertexAttribPointer(vaa, size, accessor.componentType,
+				accessor.normalized ? GL_TRUE : GL_FALSE,
+				byteStride, BUFFER_OFFSET(accessor.byteOffset));
+		}
+		else
+		{
+			std::cout << "Unknwon vaa: " << attrib.first << std::endl;
+		}
 	}
 
-	return vbos;
+	size_t verticesNum = verticesView.byteLength / verticesView.byteStride;
+	size_t texcoordsNum = texcoordsView.byteLength / texcoordsView.byteStride;
+	size_t indicesNum = (indicesView.byteLength / indicesView.byteStride);
+	size_t trianglesNum = indicesNum / 3;
+	std::cout << "Vertices: " << verticesNum << "\tIndices: " << indicesNum << "\tTriangles: " << trianglesNum << std::endl;
+
+	// Tagent space generation
+	glm::vec3 * vertices =
+		reinterpret_cast<glm::vec3*>(&verticesGLTF.data[0]
+			+ verticesView.byteOffset);
+
+	glm::vec2 * texcoords =
+		reinterpret_cast<glm::vec2*>(&indicesGLTF.data[0]
+			+ indicesView.byteOffset);
+
+	std::vector<glm::vec3> tangents;
+	tangents.reserve(verticesNum);
+	tangents.resize(verticesNum);
+
+	unsigned char* indicesRaw = &indicesGLTF.data[0] + indicesView.byteOffset;
+	// Indices must be unsigned (byte | short | int)
+	for (size_t idx = 0; idx < indicesNum; idx += 3)
+	{
+		unsigned int face[3];
+		unsigned int vertexIdx = 0;
+		switch (indicesView.byteStride)
+		{
+		case 1:
+			face[0] = (unsigned int)(indicesRaw)[idx];
+			face[1] = (unsigned int)(indicesRaw)[idx + 1];
+			face[2] = (unsigned int)(indicesRaw)[idx + 2];
+			break;
+		case 2:
+			face[0] = (unsigned int)((unsigned short*)indicesRaw)[idx];
+			face[1] = (unsigned int)((unsigned short*)indicesRaw)[idx + 1];
+			face[2] = (unsigned int)((unsigned short*)indicesRaw)[idx + 2];
+			break;
+		case 4:
+			face[0] = ((unsigned int*)indicesRaw)[idx];
+			face[1] = ((unsigned int*)indicesRaw)[idx + 1];
+			face[2] = ((unsigned int*)indicesRaw)[idx + 2];
+			break;
+		}
+
+		glm::vec3 edge[2]{
+			(vertices[face[1]] - vertices[face[0]]),
+			(vertices[face[2]] - vertices[face[0]])
+		};
+		glm::vec2 deltaUV[2]{
+			(texcoords[face[1]] - texcoords[face[0]]),
+			(texcoords[face[2]] - texcoords[face[0]])
+		};
+		float dirCorrection = (deltaUV[1].x * deltaUV[0].y - deltaUV[1].y * deltaUV[0].x) < 0.0f ? -1.0f : 1.0f;
+
+		if (deltaUV[0].x * deltaUV[1].y == deltaUV[0].y * deltaUV[1].x)
+		{
+			deltaUV[0] = { 0.0f, 1.0f };
+			deltaUV[1] = { 1.0f, 0.0f };
+		}
+
+		glm::vec3 tangent{
+			dirCorrection * (deltaUV[1].y * edge[0].x - deltaUV[0].y * edge[1].x),
+			dirCorrection * (deltaUV[1].y * edge[0].y - deltaUV[0].y * edge[1].y),
+			dirCorrection * (deltaUV[1].y * edge[0].z - deltaUV[0].y * edge[1].z)
+		};
+
+		tangent = glm::normalize(tangent);
+		tangents[face[0]] = tangent;
+		tangents[face[1]] = tangent;
+		tangents[face[2]] = tangent;
+	}
+
+	std::cout << "Tangents: " << tangents.size() << std::endl;
+	glGenBuffers(1, &m_tanVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float) * tangents.size(),
+		&tangents[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(EVertexAttrib::TangentAttrib);
+	glVertexAttribPointer(EVertexAttrib::TangentAttrib,
+		3, GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(float), 0);
+
+	Mesh* newMesh = new Mesh(m_materials[primitive.material],
+		vao,
+		primitive.mode,
+		idxAccessor.count, idxAccessor.componentType,
+		BUFFER_OFFSET(idxAccessor.byteOffset));
+	m_meshes.push_back(newMesh);
 }
 
 void Model::Render(Shader* shader)
@@ -430,27 +460,10 @@ void Model::RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& n
 {
 	if (node.mesh != -1)
 	{
-		glBindVertexArray(m_vaos[node.mesh]);
-		RenderMesh(shader, model, model.meshes[node.mesh]);
-		glBindVertexArray(0);
+		m_meshes[node.mesh]->Render(shader);
 	}
 	for (size_t idx = 0; idx < node.children.size(); ++idx)
 	{
 		RenderNode(shader, model, model.nodes[node.children[idx]]);
-	}
-}
-
-void Model::RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& mesh)
-{
-	for (size_t idx = 0; idx < mesh.primitives.size(); ++idx)
-	{
-		tinygltf::Primitive primitive = mesh.primitives[idx];
-		tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
-
-		m_materials[primitive.material]->Bind(shader);
-		glDrawElements(primitive.mode, idxAccessor.count,
-			idxAccessor.componentType,
-			BUFFER_OFFSET(idxAccessor.byteOffset));
-		m_materials[primitive.material]->Unbind(shader);
 	}
 }

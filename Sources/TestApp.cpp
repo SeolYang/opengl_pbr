@@ -21,7 +21,7 @@ bool TestApp::Init()
 		glm::radians(90.0f), glm::vec3{ 1.0f, 0.0f, 0.0f }));
 
 	m_avocado = scene->LoadModel("../Resources/Models/Avocado/Avocado.gltf", "Avocado");
-	m_avocado->SetPosition(glm::vec3(2.0f, 0.0f, 0.0f));
+	m_avocado->SetPosition(glm::vec3(2.0f, 0.0f, -1.f));
 	m_avocado->SetScale(glm::vec3{ 15.0f, 15.0f, 15.0f });
 	m_avocado->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(135.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
@@ -44,10 +44,14 @@ bool TestApp::Init()
 		glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	
 	m_madoka = scene->LoadModel("../Resources/Models/madoka_machida/scene.gltf", "Madoka");
-	m_madoka->SetPosition(glm::vec3(0.0f, -0.5f, 1.0f));
-	m_madoka->SetScale(glm::vec3(0.1f, 0.1f, 0.1f));
+	m_madoka->SetPosition(glm::vec3(-0.8f, -1.f, 2.0f));
+	m_madoka->SetScale(glm::vec3(0.065f, 0.065f, 0.065f));
+	m_madoka->SetRotation(glm::rotate(glm::quat(),
+		glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
 
-	//m_mikuStand = scene->LoadModel("../Resources/Models/mikuStand/scene.gltf", "Miku Stand");
+	m_mikuStand = scene->LoadModel("../Resources/Models/mikuStand/scene.gltf", "Miku Stand");
+	m_mikuStand->SetPosition(glm::vec3(0.6f, -1.0f, 1.6f));
+	m_mikuStand->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
 
 	m_mainLight = scene->CreateLight("Main");
 	m_mainLight->SetPosition(glm::vec3{ 0.0f, 2.0f, 1.0f });

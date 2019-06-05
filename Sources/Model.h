@@ -37,13 +37,14 @@ private:
 	void LoadTextures(tinygltf::Model& model);
 	void LoadMaterials(tinygltf::Model& model);
 	void LoadModel(tinygltf::Model& model);
-	void LoadMeshes(tinygltf::Model& model);
 
-	void ProcessNode(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Node& node);
-	std::map<int, GLuint> ProcessMesh(std::map<int, GLuint> vbos, tinygltf::Model& model, tinygltf::Mesh& mesh);
+	void ProcessNode(tinygltf::Model& model, tinygltf::Node& node);
+	void ProcessMesh(tinygltf::Model& model, tinygltf::Mesh& mesh);
 
-	void RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& node);
-	void RenderMesh(Shader* shader, tinygltf::Model& model, tinygltf::Mesh& mesh);
+	void RenderNode(
+		Shader* shader,
+		tinygltf::Model& model,
+		tinygltf::Node& node);
 
 private:
 	tinygltf::Model m_model;

@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Material.h"
+#include "Shader.h"
 #include "Rendering.h"
 
 Mesh::Mesh(Material* material, unsigned int vao, unsigned int mode, int count, unsigned int type, char* offset) :
@@ -18,7 +19,11 @@ void Mesh::Render(Shader* shader)
 	{
 		m_material->Bind(shader);
 		glBindVertexArray(m_vao);
+
 		glDrawElements(m_mode, m_count, m_type,
 			m_offset);
+
+		glBindVertexArray(0);
+		m_material->Unbind(shader);
 	}
 }
