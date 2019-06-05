@@ -33,6 +33,7 @@ protected:
 	virtual void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods);
 
 	void RandomLightGen();
+	void SplitViewport();
 
 private:
 	Model*		m_helmet;

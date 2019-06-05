@@ -142,7 +142,7 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 
 		case GLFW_KEY_C:
-			m_secondaryCam->SetActive(!m_secondaryCam->IsActivated());
+			SplitViewport();
 			break;
 		}
 	}
@@ -166,4 +166,32 @@ void TestApp::RandomLightGen()
 		pos_dist(engine),
 		pos_dist(engine),
 		pos_dist(engine)));
+}
+
+void TestApp::SplitViewport()
+{
+	bool status = !m_secondaryCam->IsActivated();
+
+	unsigned int width = GetWidth();
+	unsigned int height = GetHeight();
+	unsigned int halfWinWidth = width / 2;
+	Viewport* mainViewport = m_cam->GetViewport();
+	Viewport* secondaryViewport = m_secondaryCam->GetViewport();
+
+	if (status)
+	{
+		mainViewport->SetWidth(halfWinWidth);
+		mainViewport->SetHeight(height);
+
+		secondaryViewport->SetWidth(halfWinWidth);
+		secondaryViewport->SetHeight(height);
+		secondaryViewport->SetX(halfWinWidth);
+	}
+	else
+	{
+		mainViewport->SetWidth(width);
+		mainViewport->SetHeight(height);
+	}
+
+	m_secondaryCam->SetActive(status);
 }
