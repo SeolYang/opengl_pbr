@@ -38,10 +38,11 @@ bool TestApp::Init()
 	m_duckMat->SetRoughnessFactor(0.0f);
 
 	m_spheres = scene->LoadModel("../Resources/Models/MetalRoughSpheres/MetalRoughSpheres.gltf", "Spheres");
-	m_spheres->SetPosition(glm::vec3(0.0f, -1.f, -5.5f));
-	m_spheres->SetScale(glm::vec3{ 0.3f, 0.3f, 0.3f });
-	m_spheres->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	m_spheres->SetPosition(glm::vec3(0.0f, -0.1f, -4.5f));
+	m_spheres->SetScale(glm::vec3{ 0.2f, 0.2f, 0.2f });
+	m_spheres->SetRotation(glm::rotate(glm::rotate(glm::quat(),
+		glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	
 	m_madoka = scene->LoadModel("../Resources/Models/madoka_machida/scene.gltf", "Madoka");
 	m_madoka->SetPosition(glm::vec3(-0.8f, -1.f, 2.0f));
