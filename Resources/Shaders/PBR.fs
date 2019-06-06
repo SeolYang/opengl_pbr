@@ -106,6 +106,9 @@ void main()
 	vec3 V = normalize(camPos - worldPos);
 
 	vec3 Lo = vec3(0.0);
+	
+	float metallic = metallicFactor + texture(metallicRoughnessMap, texcoord).b;
+	float roughness = roughnessFactor + texture(metallicRoughnessMap, texcoord).g;
 
 	for(int idx = 0; idx < numOfLights; ++idx)
 	{
@@ -118,9 +121,6 @@ void main()
 		float attenuation = 1.0/(distance*distance);
 		
 		vec3 radiance = lights[idx].radiance*attenuation;
-
-		float metallic = metallicFactor + texture(metallicRoughnessMap, texcoord).b;
-		float roughness = roughnessFactor + texture(metallicRoughnessMap, texcoord).g;
 
 		vec3 F0 = vec3(0.04);
 		F0 = mix(F0, albedo, metallic);

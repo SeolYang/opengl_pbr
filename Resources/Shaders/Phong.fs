@@ -23,6 +23,10 @@ uniform vec4 baseColorFactor;
 
 uniform sampler2D normalMap;
 
+uniform sampler2D metallicRoughnessMap;
+uniform float metallicFactor;
+uniform float roughnessFactor;
+
 // aoMap(Ambient Occlusion Map): Linear(R channel only)
 uniform sampler2D aoMap;
 
