@@ -3,6 +3,13 @@
 
 constexpr unsigned int MaximumLights = 32;
 
+enum class ELightingModel
+{
+	Phong,
+	BlinnPhong,
+	CookTorrance
+};
+
 class Scene;
 class Mesh;
 class Model;
@@ -21,8 +28,11 @@ public:
 
 	void Clear(const glm::vec4& color, bool clearDepth = true);
 
+	void SetLightingModel(ELightingModel model) { m_model = model; }
+
 private:
-	Shader* m_basicShader;
-	Scene* m_targetScene;
+	ELightingModel m_model;
+	Shader* m_pbrShader;
+	Shader* m_phongShader;
 
 };

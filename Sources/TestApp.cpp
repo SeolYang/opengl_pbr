@@ -5,6 +5,7 @@
 #include "Material.h"
 #include "Light.h"
 #include "Viewport.h"
+#include "Renderer.h"
 
 #include "GLFW/glfw3.h"
 
@@ -154,6 +155,16 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 
 		case GLFW_KEY_C:
 			SplitViewport();
+			break;
+
+		case GLFW_KEY_1:
+			this->GetRenderer()->SetLightingModel(ELightingModel::CookTorrance);
+			std::cout << "Cook-Torrance BRDF" << std::endl;
+			break;
+
+		case GLFW_KEY_2:
+			this->GetRenderer()->SetLightingModel(ELightingModel::Phong);
+			std::cout << "Phong Reflection Model" << std::endl;
 			break;
 		}
 	}

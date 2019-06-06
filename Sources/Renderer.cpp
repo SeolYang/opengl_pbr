@@ -10,24 +10,37 @@
 #include "GL/gl3w.h"
 
 Renderer::Renderer() :
-	m_basicShader(nullptr)
+	m_model(ELightingModel::CookTorrance),
+	m_pbrShader(nullptr),
+	m_phongShader(nullptr)
 {
 }
 
 Renderer::~Renderer()
 {
-	if (m_basicShader != nullptr)
+	if (m_pbrShader != nullptr)
 	{
-		delete m_basicShader;
-		m_basicShader = nullptr;
+		delete m_pbrShader;
+		m_pbrShader = nullptr;
+	}
+
+	if (m_phongShader != nullptr)
+	{
+		delete m_phongShader;
+		m_phongShader = nullptr;
 	}
 }
 
 bool Renderer::Init()
 {
-	m_basicShader = new Shader(
+	m_pbrShader = new Shader(
 		"../Resources/Shaders/PBR.vs", 
 		"../Resources/Shaders/PBR.fs");
+
+
+	m_phongShader = new Shader(
+		"../Resources/Shaders/Phong.vs",
+		"../Resources/Shaders/Phong.fs");
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -39,6 +52,17 @@ void Renderer::Render(Scene* scene)
 	bool isValidRenderRequest = scene != nullptr;
 	if (isValidRenderRequest)
 	{
+		Shader* targetShader = nullptr;
+		switch (m_model)
+		{
+		case ELightingModel::CookTorrance:
+			targetShader = m_pbrShader;
+			break;
+		default:
+			targetShader = m_phongShader;
+			break;
+		}
+
 		std::vector<Camera*>& cameras = scene->GetCameras();
 		std::vector<Model*>& models = scene->GetModels();
 		std::vector<Light*>& lights = scene->GetLights();
@@ -58,28 +82,28 @@ void Renderer::Render(Scene* scene)
 				glm::mat4 viewMat = camera->GetViewMatrix();
 				glm::mat4 projMat = camera->GetProjMatrix();
 
-				m_basicShader->Bind();
-				m_basicShader->SetMat4f("viewMatrix", viewMat);
-				m_basicShader->SetMat4f("projMatrix", projMat);
+				targetShader->Bind();
+				targetShader->SetMat4f("viewMatrix", viewMat);
+				targetShader->SetMat4f("projMatrix", projMat);
 
-				m_basicShader->SetVec3f("camPos", camera->GetPosition());
+				targetShader->SetVec3f("camPos", camera->GetPosition());
 
 				// ########### TEST CODE ##############
 				auto numOfLights = (lights.size() <= MaximumLights) ? lights.size() : MaximumLights;
-				m_basicShader->SetInt("numOfLights", numOfLights);
+				targetShader->SetInt("numOfLights", numOfLights);
 				for (size_t idx = 0; idx < numOfLights; ++idx)
 				{
 					auto indexingStr = "lights[" + std::to_string(idx) + "]";
-					m_basicShader->SetVec3f(indexingStr + ".position", lights[idx]->GetPosition());
-					m_basicShader->SetVec3f(indexingStr + ".radiance", lights[idx]->GetRadiance());
+					targetShader->SetVec3f(indexingStr + ".position", lights[idx]->GetPosition());
+					targetShader->SetVec3f(indexingStr + ".radiance", lights[idx]->GetRadiance());
 				}
 
 				for (auto model : models)
 				{
-					m_basicShader->SetMat4f("worldMatrix", model->GetWorldMatrix());
+					targetShader->SetMat4f("worldMatrix", model->GetWorldMatrix());
 					if (model != nullptr)
 					{
-						model->Render(m_basicShader);
+						model->Render(targetShader);
 					}
 				}
 			}
