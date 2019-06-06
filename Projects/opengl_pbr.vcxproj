@@ -49,8 +49,8 @@
   <ItemGroup>
     <None Include="..\Resources\Shaders\PBR.fs" />
     <None Include="..\Resources\Shaders\PBR.vs" />
-    <None Include="..\Resources\Shaders\test.fs" />
-    <None Include="..\Resources\Shaders\test.vs" />
+    <None Include="..\Resources\Shaders\Phong.fs" />
+    <None Include="..\Resources\Shaders\Phong.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

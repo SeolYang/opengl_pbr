@@ -116,16 +116,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Resources\Shaders\test.vs">
-      <Filter>Resources</Filter>
-    </None>
-    <None Include="..\Resources\Shaders\test.fs">
-      <Filter>Resources</Filter>
-    </None>
     <None Include="..\Resources\Shaders\PBR.vs">
       <Filter>Resources</Filter>
     </None>
     <None Include="..\Resources\Shaders\PBR.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\Phong.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\Phong.fs">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>
