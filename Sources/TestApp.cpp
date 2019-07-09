@@ -62,19 +62,11 @@ bool TestApp::Init()
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 5.f));
 
-	unsigned int halfWinWidth = this->GetWidth() / 2;
+	unsigned int width = this->GetWidth();
 	unsigned int height = this->GetHeight();
 	Viewport* mainViewport = m_cam->GetViewport();
-	mainViewport->SetWidth(halfWinWidth);
+	mainViewport->SetWidth(width);
 	mainViewport->SetHeight(height);
-
-	m_secondaryCam = scene->CreateCamera("SecondaryCam");
-	m_secondaryCam->SetPosition(glm::vec3(1.0f, 2.0f, 3.0f));
-
-	Viewport* secondaryViewport = m_secondaryCam->GetViewport();
-	secondaryViewport->SetWidth(halfWinWidth);
-	secondaryViewport->SetHeight(height);
-	secondaryViewport->SetX(halfWinWidth);
 
 	return true;
 }
@@ -106,15 +98,9 @@ void TestApp::Update(float dt)
 
 void TestApp::WindowResizeCallback(GLFWwindow * window, int width, int height)
 {
-	unsigned int halfWinWidth = width / 2;
 	Viewport* mainViewport = m_cam->GetViewport();
-	mainViewport->SetWidth(halfWinWidth);
+	mainViewport->SetWidth(width);
 	mainViewport->SetHeight(height);
-
-	Viewport* secondaryViewport = m_secondaryCam->GetViewport();
-	secondaryViewport->SetWidth(halfWinWidth);
-	secondaryViewport->SetHeight(height);
-	secondaryViewport->SetX(halfWinWidth);
 
 	std::cout << "Window resized: " << width << " , " << height << std::endl;
 }
@@ -154,7 +140,7 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 
 		case GLFW_KEY_C:
-			SplitViewport();
+			//SplitViewport();
 			break;
 
 		}
