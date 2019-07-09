@@ -16,6 +16,7 @@
     <ClInclude Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\KHR\khrplatform.h" />
     <ClInclude Include="..\Sources\Application.h" />
     <ClInclude Include="..\Sources\Camera.h" />
+    <ClInclude Include="..\Sources\GBuffer.h" />
     <ClInclude Include="..\Sources\Light.h" />
     <ClInclude Include="..\Sources\Material.h" />
     <ClInclude Include="..\Sources\Mesh.h" />
@@ -34,6 +35,7 @@
     <ClCompile Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\GL\gl3w.c" />
     <ClCompile Include="..\Sources\Application.cpp" />
     <ClCompile Include="..\Sources\Camera.cpp" />
+    <ClCompile Include="..\Sources\GBuffer.cpp" />
     <ClCompile Include="..\Sources\Light.cpp" />
     <ClCompile Include="..\Sources\main.cpp" />
     <ClCompile Include="..\Sources\Material.cpp" />
@@ -47,6 +49,10 @@
     <ClCompile Include="..\Sources\Viewport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Resources\Shaders\GeometryPass.fs" />
+    <None Include="..\Resources\Shaders\GeometryPass.vs" />
+    <None Include="..\Resources\Shaders\LightingPass.fs" />
+    <None Include="..\Resources\Shaders\LightingPass.vs" />
     <None Include="..\Resources\Shaders\PBR.fs" />
     <None Include="..\Resources\Shaders\PBR.vs" />
     <None Include="..\Resources\Shaders\Phong.fs" />

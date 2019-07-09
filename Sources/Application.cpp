@@ -38,7 +38,7 @@ bool Application::InitBase()
 	m_scene = new Scene();
 	m_renderer = new Renderer();
 
-	if (!m_renderer->Init())
+	if (!m_renderer->Init(m_windowWidth, m_windowHeight))
 	{
 		std::cout << "Failed to init renderer" << std::endl;
 		return false;
@@ -107,7 +107,7 @@ int Application::Run()
 		auto begin = std::chrono::system_clock::now();
 
 		Update(deltaTime);
-		m_renderer->Render(m_scene);
+		m_renderer->DeferredRender(m_scene);
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
@@ -124,6 +124,7 @@ void Application::_WindowResizeCallback(GLFWwindow* window, int width, int heigh
 {
 	m_windowWidth = width;
 	m_windowHeight = height;
+	//m_renderer->Resize(width, height);
 	WindowResizeCallback(window, width, height);
 }
 

@@ -157,15 +157,6 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			SplitViewport();
 			break;
 
-		case GLFW_KEY_1:
-			this->GetRenderer()->SetLightingModel(ELightingModel::CookTorrance);
-			std::cout << "Cook-Torrance BRDF" << std::endl;
-			break;
-
-		case GLFW_KEY_2:
-			this->GetRenderer()->SetLightingModel(ELightingModel::Phong);
-			std::cout << "Phong Reflection Model" << std::endl;
-			break;
 		}
 	}
 }

@@ -70,6 +70,9 @@
     <ClInclude Include="..\Sources\TestApp.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\GBuffer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
@@ -114,6 +117,9 @@
     <ClCompile Include="..\Sources\TestApp.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\Sources\GBuffer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Shaders\PBR.vs">
@@ -126,6 +132,18 @@
       <Filter>Resources</Filter>
     </None>
     <None Include="..\Resources\Shaders\Phong.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\GeometryPass.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\GeometryPass.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\LightingPass.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\Resources\Shaders\LightingPass.fs">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>
