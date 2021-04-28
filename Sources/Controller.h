@@ -28,13 +28,14 @@ public:
             m_horizontalAngle += MouseSensitivity * dt * static_cast<float>(0.5 - x);
             m_verticalAngle += MouseSensitivity * dt * static_cast<float>(0.5 - y);
 
-            if (m_verticalAngle >= (PI/2.0f))
+            constexpr float epsilon = 0.001f;
+            if (m_verticalAngle >= (PI / 2.0f))
             {
-               m_verticalAngle = PI / 2.0f;
+               m_verticalAngle = (PI / 2.0f) - epsilon;
             }
             else if (m_verticalAngle <= -(PI/2.0f))
             {
-               m_verticalAngle = -(PI / 2.0f);
+               m_verticalAngle = -(PI / 2.0f) + epsilon;
             }
 
             m_forward = glm::vec3(
@@ -126,7 +127,7 @@ public:
 public:
    float MouseSensitivity = 0.5f;
    float CameraSpeed = 4.0f;
-   float SpeedMultiplier = 6.0f;
+   float SpeedMultiplier = 12.0f;
 
 private:
    GLFWwindow* m_window = nullptr;
