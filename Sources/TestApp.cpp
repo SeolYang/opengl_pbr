@@ -128,7 +128,7 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			//SplitViewport();
 			break;
 		case GLFW_KEY_ESCAPE:
-			glfwTerminate();
+			this->Stop();
 			break;
 
 		}

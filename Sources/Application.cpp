@@ -118,6 +118,7 @@ int Application::Run()
 		deltaTime = dt.count();
 	}
 
+	glfwTerminate();
 	return 0;
 }
 
