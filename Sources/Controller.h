@@ -21,35 +21,33 @@ public:
          double x = 0.0;
          double y = 0.0;
          glfwGetCursorPos(m_window, &x, &y);
-         glfwSetCursorPos(m_window, 0.5, 0.5);
 
-         if (m_prevCursorPos.x != x && m_prevCursorPos.y != y)
+         const double dx = m_prevCursorPos.x - x;
+         const double dy = m_prevCursorPos.y - y;
+         m_horizontalAngle += MouseSensitivity * dt * static_cast<float>(dx);
+         m_verticalAngle += MouseSensitivity * dt * static_cast<float>(dy);
+
+         constexpr float epsilon = 0.001f;
+         if (m_verticalAngle >= (PI / 2.0f))
          {
-            m_horizontalAngle += MouseSensitivity * dt * static_cast<float>(0.5 - x);
-            m_verticalAngle += MouseSensitivity * dt * static_cast<float>(0.5 - y);
-
-            constexpr float epsilon = 0.001f;
-            if (m_verticalAngle >= (PI / 2.0f))
-            {
-               m_verticalAngle = (PI / 2.0f) - epsilon;
-            }
-            else if (m_verticalAngle <= -(PI/2.0f))
-            {
-               m_verticalAngle = -(PI / 2.0f) + epsilon;
-            }
-
-            m_forward = glm::vec3(
-               std::cos(m_verticalAngle) * std::sin(m_horizontalAngle),
-               std::sin(m_verticalAngle),
-               std::cos(m_verticalAngle) * std::cos(m_horizontalAngle));
-
-            m_right = glm::vec3(
-               std::sin(m_horizontalAngle - PI / 2.0f),
-               0.0f,
-               std::cos(m_horizontalAngle - PI / 2.0f));
-
-            m_prevCursorPos = glm::vec2(x, y);
+            m_verticalAngle = (PI / 2.0f) - epsilon;
          }
+         else if (m_verticalAngle <= -(PI / 2.0f))
+         {
+            m_verticalAngle = -(PI / 2.0f) + epsilon;
+         }
+
+         m_forward = glm::vec3(
+            std::cos(m_verticalAngle) * std::sin(m_horizontalAngle),
+            std::sin(m_verticalAngle),
+            std::cos(m_verticalAngle) * std::cos(m_horizontalAngle));
+
+         m_right = glm::vec3(
+            std::sin(m_horizontalAngle - PI / 2.0f),
+            0.0f,
+            std::cos(m_horizontalAngle - PI / 2.0f));
+
+         m_prevCursorPos = glm::vec2(x, y);
 
          const float deltaSpeed = CameraSpeed * dt * (m_bBoost ? SpeedMultiplier : 1.0f);
          const glm::vec3 deltaForward = m_forward * deltaSpeed;
@@ -125,7 +123,7 @@ public:
    }
 
 public:
-   float MouseSensitivity = 0.5f;
+   float MouseSensitivity = 0.35f;
    float CameraSpeed = 4.0f;
    float SpeedMultiplier = 12.0f;
 
@@ -134,7 +132,7 @@ private:
    Camera* m_target = nullptr;
    float m_horizontalAngle = PI;
    float m_verticalAngle = 0.0f;
-   glm::vec2 m_prevCursorPos = glm::vec2();
+   glm::tvec2<double> m_prevCursorPos = glm::vec2();
 
    glm::vec3 m_forward;
    glm::vec3 m_right;

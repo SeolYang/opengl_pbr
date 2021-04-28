@@ -18,10 +18,9 @@
 
 bool TestApp::Init()
 {
-	glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	Scene* scene = this->GetScene();
-
 	ModelLoadParams duckParams{
 	.CalcTangentSpace = true,
 	.ConvertToLeftHanded = true,
@@ -31,11 +30,12 @@ bool TestApp::Init()
 	.Triangulate = true };
 	m_duck = scene->LoadModel("Duck", "Resources/Models/Duck/Duck.gltf", duckParams);
 	m_duck->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+	m_duck->SetScale(glm::vec3(3.0f, 3.0f, 3.0f));
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	m_duckMat = m_duck->GetMaterial(0);
 	m_duckMat->SetMetallicFactor(0.0f);
-	m_duckMat->SetRoughnessFactor(1.0f);
+	m_duckMat->SetRoughnessFactor(0.0f);
 
 	ModelLoadParams sponzaLoadParams{
 	   .CalcTangentSpace = true,
@@ -79,8 +79,8 @@ bool TestApp::Init()
 	m_mikuStand->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));*/
 
 	m_mainLight = scene->CreateLight("Main");
-	m_mainLight->SetPosition(glm::vec3{ 0.0f, 2.0f, 1.0f });
-	m_mainLight->SetRadiance(glm::vec3{ 5.0f });
+	m_mainLight->SetPosition(glm::vec3{ 0.0f, 5.0f, 1.0f });
+	m_mainLight->SetRadiance(glm::vec3{ 15.0f });
 
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 0.f));
