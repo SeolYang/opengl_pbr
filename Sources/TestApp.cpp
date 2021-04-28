@@ -39,7 +39,7 @@ bool TestApp::Init()
 
 	ModelLoadParams sponzaLoadParams{
 	   .CalcTangentSpace = true,
-	   .ConvertToLeftHanded = false,
+	   .ConvertToLeftHanded = true,
 	   .GenSmoothNormals=false,
 	   .GenUVs = true,
 	   .PreTransformVertices=false,
