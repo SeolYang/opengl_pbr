@@ -2,7 +2,7 @@
 out vec4 fragColor;
 layout (location=0) out vec3 aPosition;
 layout (location=1) out vec3 aNormal;
-layout (location=2) out vec3 aAlbedo;
+layout (location=2) out vec4 aAlbedo;
 layout (location=3) out vec2 aMetallicRoughness;
 layout (location=4) out vec4 aEmissiveAO;
 
@@ -42,8 +42,12 @@ void main()
 {
 	float ao = texture(aoMap, texcoord).r;
 
-	vec3 albedo = pow3(texture(baseColorMap, texcoord).rgb, 2.2);
-	albedo += pow3(baseColorFactor.rgb, 2.2);
+	vec4 albedo = texture(baseColorMap, texcoord);
+	if (albedo.a < 0.1)
+	{
+		discard;
+	}
+	albedo = vec4(pow3(albedo.rgb, 2.2) + pow3(baseColorFactor.rgb, 2.2), albedo.a);
 
 	vec3 normal = worldNormal;
 	if (bUseNormalMap == 1)
