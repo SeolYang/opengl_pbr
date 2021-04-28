@@ -31,6 +31,9 @@ public:
 	glm::mat4 GetViewMatrix() const;
 	glm::mat4 GetProjMatrix() const;
 
+	void SetLookAt(const glm::vec3& newLookPos) { m_lookAt = newLookPos; }
+	glm::vec3 GetLookAt() const { return m_lookAt; }
+
 private:
 	float m_fov;
 	float m_nearPlane;

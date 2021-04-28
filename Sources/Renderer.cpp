@@ -55,8 +55,8 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	m_winHeight = height;
 
 	m_pbrShader = new Shader(
-		"../Resources/Shaders/PBR.vs", 
-		"../Resources/Shaders/PBR.fs");
+		"Resources/Shaders/PBR.vs", 
+		"Resources/Shaders/PBR.fs");
 
 	m_gBuffer = new GBuffer(width, height);
 	if (!m_gBuffer->Init())
@@ -65,12 +65,12 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	}
 
 	m_geometryPass = new Shader(
-		"../Resources/Shaders/GeometryPass.vs",
-		"../Resources/Shaders/GeometryPass.fs");
+		"Resources/Shaders/GeometryPass.vs",
+		"Resources/Shaders/GeometryPass.fs");
 
 	m_lightingPass = new Shader(
-		"../Resources/Shaders/LightingPass.vs",
-		"../Resources/Shaders/LightingPass.fs");
+		"Resources/Shaders/LightingPass.vs",
+		"Resources/Shaders/LightingPass.fs");
 	m_lightingPass->Bind();
 	m_lightingPass->SetInt("positionBuffer", 0);
 	m_lightingPass->SetInt("normalBuffer", 1);
@@ -96,63 +96,11 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
 
 	return true;
-}
-
-void Renderer::ForwardRender(Scene* scene)
-{
-	bool isValidRenderRequest = scene != nullptr;
-	if (isValidRenderRequest)
-	{
-		Shader* targetShader = m_pbrShader;
-
-		std::vector<Camera*>& cameras = scene->GetCameras();
-		std::vector<Model*>& models = scene->GetModels();
-		std::vector<Light*>& lights = scene->GetLights();
-
-		Camera* mainCamera = scene->GetMainCamera();
-
-		glm::vec3 clearColor = mainCamera->GetClearColor();
-		Clear(glm::vec4{ clearColor, 1.0f });
-
-		for (const auto* camera : cameras)
-		{
-			if (camera != nullptr && camera->IsActivated())
-			{
-				Viewport* viewport = camera->GetViewport();
-				viewport->Bind();
-
-				glm::mat4 viewMat = camera->GetViewMatrix();
-				glm::mat4 projMat = camera->GetProjMatrix();
-
-				targetShader->Bind();
-				targetShader->SetMat4f("viewMatrix", viewMat);
-				targetShader->SetMat4f("projMatrix", projMat);
-
-				targetShader->SetVec3f("camPos", camera->GetPosition());
-
-				// ########### TEST CODE ##############
-				auto numOfLights = (lights.size() <= MaximumLights) ? lights.size() : MaximumLights;
-				targetShader->SetInt("numOfLights", numOfLights);
-				for (size_t idx = 0; idx < numOfLights; ++idx)
-				{
-					auto indexingStr = "lights[" + std::to_string(idx) + "]";
-					targetShader->SetVec3f(indexingStr + ".position", lights[idx]->GetPosition());
-					targetShader->SetVec3f(indexingStr + ".radiance", lights[idx]->GetRadiance());
-				}
-
-				for (auto model : models)
-				{
-					targetShader->SetMat4f("worldMatrix", model->GetWorldMatrix());
-					if (model != nullptr)
-					{
-						model->Render(targetShader);
-					}
-				}
-			}
-		}
-	}
 }
 
 void Renderer::DeferredRender(Scene* scene)
@@ -184,6 +132,8 @@ void Renderer::DeferredRender(Scene* scene)
 			m_geometryPass->SetMat4f("viewMatrix", viewMat);
 			m_geometryPass->SetMat4f("projMatrix", projMat);
 
+			glEnable(GL_DEPTH_TEST);
+
 			for (auto model : models)
 			{
 				m_geometryPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
@@ -208,14 +158,11 @@ void Renderer::DeferredRender(Scene* scene)
 				m_lightingPass->SetVec3f(indexingStr + ".radiance", lights[idx]->GetRadiance());
 			}
 
+			glDisable(GL_DEPTH_TEST);
 			glBindVertexArray(m_quadVAO);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glBindVertexArray(0);
-		}
-
-		for (const auto* camera : cameras)
-		{
-			
+			m_gBuffer->UnbindTextures();
 		}
 	}
 }

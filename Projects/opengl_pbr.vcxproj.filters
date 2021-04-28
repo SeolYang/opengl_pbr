@@ -11,7 +11,7 @@
     <Filter Include="Thirdparty\gl3w">
       <UniqueIdentifier>{01ac3f8f-cc7a-4d8e-9a22-f6114565fda5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources">
+    <Filter Include="Shaders">
       <UniqueIdentifier>{c7d95f49-1829-471f-adc9-b1e1d706d8d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -43,7 +43,7 @@
     <ClInclude Include="..\Sources\Model.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Texture.h">
+    <ClInclude Include="..\Sources\Texture2D.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\Shader.h">
@@ -58,19 +58,25 @@
     <ClInclude Include="..\Sources\Rendering.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\GL\gl3w.h">
-      <Filter>Thirdparty\gl3w</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\GL\glcorearb.h">
-      <Filter>Thirdparty\gl3w</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\KHR\khrplatform.h">
-      <Filter>Thirdparty\gl3w</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\TestApp.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\GBuffer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Thirdparty\gl3w\includes\GL\glcorearb.h">
+      <Filter>Thirdparty\gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Thirdparty\gl3w\includes\GL\gl3w.h">
+      <Filter>Thirdparty\gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Thirdparty\gl3w\includes\KHR\khrplatform.h">
+      <Filter>Thirdparty\gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Vertex.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Controller.h">
       <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
@@ -90,7 +96,7 @@
     <ClCompile Include="..\Sources\Model.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\Sources\Texture.cpp">
+    <ClCompile Include="..\Sources\Texture2D.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Material.cpp">
@@ -101,9 +107,6 @@
     </ClCompile>
     <ClCompile Include="..\Sources\Shader.cpp">
       <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Live\project_rumia\Thirdparty\gl3w\include\GL\gl3w.c">
-      <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Application.cpp">
       <Filter>Sources</Filter>
@@ -120,31 +123,34 @@
     <ClCompile Include="..\Sources\GBuffer.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">
+      <Filter>Thirdparty\gl3w</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Resources\Shaders\PBR.vs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\GeometryPass.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\PBR.fs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\GeometryPass.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\Phong.vs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\LightingPass.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\Phong.fs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\LightingPass.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\GeometryPass.vs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\PBR.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\GeometryPass.fs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\PBR.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\LightingPass.vs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\Phong.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Resources\Shaders\LightingPass.fs">
-      <Filter>Resources</Filter>
+    <None Include="Resources\Shaders\Phong.vs">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 class Model;
 class Camera;
 class Light;
+struct ModelLoadParams;
 class Scene
 {
 public:
@@ -22,7 +23,7 @@ public:
 
 	Light* CreateLight(const std::string& name);
 	Camera* CreateCamera(const std::string& name);
-	Model* LoadModel(const std::string& filePath, const std::string& name);
+	Model* LoadModel(const std::string& name, const std::string& filePath, const ModelLoadParams& params);
 
 	Camera* SetMainCamera(unsigned int idx);
 	Camera* SetMainCamera(const std::string& name);
@@ -30,8 +31,8 @@ public:
 	Camera* GetMainCamera() const { return m_cameras[m_mainCameraIdx]; }
 
 private:
-	unsigned int			m_mainCameraIdx;
-	std::vector<Camera*>	m_cameras;
+	unsigned int				m_mainCameraIdx;
+	std::vector<Camera*>		m_cameras;
 	std::vector<Light*>		m_lights;
 	std::vector<Model*>		m_models;
 

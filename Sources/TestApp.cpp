@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "TestApp.h"
 #include "Scene.h"
 #include "Model.h"
@@ -6,17 +7,47 @@
 #include "Light.h"
 #include "Viewport.h"
 #include "Renderer.h"
+#include "Controller.h"
 
 #include "GLFW/glfw3.h"
 
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <algorithm>
 
 bool TestApp::Init()
 {
+	glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
 	Scene* scene = this->GetScene();
-	m_helmet = scene->LoadModel("../Resources/Models/DamagedHelmet/DamagedHelmet.gltf", "Helmet");
+
+	ModelLoadParams duckParams{
+	.CalcTangentSpace = true,
+	.ConvertToLeftHanded = true,
+	.GenSmoothNormals = true,
+	.GenUVs = true,
+	.PreTransformVertices = true,
+	.Triangulate = true };
+	m_duck = scene->LoadModel("Duck", "Resources/Models/Duck/Duck.gltf", duckParams);
+	m_duck->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+	m_duck->SetRotation(glm::rotate(glm::quat(),
+		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+	m_duckMat = m_duck->GetMaterial(0);
+	m_duckMat->SetMetallicFactor(0.0f);
+	m_duckMat->SetRoughnessFactor(1.0f);
+
+	ModelLoadParams sponzaLoadParams{
+	   .CalcTangentSpace = true,
+	   .ConvertToLeftHanded = false,
+	   .GenSmoothNormals=false,
+	   .GenUVs = true,
+	   .PreTransformVertices=false,
+	   .Triangulate=false};
+	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
+	m_sponza->SetScale(glm::vec3(0.09f, 0.09f, 0.09f));
+
+	/*m_helmet = scene->LoadModel("../Resources/Models/DamagedHelmet/DamagedHelmet.gltf", "Helmet");
 	m_helmet->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_helmet->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(90.0f), glm::vec3{ 1.0f, 0.0f, 0.0f }));
@@ -29,14 +60,6 @@ bool TestApp::Init()
 	Material* avocadoMat = m_avocado->GetMaterial(0);
 	avocadoMat->SetUseNormal(true);
 
-	m_duck = scene->LoadModel("../Resources/Models/Duck/Duck.gltf", "Duck");
-	m_duck->SetPosition(glm::vec3(-2.0f, -1.0f, 0.0f));
-	m_duck->SetScale(glm::vec3{ 0.008f, 0.008f, 0.008f });
-	m_duck->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-	m_duckMat = m_duck->GetMaterial(0);
-	m_duckMat->SetMetallicFactor(0.0f);
-	m_duckMat->SetRoughnessFactor(0.0f);
 
 	m_spheres = scene->LoadModel("../Resources/Models/MetalRoughSpheres/MetalRoughSpheres.gltf", "Spheres");
 	m_spheres->SetPosition(glm::vec3(0.0f, -0.1f, -4.5f));
@@ -53,14 +76,15 @@ bool TestApp::Init()
 
 	m_mikuStand = scene->LoadModel("../Resources/Models/mikuStand/scene.gltf", "Miku Stand");
 	m_mikuStand->SetPosition(glm::vec3(0.6f, -1.0f, 1.6f));
-	m_mikuStand->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
+	m_mikuStand->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));*/
 
 	m_mainLight = scene->CreateLight("Main");
 	m_mainLight->SetPosition(glm::vec3{ 0.0f, 2.0f, 1.0f });
 	m_mainLight->SetRadiance(glm::vec3{ 5.0f });
 
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 5.f));
+	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 0.f));
+	m_controller = new Controller(m_cam, this->GetWindow());
 
 	unsigned int width = this->GetWidth();
 	unsigned int height = this->GetHeight();
@@ -73,27 +97,7 @@ bool TestApp::Init()
 
 void TestApp::Update(float dt)
 {
-	glm::vec3 camPos = m_cam->GetPosition();
-	if (m_bRotateCam)
-	{
-		m_elasedTime += dt;
-		m_rotateRad += dt * 0.01f;
-		camPos.x = m_rotateRad * glm::sin(m_elasedTime);
-		camPos.z = m_rotateRad * glm::cos(m_elasedTime);
-	}
-	camPos.y = m_camY;
-	m_cam->SetPosition(camPos);
-
-	m_duckAngle += dt * m_duckRotatePower;
-	m_duck->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(m_duckAngle), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-
-	m_duckRoughness += (dt * m_duckRoughnessScale);
-	if (m_duckRoughness > 1.0f || m_duckRoughness < 0.0f)
-	{
-		m_duckRoughnessScale = -m_duckRoughnessScale;
-	}
-	m_duckMat->SetRoughnessFactor(m_duckRoughness);
+	m_controller->Update(dt);
 }
 
 void TestApp::WindowResizeCallback(GLFWwindow * window, int width, int height)
@@ -107,40 +111,24 @@ void TestApp::WindowResizeCallback(GLFWwindow * window, int width, int height)
 
 void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action, int mods)
 {
+	if (m_controller != nullptr)
+	{
+		m_controller->KeyCallback(window, key, scanCode, action, mods);
+	}
+
 	if (action == GLFW_PRESS)
 	{
 		switch (key)
 		{
-		case GLFW_KEY_SPACE:
-			m_bRotateCam = !m_bRotateCam;
-			break;
-
-		case GLFW_KEY_UP:
-			m_duckRotatePower += m_powerDiff;
-			break;
-		case GLFW_KEY_DOWN:
-			m_duckRotatePower -= m_powerDiff;
-			break;
-
-		case GLFW_KEY_W:
-			m_rotateRad -= m_rotateRadDiff;
-			break;
-		case GLFW_KEY_S:
-			m_rotateRad += m_rotateRadDiff;
-			break;
-		case GLFW_KEY_A:
-			m_camY -= m_camYDiff;
-			break;
-		case GLFW_KEY_D:
-			m_camY += m_camYDiff;
-			break;
-
 		case GLFW_KEY_L:
 			RandomLightGen();
 			break;
 
 		case GLFW_KEY_C:
 			//SplitViewport();
+			break;
+		case GLFW_KEY_ESCAPE:
+			glfwTerminate();
 			break;
 
 		}
@@ -153,8 +141,8 @@ void TestApp::RandomLightGen()
 	static std::random_device device;
 	static std::mt19937 engine(device());
 
-	std::uniform_real_distribution<float> rad_dist(0.0f, 25.0f);
-	std::uniform_real_distribution<float> pos_dist(-5.0f, 5.0f);
+	std::uniform_real_distribution<float> rad_dist(0.0f, 60.0f);
+	std::uniform_real_distribution<float> pos_dist(-100.0f, 100.0f);
 
 	auto* newLight = GetScene()->CreateLight("Random" + std::to_string(count));
 	newLight->SetRadiance(glm::vec3(
@@ -163,7 +151,7 @@ void TestApp::RandomLightGen()
 		rad_dist(engine)));
 	newLight->SetPosition(glm::vec3(
 		pos_dist(engine),
-		pos_dist(engine),
+		std::max(0.0f, pos_dist(engine)),
 		pos_dist(engine)));
 }
 

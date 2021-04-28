@@ -34,3 +34,6 @@
 *.ipch
 *.tlog
 *.idb
+
+Builds/
+Projects/.vs

@@ -1,23 +1,21 @@
 #pragma once
-#include "glm/matrix.hpp"
+#include <vector>
+#include "Rendering.h"
+#include "Vertex.h"
 
 class Material;
 class Shader;
 class Mesh
 {
 public:
-	Mesh(Material* material,  unsigned int vao,
-		unsigned int mode, int count, unsigned int type,
-		char* offset);
-
-	void Render(Shader* shader);
+	Mesh(std::vector<VertexPosTexNT> vertices, std::vector<unsigned int> indices, Material* material);
+	void Render(Shader* shader, GLenum mode = GL_TRIANGLES);
 
 private:
 	Material*	 m_material;
+	unsigned int m_vbo;
 	unsigned int m_vao;
-	unsigned int m_mode;
-	int			 m_count;
-	unsigned int m_type;
-	char*		 m_offset;
+	unsigned int m_ebo;
+	unsigned int m_count;
 
 };

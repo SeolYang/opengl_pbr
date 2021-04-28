@@ -1,469 +1,217 @@
 #include "Model.h"
-#include "Texture.h"
+#include "Texture2D.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/pbrmaterial.h>
+#include <filesystem>
 
 #include <iostream>
 
-#define BUFFER_OFFSET(idx) ((char *)NULL + (idx))
-
-Model::Model(const std::string& filePath,
-	const std::string& name) :
-	m_filePath(filePath),
-	Object(name)
+Model::Model(const std::string& name, std::string filePath, const ModelLoadParams& params) :
+	Object(name),
+   m_mode(GL_TRIANGLES),
+	m_filePath(std::move(filePath))
 {
-	Init();
+	std::filesystem::path path(m_filePath);
+	path = path.parent_path();
+	std::wstring originParentPath = path.c_str();
+	char folderPath[2048];
+	size_t converted = 0;
+	wcstombs_s(&converted, folderPath, 2048, originParentPath.c_str(), originParentPath.size());
+	m_folderPath = folderPath;
+	m_folderPath.append("/");
+	LoadModel(params);
 }
 
 Model::~Model()
 {
-	for (auto mesh : m_meshes)
+	for (auto& material : m_materials)
 	{
-		if (mesh != nullptr)
-		{
-			delete mesh;
-		}
+		delete material;
 	}
-
-	for (auto material : m_materials)
+	for (auto& mesh : m_meshes)
 	{
-		if (material != nullptr)
-		{
-			delete material;
-		}
-	}
-
-	for (auto texture : m_textures)
-	{
-		delete texture.second;
+		delete mesh;
 	}
 }
 
-void Model::Init()
+void Model::LoadModel(const ModelLoadParams& params)
 {
-	if (LoadGLTFModel(m_model))
+	Assimp::Importer importer;
+	auto scene = importer.ReadFile(m_filePath,
+		(params.CalcTangentSpace ? aiProcess_CalcTangentSpace : 0x0) |
+		(params.Triangulate ? aiProcess_Triangulate : 0x0) |
+		(params.ConvertToLeftHanded ? aiProcess_ConvertToLeftHanded : 0x0) |
+		(params.GenUVs ? aiProcess_GenUVCoords : 0x0) |
+		(params.PreTransformVertices ? aiProcess_PreTransformVertices : 0x0));
+
+	this->ProcessNode(scene, scene->mRootNode);
+
+	importer.FreeScene();
+}
+
+void Model::ProcessNode(const aiScene* scene, const aiNode* node)
+{
+	if (scene != nullptr && node != nullptr)
 	{
-		LoadTextures(m_model);
-		LoadMaterials(m_model);
-		LoadModel(m_model);
+		for (size_t idx = 0; idx < node->mNumMeshes; ++idx)
+		{
+			ProcessMesh(scene, scene->mMeshes[node->mMeshes[idx]]);
+		}
+
+		for (size_t childIdx = 0; childIdx < node->mNumChildren; ++childIdx)
+		{
+			ProcessNode(scene, node->mChildren[childIdx]);
+		}
 	}
 }
 
-bool Model::LoadGLTFModel(tinygltf::Model& model)
+void Model::ProcessMesh(const aiScene* scene, const aiMesh* mesh)
 {
-	tinygltf::TinyGLTF loader;
+   if (scene != nullptr && mesh != nullptr)
+   {
+		std::vector<VertexPosTexNT> vertices(mesh->mNumVertices);
+		std::vector<unsigned int> indices(mesh->mNumFaces * 3);
 
-	std::string error;
-	std::string warning;
+		bool bHasUVCoords = mesh->HasTextureCoords(0);
+		bool bHasNormals = mesh->HasNormals();
+		bool bHasTangentsAndBitangents = mesh->HasTangentsAndBitangents();
 
-	bool res = loader.LoadASCIIFromFile(&model, &error, &warning, m_filePath);
-	if (!warning.empty())
-	{
-		std::cout << "Warn: " << warning << std::endl;
-	}
-	if (!error.empty())
-	{
-		std::cout << "Error: " << error << std::endl;
-	}
-
-	if (!res)
-	{
-		std::cout << "Failed to load gltf Model: " << m_filePath << std::endl;
-	}
-	else
-	{
-		std::cout << "Loaded gltf Model: " << m_filePath << std::endl;
-	}
-
-	return res;
-}
-
-void Model::LoadTextures(tinygltf::Model& model)
-{
-	int samplerSize = model.samplers.size();
-	for (auto texture : model.textures)
-	{
-		int source = texture.source;
-		int sampler = texture.sampler;
-
-		tinygltf::Sampler targetSampler;
-		targetSampler.minFilter = GL_LINEAR;
-		targetSampler.magFilter = GL_LINEAR;
-		targetSampler.wrapS = GL_REPEAT;
-		targetSampler.wrapT = GL_REPEAT;
-		targetSampler.wrapR = GL_REPEAT;
-
-		bool bValidSampler = (samplerSize > 0 && samplerSize > texture.sampler);
-		if (bValidSampler)
+		/* Vertices Data Process */
+		for (unsigned int idx = 0; idx < mesh->mNumVertices; ++idx)
 		{
-			targetSampler = model.samplers[texture.sampler];
-		}
+			auto& vertex = vertices[idx];
+			const auto& aiPos = mesh->mVertices[idx];
+			vertex.Position = glm::vec3(aiPos.x, aiPos.y, aiPos.z);
 
-		m_textures[source] = new Texture{
-			model.images[source],
-			targetSampler };
-	}
-}
-
-void Model::LoadMaterials(tinygltf::Model& model)
-{
-	for (auto material : model.materials)
-	{
-		// PBR Workflow
-		// Think about non textured object
-		Texture* baseColorTexture = nullptr;
-		glm::vec4 baseColorFactor{ 0.0f };
-
-		Texture* metallicRoughnessTexture = nullptr;
-		float metallicFactor = 0.0f;
-		float roughnessFactor = 0.0f;
-
-		Texture* ao = nullptr;
-
-		Texture* emissive = nullptr;
-		glm::vec3 emissiveFactor{ 0.0f };
-
-		Texture* normal = nullptr;
-
-		int textureIdx = 0;
-		for (auto value : material.values)
-		{
-			if (value.first.compare("baseColorTexture") == 0)
+			if (bHasUVCoords)
 			{
-				textureIdx = model.textures[value.second.TextureIndex()].source;
-				baseColorTexture =
-					m_textures[textureIdx];
+				const auto& aiTexCoords = mesh->mTextureCoords[0][idx];
+				vertex.TexCoord = glm::vec2(aiTexCoords.x, aiTexCoords.y);
 			}
-			else if (value.first.compare("baseColorFactor") == 0)
+
+			if (bHasNormals)
 			{
-				auto colorFactor = value.second.ColorFactor();
-				baseColorFactor.r = colorFactor[0];
-				baseColorFactor.g = colorFactor[1];
-				baseColorFactor.b = colorFactor[2];
-				if (colorFactor.size() >= 4)
-				{
-					baseColorFactor.a = colorFactor[3];
-				}
+				const auto& aiNormal = mesh->mNormals[idx];
+				vertex.Normal = glm::vec3(aiNormal.x, aiNormal.y, aiNormal.z);
 			}
-			else if (value.first.compare("metallicRoughnessTexture") == 0)
+
+			if (bHasTangentsAndBitangents)
 			{
-				textureIdx = model.textures[value.second.TextureIndex()].source;
-				metallicRoughnessTexture =
-					m_textures[textureIdx];
-			}
-			else if (value.first.compare("metallicFactor") == 0)
-			{
-				metallicFactor = value.second.Factor();
-			}
-			else if (value.first.compare("roughnessFactor") == 0)
-			{
-				roughnessFactor = value.second.Factor();
+				const auto& aiTangent = mesh->mTangents[idx];
+				vertex.Tangent = glm::vec3(aiTangent.x, aiTangent.y, aiTangent.z);
 			}
 		}
 
-		// Addition properties
-		for (auto value : material.additionalValues)
+		/* Indices Data Process */
+		for (size_t idx = 0; idx < mesh->mNumFaces; ++idx)
 		{
-			if (value.first.compare("normalTexture") == 0)
+			const auto& face = mesh->mFaces[idx];
+			indices[idx * 3 + 0] = face.mIndices[0];
+			indices[idx * 3 + 1] = face.mIndices[1];
+			indices[idx * 3 + 2] = face.mIndices[2];
+		}
+
+		/* Material Data Process */
+		const auto newMat = new Material();
+
+		aiString baseColorFileName;
+		aiString metallicRoughnessFileName;
+		aiString aoFileName;
+		aiString emissiveFileName;
+		aiString normalFileName;
+
+		const auto aiMaterial = scene->mMaterials[mesh->mMaterialIndex];
+		aiMaterial->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, &baseColorFileName);
+		aiMaterial->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &metallicRoughnessFileName);
+		aiMaterial->GetTexture(aiTextureType::aiTextureType_EMISSIVE, 0, &emissiveFileName);
+		aiMaterial->GetTexture(aiTextureType::aiTextureType_AMBIENT_OCCLUSION, 0, &aoFileName);
+		aiMaterial->GetTexture(aiTextureType::aiTextureType_NORMALS, 0, &normalFileName);
+
+		if (baseColorFileName.length > 0)
+		{
+			auto baseColorPath = m_folderPath;
+			baseColorPath.append(baseColorFileName.C_Str());
+			if (const auto baseColor = new Texture2D(baseColorPath); baseColor->GetID() != 0)
 			{
-				textureIdx = model.textures[value.second.TextureIndex()].source;
-				normal = m_textures[textureIdx];
+				newMat->SetBaseColor(baseColor);
 			}
-			else if (value.first.compare("occlusionTexture") == 0)
+			else
 			{
-				textureIdx = model.textures[value.second.TextureIndex()].source;
-				ao = m_textures[textureIdx];
+				delete baseColor;
 			}
-			
-			else if (value.first.compare("emissiveTexture") == 0)
+		}
+
+		if (metallicRoughnessFileName.length > 0)
+		{
+			auto metallicRoughnnesPath = m_folderPath;
+			metallicRoughnnesPath.append(metallicRoughnessFileName.C_Str());
+			if (const auto metallicRoughness = new Texture2D(metallicRoughnnesPath); metallicRoughness->GetID() != 0)
 			{
-				textureIdx = model.textures[value.second.TextureIndex()].source;
-				emissive = m_textures[textureIdx];
+				newMat->SetMetallicRoughness(metallicRoughness);
 			}
-			else if (value.first.compare("emissiveFactor") == 0)
+			else
 			{
-				auto colorFactor = value.second.ColorFactor();
-				emissiveFactor.r = colorFactor[0];
-				emissiveFactor.g = colorFactor[1];
-				emissiveFactor.b = colorFactor[2];
+				delete metallicRoughness;
 			}
 		}
 
-		m_materials.push_back(new Material{ 
-			baseColorTexture,
-			baseColorFactor,
-			normal,
-			metallicRoughnessTexture,
-			metallicFactor,
-			roughnessFactor,
-			ao,
-			emissive,
-			emissiveFactor});
-	}
-}
-
-void Model::LoadModel(tinygltf::Model& model)
-{
-	const tinygltf::Scene& scene = model.scenes[model.defaultScene];
-	for (size_t idx = 0; idx < scene.nodes.size(); ++idx)
-	{
-		ProcessNode(model, model.nodes[idx]);
-	}
-}
-
-void Model::ProcessNode(tinygltf::Model& model, tinygltf::Node& node)
-{
-	/*
-	const auto& translation = node.translation;
-	const auto& scale = node.scale;
-	const auto& rotation = node.rotation;
-
-	// T*R*S
-	glm::mat4 local{ 1.0f };
-	if (scale.size() > 0)
-	{
-		local = glm::scale(local, glm::vec3{ scale[0], scale[1], scale[2] });
-	}
-	if (rotation.size() > 0)
-	{
-		auto rotate = glm::toMat4(glm::quat{ 
-			static_cast<float>(rotation[0]),
-			static_cast<float>(rotation[1]),
-			static_cast<float>(rotation[2]),
-			static_cast<float>(rotation[3]) });
-		local = rotate * local;
-	}
-	if (translation.size() > 0)
-	{
-		local = glm::translate(local, glm::vec3{ translation[0], translation[1], translation[2] });
-	}
-
-	glm::mat4 glob = local * transform;
-	*/
-
-	if (node.mesh != -1)
-	{
-		ProcessMesh(model, model.meshes[node.mesh]);
-	}
-	for (size_t idx = 0; idx < node.children.size(); ++idx)
-	{
-		ProcessNode(model, model.nodes[node.children[idx]]);
-	}
-}
-
-void Model::ProcessMesh(tinygltf::Model& model, tinygltf::Mesh& mesh)
-{
-	std::map<int, GLuint> vbos;
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	tinygltf::Buffer verticesGLTF;
-	tinygltf::BufferView verticesView;
-	tinygltf::Buffer indicesGLTF;
-	tinygltf::BufferView indicesView;
-	tinygltf::Buffer texcoordsGLTF;
-	tinygltf::BufferView texcoordsView;
-
-	for (size_t idx = 0; idx < model.bufferViews.size(); ++idx)
-	{
-		const tinygltf::BufferView& bufferView = model.bufferViews[idx];
-		if (bufferView.target == 0)
+		if (emissiveFileName.length > 0)
 		{
-			std::cout << "WARN: BufferView.Target is zero" << std::endl;
-			continue;
+			auto emissivePath = m_folderPath;
+			emissivePath.append(emissiveFileName.C_Str());
+			if (const auto emissive = new Texture2D(emissivePath); emissive->GetID() != 0)
+			{
+				newMat->SetEmissive(emissive);
+			}
+			else
+			{
+				delete emissive;
+			}
 		}
 
-		tinygltf::Buffer buffer = model.buffers[bufferView.buffer];
-		std::cout << "BufferView.target: ";
-		switch (bufferView.target)
+		if (aoFileName.length > 0)
 		{
-		case GL_ARRAY_BUFFER:
-			std::cout << "GL_ARRAY_BUFFER:";
-			break;
-		case GL_ELEMENT_ARRAY_BUFFER:
-			indicesGLTF = buffer;
-			indicesView = bufferView;
-			std::cout << "GL_ELEMENT_ARRAY_BUFFER:";
-		}
-		std::cout << bufferView.target << std::endl;
-
-		GLuint vbo;
-		glGenBuffers(1, &vbo);
-		vbos[idx] = vbo;
-		glBindBuffer(bufferView.target, vbo);
-
-		std::cout << "Buffer.data.size: " << buffer.data.size()
-			<< ", BufferView.byteoffset: " << bufferView.byteOffset << std::endl;
-
-		glBufferData(bufferView.target, bufferView.byteLength,
-			&buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-	}
-
-	/* @TODO: Multiple Primitives per mesh!!!!! */
-	tinygltf::Primitive primitive = mesh.primitives[0];
-	tinygltf::Accessor idxAccessor = model.accessors[primitive.indices];
-	indicesView.byteStride = idxAccessor.ByteStride(indicesView);
-
-	for (auto& attrib : primitive.attributes)
-	{
-		tinygltf::Accessor accessor = model.accessors[attrib.second];
-		tinygltf::BufferView bufferView = model.bufferViews[accessor.bufferView];
-		tinygltf::Buffer buffer = model.buffers[bufferView.buffer];
-		int byteStride = accessor.ByteStride(bufferView);
-		glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-
-		int size = 1;
-		if (accessor.type != TINYGLTF_TYPE_SCALAR)
-		{
-			size = accessor.type;
+			auto aoPath = m_folderPath;
+			aoPath.append(aoFileName.C_Str());
+			if (const auto ao = new Texture2D(aoPath); ao->GetID() != 0)
+			{
+				newMat->SetAmbientOcclusion(ao);
+			}
+			else
+			{
+				delete ao;
+			}
 		}
 
-		int vaa = -1;
-		if (attrib.first.compare("POSITION") == 0)
+		if (normalFileName.length > 0 )
 		{
-			verticesGLTF = buffer;
-			verticesView = bufferView;
-			verticesView.byteStride = byteStride;
-			vaa = EVertexAttrib::PositionAttrib;
-		}
-		else if (attrib.first.compare("NORMAL") == 0)
-		{
-			vaa = EVertexAttrib::NormalAttrib;
-		}
-		else if (attrib.first.compare("TEXCOORD_0") == 0)
-		{
-			texcoordsGLTF = buffer;
-			texcoordsView = bufferView;
-			texcoordsView.byteStride = byteStride;
-			vaa = EVertexAttrib::TexcoordsAttrib;
+			auto normalPath = m_folderPath;
+			normalPath.append(normalFileName.C_Str());
+			if (const auto normal = new Texture2D(normalPath); normal->GetID() != 0)
+			{
+				newMat->SetNormal(normal);
+			}
+			else
+			{
+				delete normal;
+			}
 		}
 
-		if (vaa > -1)
-		{
-			glEnableVertexAttribArray(vaa);
-			glVertexAttribPointer(vaa, size, accessor.componentType,
-				accessor.normalized ? GL_TRUE : GL_FALSE,
-				byteStride, BUFFER_OFFSET(accessor.byteOffset));
-		}
-		else
-		{
-			std::cout << "Unknwon vaa: " << attrib.first << std::endl;
-		}
-	}
-
-	size_t verticesNum = verticesView.byteLength / verticesView.byteStride;
-	size_t texcoordsNum = texcoordsView.byteLength / texcoordsView.byteStride;
-	size_t indicesNum = (indicesView.byteLength / indicesView.byteStride);
-	size_t trianglesNum = indicesNum / 3;
-	std::cout << "Vertices: " << verticesNum << "\tIndices: " << indicesNum << "\tTriangles: " << trianglesNum << std::endl;
-
-	// Tagent space generation
-	glm::vec3 * vertices =
-		reinterpret_cast<glm::vec3*>(&verticesGLTF.data[0]
-			+ verticesView.byteOffset);
-
-	glm::vec2 * texcoords =
-		reinterpret_cast<glm::vec2*>(&indicesGLTF.data[0]
-			+ indicesView.byteOffset);
-
-	std::vector<glm::vec3> tangents;
-	tangents.reserve(verticesNum);
-	tangents.resize(verticesNum);
-
-	unsigned char* indicesRaw = &indicesGLTF.data[0] + indicesView.byteOffset;
-	// Indices must be unsigned (byte | short | int)
-	for (size_t idx = 0; idx < indicesNum; idx += 3)
-	{
-		unsigned int face[3];
-		unsigned int vertexIdx = 0;
-		switch (indicesView.byteStride)
-		{
-		case 1:
-			face[0] = (unsigned int)(indicesRaw)[idx];
-			face[1] = (unsigned int)(indicesRaw)[idx + 1];
-			face[2] = (unsigned int)(indicesRaw)[idx + 2];
-			break;
-		case 2:
-			face[0] = (unsigned int)((unsigned short*)indicesRaw)[idx];
-			face[1] = (unsigned int)((unsigned short*)indicesRaw)[idx + 1];
-			face[2] = (unsigned int)((unsigned short*)indicesRaw)[idx + 2];
-			break;
-		case 4:
-			face[0] = ((unsigned int*)indicesRaw)[idx];
-			face[1] = ((unsigned int*)indicesRaw)[idx + 1];
-			face[2] = ((unsigned int*)indicesRaw)[idx + 2];
-			break;
-		}
-
-		glm::vec3 edge[2]{
-			(vertices[face[1]] - vertices[face[0]]),
-			(vertices[face[2]] - vertices[face[0]])
-		};
-		glm::vec2 deltaUV[2]{
-			(texcoords[face[1]] - texcoords[face[0]]),
-			(texcoords[face[2]] - texcoords[face[0]])
-		};
-		float dirCorrection = (deltaUV[1].x * deltaUV[0].y - deltaUV[1].y * deltaUV[0].x) < 0.0f ? -1.0f : 1.0f;
-
-		if (deltaUV[0].x * deltaUV[1].y == deltaUV[0].y * deltaUV[1].x)
-		{
-			deltaUV[0] = { 0.0f, 1.0f };
-			deltaUV[1] = { 1.0f, 0.0f };
-		}
-
-		glm::vec3 tangent{
-			dirCorrection * (deltaUV[1].y * edge[0].x - deltaUV[0].y * edge[1].x),
-			dirCorrection * (deltaUV[1].y * edge[0].y - deltaUV[0].y * edge[1].y),
-			dirCorrection * (deltaUV[1].y * edge[0].z - deltaUV[0].y * edge[1].z)
-		};
-
-		tangent = glm::normalize(tangent);
-		tangents[face[0]] = tangent;
-		tangents[face[1]] = tangent;
-		tangents[face[2]] = tangent;
-	}
-
-	std::cout << "Tangents: " << tangents.size() << std::endl;
-	glGenBuffers(1, &m_tanVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_tanVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float) * tangents.size(),
-		&tangents[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(EVertexAttrib::TangentAttrib);
-	glVertexAttribPointer(EVertexAttrib::TangentAttrib,
-		3, GL_FLOAT,
-		GL_FALSE,
-		3 * sizeof(float), 0);
-
-	Mesh* newMesh = new Mesh(m_materials[primitive.material],
-		vao,
-		primitive.mode,
-		idxAccessor.count, idxAccessor.componentType,
-		BUFFER_OFFSET(idxAccessor.byteOffset));
-	m_meshes.push_back(newMesh);
+		const auto newMesh = new Mesh(vertices, indices, newMat);
+		m_meshes.push_back(newMesh);
+		m_materials.push_back(newMat);
+   }
 }
 
 void Model::Render(Shader* shader)
 {
-	const tinygltf::Scene& scene = m_model.scenes[m_model.defaultScene];
-	for (size_t idx = 0; idx < m_model.nodes.size(); ++idx)
+	for (auto& mesh : m_meshes)
 	{
-		RenderNode(shader, m_model, m_model.nodes[idx]);
-	}
-}
-
-void Model::RenderNode(Shader* shader, tinygltf::Model& model, tinygltf::Node& node)
-{
-	if (node.mesh != -1)
-	{
-		m_meshes[node.mesh]->Render(shader);
-	}
-	for (size_t idx = 0; idx < node.children.size(); ++idx)
-	{
-		RenderNode(shader, model, model.nodes[node.children[idx]]);
+		mesh->Render(shader, m_mode);
 	}
 }

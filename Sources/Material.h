@@ -11,36 +11,48 @@ enum EMaterialTextureSlot
 	Emissive
 };
 
-class Texture;
+class Texture2D;
 class Shader;
 class Material
 {
 public:
+	Material() :
+	m_baseColor(nullptr),
+	m_metallicRoughness(nullptr),
+	m_emissive(nullptr),
+	m_ao(nullptr),
+	m_normal(nullptr),
+	m_baseColorFactor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),
+	m_metallicFactor(0.0f),
+	m_roughnessFactor(1.0f),
+	m_emissiveFactor(glm::vec3(0.0f, 0.0f, 0.0f))
+	{
+	}
+
 	Material(
-		Texture* baseColor,
+		Texture2D* baseColor,
 		glm::vec4 baseColorFactor,
-		Texture* normal,
-		Texture* metallicRoughness,
+		Texture2D* normal,
+		Texture2D* metallicRoughness,
 		float metallicFactor,
 		float roughnessFactor,
-		Texture* ao,
-		Texture* emissive,
+		Texture2D* ao,
+		Texture2D* emissive,
 		glm::vec3 emissiveFactor);
+
+	~Material();
 
 	void Bind(Shader* shader);
 	void Unbind(Shader* shader);
 
-	void SetBaseColor(Texture* baseColor) { m_baseColor = baseColor; }
-	Texture* GetBaseColor() const { return m_baseColor; }
+	void SetBaseColor(Texture2D* baseColor) { m_baseColor = baseColor; }
+	Texture2D* GetBaseColor() const { return m_baseColor; }
 
-	void SetNormal(Texture* normal) { m_normal = normal; }
-	Texture* GetNormal() const { return m_normal; }
+	void SetNormal(Texture2D* normal) { m_normal = normal; }
+	Texture2D* GetNormal() const { return m_normal; }
 
-	void SetUseNormal(bool bUseNormal) { m_bUseNormal = bUseNormal; }
-	bool IsUseNormal() const { return m_bUseNormal; }
-
-	void SetMetallicRoughness(Texture* metallicRoughness) { m_metallicRoughness = metallicRoughness; }
-	Texture* GetMetallicRoughness() const { return m_metallicRoughness; }
+	void SetMetallicRoughness(Texture2D* metallicRoughness) { m_metallicRoughness = metallicRoughness; }
+	Texture2D* GetMetallicRoughness() const { return m_metallicRoughness; }
 
 	void SetMetallicFactor(float factor) { m_metallicFactor = factor; }
 	float GetMetallicFactor() const { return m_metallicFactor; }
@@ -48,29 +60,28 @@ public:
 	void SetRoughnessFactor(float factor) { m_roughnessFactor = factor; }
 	float GetRoughnessFactor() const { return m_roughnessFactor; }
 
-	void SetAmbientOcclusion(Texture* ao) { m_ao = ao; }
-	Texture* GetAmbientOcclusion() const { return m_ao; }
+	void SetAmbientOcclusion(Texture2D* ao) { m_ao = ao; }
+	Texture2D* GetAmbientOcclusion() const { return m_ao; }
 
-	void SetEmissive(Texture* emissive) { m_emissive = emissive; }
-	Texture* GetEmissive() const { return m_emissive; }
+	void SetEmissive(Texture2D* emissive) { m_emissive = emissive; }
+	Texture2D* GetEmissive() const { return m_emissive; }
 
 	void SetEmissiveFactor(const glm::vec3& factor) { m_emissiveFactor = factor; }
 	glm::vec3 GetEmissiveFactor() const { return m_emissiveFactor; }
 
 private:
-	Texture* m_baseColor;
+	Texture2D* m_baseColor;
 	glm::vec4 m_baseColorFactor;
 
-	Texture* m_metallicRoughness;
+	Texture2D* m_metallicRoughness;
 	float m_metallicFactor;
 	float m_roughnessFactor;
 
-	Texture* m_ao;
+	Texture2D* m_ao;
 
-	Texture* m_emissive;
+	Texture2D* m_emissive;
 	glm::vec3 m_emissiveFactor;
 
-	Texture* m_normal;
-	bool	m_bUseNormal;
+	Texture2D* m_normal;
 
 };

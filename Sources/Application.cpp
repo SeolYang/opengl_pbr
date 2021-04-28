@@ -108,6 +108,7 @@ int Application::Run()
 
 		Update(deltaTime);
 		m_renderer->DeferredRender(m_scene);
+		//m_renderer->ForwardRender(m_scene);
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();

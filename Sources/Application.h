@@ -19,6 +19,7 @@ public:
 
 	Scene* GetScene() const { return m_scene; }
 	Renderer* GetRenderer() const { return m_renderer; }
+	GLFWwindow* GetWindow() const { return m_window; }
 
 	unsigned int GetWidth() const { return m_windowWidth; }
 	unsigned int GetHeight() const { return m_windowHeight; }

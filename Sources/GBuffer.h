@@ -13,6 +13,7 @@ public:
 	void BindFrameBuffer();
 	void UnbindFrameBuffer();
 	void BindTextures();
+	void UnbindTextures();
 
 private:
 	unsigned int m_width;

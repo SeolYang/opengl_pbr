@@ -18,7 +18,6 @@ public:
 	~Renderer();
 
 	bool Init(unsigned int width, unsigned int height);
-	void ForwardRender(Scene* scene);
 	void DeferredRender(Scene* scene);
 
 	void Clear(const glm::vec4& color, bool clearDepth = true);

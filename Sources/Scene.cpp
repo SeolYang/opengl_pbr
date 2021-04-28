@@ -56,9 +56,9 @@ Camera* Scene::CreateCamera(const std::string& name)
 	return newCamera;
 }
 
-Model* Scene::LoadModel(const std::string& filePath, const std::string& name)
+Model* Scene::LoadModel(const std::string& name, const std::string& filePath, const ModelLoadParams& params)
 {
-	Model* newModel = new Model(filePath, name);
+	Model* newModel = new Model(name, filePath, params);
 	m_models.push_back(newModel);
 	return newModel;
 }

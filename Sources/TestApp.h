@@ -3,6 +3,7 @@
 
 class Model;
 class Camera;
+class Controller;
 class Material;
 class Light;
 class TestApp : public Application
@@ -10,6 +11,7 @@ class TestApp : public Application
 public:
 	TestApp(const std::string& title,
 		unsigned int width, unsigned int height) :
+	   m_sponza(nullptr),
 		m_helmet(nullptr),
 		m_avocado(nullptr),
 		m_duck(nullptr),
@@ -44,28 +46,17 @@ private:
 	Model*		m_spheres;
 	Model*		m_madoka;
 	Model*		m_mikuStand;
+	Model*		m_sponza;
 				
 	Light*		m_mainLight;
 				
 	Camera*		m_cam;
 	Camera*		m_secondaryCam;
+	Controller* m_controller = nullptr;
 				
 	float		m_movePower = 50.0f;
 
 	float		m_elasedTime = 0.0f;
-	
-	bool		m_bRotateCam = true;
-	float		m_rotateRad = 5.0f;
-	float		m_rotateRadDiff = 0.5f;
-
-	float		m_camYDiff = 0.5f;
-	float		m_camY = 0.0f;
-
-	float		m_duckRotatePower = 50.0f;
-	float		m_powerDiff = 10.0f;
-	float		m_duckAngle = 0.0f;
-	float		m_duckRoughness = 0.0f;
-	float		m_duckRoughnessScale = 0.03f;
 	Material*	m_duckMat = nullptr;
 
 };

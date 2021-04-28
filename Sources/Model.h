@@ -17,11 +17,25 @@ class Texture;
 class Sampler;
 class Mesh;
 class Shader;
+struct aiScene;
+struct aiMesh;
+struct aiNode;
+
+struct ModelLoadParams
+{
+public:
+	bool CalcTangentSpace = true;
+	bool ConvertToLeftHanded = false;
+	bool GenSmoothNormals = true;
+	bool GenUVs = true;
+	bool PreTransformVertices = true;
+	bool Triangulate = true;
+};
+
 class Model : public Object
 {
 public:
-	Model(const std::string& filePath,
-		const std::string& name);
+	Model(const std::string& name, std::string filePath, const ModelLoadParams& params);
 	~Model();
 
 	std::string GetFilePath() const { return m_filePath; }
@@ -29,30 +43,18 @@ public:
 
 	void Render(Shader* shader);
 
-private:
-	void Init();
-
-	bool LoadGLTFModel(tinygltf::Model& model);
-
-	void LoadTextures(tinygltf::Model& model);
-	void LoadMaterials(tinygltf::Model& model);
-	void LoadModel(tinygltf::Model& model);
-
-	void ProcessNode(tinygltf::Model& model, tinygltf::Node& node);
-	void ProcessMesh(tinygltf::Model& model, tinygltf::Mesh& mesh);
-
-	void RenderNode(
-		Shader* shader,
-		tinygltf::Model& model,
-		tinygltf::Node& node);
+	void SetMode(GLenum mode = GL_TRIANGLES) { m_mode = mode; }
 
 private:
-	tinygltf::Model m_model;
+	void LoadModel(const ModelLoadParams& params);
+	void ProcessNode(const aiScene* scene, const aiNode* node);
+	void ProcessMesh(const aiScene* scene, const aiMesh* mesh);
+
+private:
 	std::string m_filePath;
-	std::map<unsigned int, GLuint> m_vaos;
-	std::map<unsigned int, Texture*> m_textures;
+	std::string m_folderPath;
 	std::vector<Material*> m_materials;
 	std::vector<Mesh*> m_meshes;
-	unsigned int m_vao;
-	unsigned int m_tanVBO;
+	GLenum m_mode;
+
 };
