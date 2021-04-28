@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 fragColor;
 
-const int maxLightsNum = 32;
+const int maxLightsNum = 128;
 
 struct Light{
 	vec3 position;
@@ -75,6 +75,7 @@ void main()
 
 	vec3 worldPos = texture(positionBuffer, texcoord).xyz;
 	vec3 albedo = texture(albedoBuffer, texcoord).rgb;
+	float alpha = texture(albedoBuffer, texcoord).a;
 	vec3 normal = texture(normalBuffer, texcoord).xyz;
 	
 	vec3 N = normalize(normal);
@@ -124,5 +125,5 @@ void main()
 	color = color/(color+vec3(1.0));
 	color = pow(color, vec3(1.0/2.2));
 
-	fragColor = vec4(color, 1.0);
+	fragColor = vec4(color, alpha);
 }
