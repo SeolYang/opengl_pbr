@@ -5,7 +5,7 @@ const int maxLightsNum = 128;
 
 struct Light{
 	vec3 position;
-	vec3 radiance;
+	vec3 intensity;
 };
 
 in vec2 texcoord;
@@ -96,7 +96,7 @@ void main()
 		float distance = length(lights[idx].position - worldPos);
 		float attenuation = 1.0/(distance*distance);
 		
-		vec3 radiance = lights[idx].radiance*attenuation;
+		vec3 intensity = lights[idx].intensity*attenuation;
 
 		vec3 F0 = vec3(0.04);
 		F0 = mix(F0, albedo, metallic);
@@ -114,7 +114,7 @@ void main()
 
 		kD *= 1.0-metallic;
 
-		Lo += ((kD * albedo / PI) + specular) * radiance * NdotL;
+		Lo += ((kD * albedo / PI) + specular) * intensity * NdotL;
 	}
 
 	vec3 ambient = vec3(0.03)*albedo*ao;

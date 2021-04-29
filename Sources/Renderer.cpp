@@ -155,7 +155,7 @@ void Renderer::DeferredRender(Scene* scene)
 			{
 				auto indexingStr = "lights[" + std::to_string(idx) + "]";
 				m_lightingPass->SetVec3f(indexingStr + ".position", lights[idx]->GetPosition());
-				m_lightingPass->SetVec3f(indexingStr + ".radiance", lights[idx]->GetRadiance());
+				m_lightingPass->SetVec3f(indexingStr + ".intensity", lights[idx]->GetIntensity());
 			}
 
 			glDisable(GL_DEPTH_TEST);

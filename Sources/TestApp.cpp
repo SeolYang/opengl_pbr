@@ -110,7 +110,7 @@ bool TestApp::Init()
 
 	m_mainLight = scene->CreateLight("Main");
 	m_mainLight->SetPosition(glm::vec3{ 0.0f, 5.0f, 1.0f });
-	m_mainLight->SetRadiance(glm::vec3{ 15.0f });
+	m_mainLight->SetIntensity(glm::vec3{ 15.0f });
 
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 0.f));
@@ -178,7 +178,7 @@ void TestApp::RandomLightGen()
 	std::uniform_real_distribution<float> pos_dist(-100.0f, 100.0f);
 
 	auto* newLight = GetScene()->CreateLight("Random" + std::to_string(count));
-	newLight->SetRadiance(glm::vec3(
+	newLight->SetIntensity(glm::vec3(
 		rad_dist(engine),
 		rad_dist(engine),
 		rad_dist(engine)));

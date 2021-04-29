@@ -7,10 +7,10 @@ class Light : public Object
 public:
 	Light(const std::string& name);
 
-	glm::vec3 GetRadiance() const { return m_radiance; }
-	void SetRadiance(const glm::vec3& radiance) { m_radiance = radiance; }
+	glm::vec3 GetIntensity() const { return m_intensity; }
+	void SetIntensity(const glm::vec3& intensity) { m_intensity = intensity; }
 
 private:
-	glm::vec3 m_radiance;
+	glm::vec3 m_intensity = glm::vec3(1.0f);
 
 };
