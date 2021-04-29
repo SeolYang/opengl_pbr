@@ -19,7 +19,7 @@ void main()
 	worldPos = worldPosition.xyz;
 	texcoord = aTexcoord;
 
-	vec3 normal = normalize(worldMatrix * vec4(aNormal, 0.0)).xyz;
+	vec3 normal = normalize(mat3(transpose(inverse(worldMatrix)))*aNormal.xyz);
 	worldNormal = normal;
 
 	vec3 tangent = normalize(worldMatrix * vec4(aTangent, 0.0)).xyz;
