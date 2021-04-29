@@ -27,6 +27,7 @@
     <ClInclude Include="..\Sources\Shader.h" />
     <ClInclude Include="..\Sources\TestApp.h" />
     <ClInclude Include="..\Sources\Texture2D.h" />
+    <ClInclude Include="..\Sources\Texture3D.h" />
     <ClInclude Include="..\Sources\Vertex.h" />
     <ClInclude Include="..\Sources\Viewport.h" />
     <ClInclude Include="..\Thirdparty\gl3w\includes\GL\gl3w.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="..\Sources\Shader.cpp" />
     <ClCompile Include="..\Sources\TestApp.cpp" />
     <ClCompile Include="..\Sources\Texture2D.cpp" />
+    <ClCompile Include="..\Sources\Texture3D.cpp" />
     <ClCompile Include="..\Sources\Viewport.cpp" />
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c" />
   </ItemGroup>

@@ -79,6 +79,9 @@
     <ClInclude Include="..\Sources\Controller.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\Texture3D.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
@@ -126,6 +129,7 @@
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">
       <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
+    <ClCompile Include="..\Sources\Texture3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\GeometryPass.fs">
