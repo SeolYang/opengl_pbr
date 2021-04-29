@@ -1,7 +1,7 @@
 #pragma once
 #include "glm/vec4.hpp"
 
-constexpr unsigned int MaximumLights = 32;
+constexpr unsigned int MaximumLights = 128;
 
 class Scene;
 class Mesh;
