@@ -4,7 +4,9 @@
 class FBO
 {
 public:
-   FBO(unsigned int width, unsigned int height, GLenum magFilter, GLenum minFilter, GLint internalFormat, GLint format, GLint wrap)
+   FBO(unsigned int width, unsigned int height, GLenum magFilter = GL_NEAREST, GLenum minFilter = GL_NEAREST, GLint internalFormat = GL_RGB16F, GLint format = GL_FLOAT, GLint wrap = GL_REPEAT) :
+   m_width(width),
+   m_height(height)
    {
       GLint prevFB = 0;
       glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFB);
@@ -25,9 +27,10 @@ public:
 
       glGenRenderbuffers(1, &m_rbo);
       glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
-      glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
-      glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
 
+      glBindRenderbuffer(GL_RENDERBUFFER, 0);
       glBindFramebuffer(GL_FRAMEBUFFER, prevFB);
    }
 
@@ -72,7 +75,12 @@ public:
 
    unsigned int GetID() const { return m_fbo; }
 
+   unsigned int GetWidth() const { return m_width; }
+   unsigned int GetHeight() const { return m_height; }
+
 private:
+   unsigned int m_width = 0;
+   unsigned int m_height = 0;
    unsigned int m_fbo = 0;
    unsigned int m_colorBuffer = 0;
    unsigned int m_rbo = 0;
