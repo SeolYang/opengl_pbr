@@ -2,7 +2,7 @@
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
 
-enum EMaterialTextureSlot
+enum EMaterialTexture
 {
 	BaseColor,
 	Normal,
@@ -10,6 +10,8 @@ enum EMaterialTextureSlot
 	AO,
 	Emissive
 };
+
+using EMaterialTextureSlot = EMaterialTexture;
 
 class Texture2D;
 class Shader;
@@ -69,18 +71,37 @@ public:
 	void SetEmissiveFactor(const glm::vec3& factor) { m_emissiveFactor = factor; }
 	glm::vec3 GetEmissiveFactor() const { return m_emissiveFactor; }
 
+	void SetForceFactor(EMaterialTexture type, bool bForce)
+	{
+	   switch (type)
+	   {
+		case EMaterialTexture::BaseColor:
+			m_bForceBaseColorFactor = bForce;
+			break;
+		case EMaterialTexture::MetallicRoughness:
+			m_bForceMetallicRoughnessFactor = bForce;
+			break;
+		case EMaterialTexture::Emissive:
+			m_bForceEmissiveFactor = bForce;
+			break;
+	   }
+	}
+
 private:
 	Texture2D* m_baseColor;
 	glm::vec4 m_baseColorFactor;
+	bool m_bForceBaseColorFactor = false;
 
 	Texture2D* m_metallicRoughness;
 	float m_metallicFactor;
 	float m_roughnessFactor;
+	bool m_bForceMetallicRoughnessFactor = false;
 
 	Texture2D* m_ao;
 
 	Texture2D* m_emissive;
 	glm::vec3 m_emissiveFactor;
+	bool m_bForceEmissiveFactor = false;
 
 	Texture2D* m_normal;
 

@@ -39,7 +39,7 @@ void Material::Bind(Shader* shader)
 {
 	if (shader != nullptr)
 	{
-		if (m_baseColor != nullptr)
+		if (m_baseColor != nullptr && !m_bForceBaseColorFactor)
 		{
 			m_baseColor->Bind(EMaterialTextureSlot::BaseColor);
 			shader->SetVec4f("baseColorFactor", glm::vec4(0.0f));
@@ -61,7 +61,7 @@ void Material::Bind(Shader* shader)
 		}
 		shader->SetInt("normalMap", EMaterialTextureSlot::Normal);
 
-		if (m_metallicRoughness != nullptr)
+		if (m_metallicRoughness != nullptr && !m_bForceMetallicRoughnessFactor)
 		{
 			m_metallicRoughness->Bind(EMaterialTextureSlot::MetallicRoughness);
 			shader->SetFloat("metallicFactor", 0.0f);
@@ -81,7 +81,7 @@ void Material::Bind(Shader* shader)
 
 		shader->SetInt("aoMap", EMaterialTextureSlot::AO);
 
-		if (m_emissive != nullptr)
+		if (m_emissive != nullptr && m_bForceEmissiveFactor)
 		{
 			m_emissive->Bind(EMaterialTextureSlot::Emissive);
 			shader->SetVec3f("emissiveFactor", glm::vec3(0.0f));
