@@ -130,9 +130,6 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			RandomLightGen();
 			break;
 
-		case GLFW_KEY_C:
-			//SplitViewport();
-			break;
 		case GLFW_KEY_ESCAPE:
 			this->Stop();
 			break;

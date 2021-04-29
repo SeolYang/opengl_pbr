@@ -21,6 +21,8 @@ public:
 
    unsigned int GetID() const { return m_id; }
 
+   void Clear(GLfloat clearColor[4]);
+
 private:
    unsigned int m_id = 0;
    
