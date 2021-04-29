@@ -190,7 +190,6 @@ void Renderer::DeferredRender(const Scene* scene)
 			m_geometryPass->SetMat4f("projMatrix", projMat);
 
 			glEnable(GL_DEPTH_TEST);
-
 			for (auto model : models)
 			{
 				m_geometryPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
@@ -207,12 +206,10 @@ void Renderer::DeferredRender(const Scene* scene)
 			m_gBuffer->BindTextures();
 			m_lightingPass->Bind();
 			m_lightingPass->SetVec3f("camPos", camera->GetPosition());
-			m_lightingPass->SetInt("numOfLights", numOfLights);
-			for (size_t idx = 0; idx < numOfLights; ++idx)
+			if (!lights.empty())
 			{
-				auto indexingStr = "lights[" + std::to_string(idx) + "]";
-				m_lightingPass->SetVec3f(indexingStr + ".position", lights[idx]->GetPosition());
-				m_lightingPass->SetVec3f(indexingStr + ".intensity", lights[idx]->GetIntensity());
+				m_lightingPass->SetVec3f("light.Direction", lights[0]->Forward());
+				m_lightingPass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
 			}
 
 			glDisable(GL_DEPTH_TEST);

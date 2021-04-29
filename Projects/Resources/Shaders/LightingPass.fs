@@ -8,10 +8,17 @@ struct Light{
 	vec3 intensity;
 };
 
+struct DirectionalLight
+{
+	vec3 Direction;
+	vec3 Intensity;
+};
+
 in vec2 texcoord;
 
-uniform Light lights[maxLightsNum];
-uniform int numOfLights;
+//uniform Light lights[maxLightsNum];
+//uniform int numOfLights;
+uniform DirectionalLight light;
 
 uniform sampler2D positionBuffer;
 uniform sampler2D normalBuffer;
@@ -86,36 +93,30 @@ void main()
 	float metallic = texture(metallicRoughnessBuffer, texcoord).r;
 	float roughness = texture(metallicRoughnessBuffer, texcoord).g;
 
-	for(int idx = 0; idx < numOfLights; ++idx)
-	{
-		vec3 L = normalize(lights[idx].position - worldPos);
-		vec3 H = normalize(V + L);
+	vec3 L = -normalize(light.Direction);
+	vec3 H = normalize(V + L);
 
-		float NdotL = max(dot(N, L), 0.0);
+	float NdotL = max(dot(N, L), 0.0);
 
-		float distance = length(lights[idx].position - worldPos);
-		float attenuation = 1.0/(distance*distance);
-		
-		vec3 intensity = lights[idx].intensity*attenuation;
-
-		vec3 F0 = vec3(0.04);
-		F0 = mix(F0, albedo, metallic);
-		vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
-		float NDF = DistributionGGX(N, H, roughness);
-		float G = GeometrySmith(N, V, L, roughness);
-
-		vec3 nominator = NDF*G*F;
-		float denominator = 4.0*max(dot(N,V), 0.0) * max(dot(N, L), 0.0);
-		vec3 specular = nominator/max(denominator, 0.001);
-
-		vec3 kS = F;
-		vec3 kD = vec3(1.0)-kS;
-
-		kD *= 1.0-metallic;
-
-		Lo += ((kD * albedo / PI) + specular) * intensity * NdotL;
-	}
+	vec3 intensity = light.Intensity;
+	
+	vec3 F0 = vec3(0.04);
+	F0 = mix(F0, albedo, metallic);
+	vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+	
+	float NDF = DistributionGGX(N, H, roughness);
+	float G = GeometrySmith(N, V, L, roughness);
+	
+	vec3 nominator = NDF*G*F;
+	float denominator = 4.0*max(dot(N,V), 0.0) * max(dot(N, L), 0.0);
+	vec3 specular = nominator/max(denominator, 0.001);
+	
+	vec3 kS = F;
+	vec3 kD = vec3(1.0)-kS;
+	
+	kD *= 1.0-metallic;
+	
+	Lo += ((kD * albedo / PI) + specular) * intensity * NdotL;
 
 	vec3 ambient = vec3(0.03)*albedo*ao;
 	vec3 emissive = emissiveAO.rgb;

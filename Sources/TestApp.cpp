@@ -107,11 +107,12 @@ bool TestApp::Init()
 	//}
 
 	m_mainLight = scene->CreateLight("Main");
-	m_mainLight->SetPosition(glm::vec3{ 0.0f, 0.2f, 0.0f });
-	m_mainLight->SetIntensity(glm::vec3{ 0.2f });
+	m_mainLight->SetPosition(glm::vec3{ 0.0f, 0.0f, 0.0f });
+	m_mainLight->SetIntensity(glm::vec3{ 3.0f });
+	this->UpdateLightRotation();
 
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 0.f));
+	m_cam->SetPosition(glm::vec3(0.0f, 0.05f, 0.f));
 	m_controller = new Controller(m_cam, this->GetWindow());
 
 	unsigned int width = this->GetWidth();
@@ -119,12 +120,6 @@ bool TestApp::Init()
 	Viewport* mainViewport = m_cam->GetViewport();
 	mainViewport->SetWidth(width);
 	mainViewport->SetHeight(height);
-
-	//size_t initSpawnLight = 100;
-	//while(--initSpawnLight)
-	//{
-	//	RandomLightGen();
-	//}
 
 	return true;
 }
@@ -173,7 +168,25 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 		case GLFW_KEY_V:
 			this->GetRenderer()->SetVoxelizeEveryFrame(!this->GetRenderer()->IsVoxelizeEveryFrame());
 			break;
+
+		case GLFW_KEY_UP:
+			m_lightRotationX += 10.0f;
+			break;
+
+		case GLFW_KEY_DOWN:
+			m_lightRotationX -= 10.0f;
+			break;
+
+		case GLFW_KEY_LEFT:
+			m_lightRotationY -= 10.0f;
+			break;
+
+		case GLFW_KEY_RIGHT:
+			m_lightRotationY += 10.0f;
+			break;
 		}
+
+		this->UpdateLightRotation();
 	}
 }
 
@@ -223,4 +236,17 @@ void TestApp::SplitViewport()
 	}
 
 	m_secondaryCam->SetActive(status);
+}
+
+void TestApp::UpdateLightRotation()
+{
+	const glm::quat lightXRot = glm::rotate(glm::quat(),
+		glm::radians(m_lightRotationX), glm::vec3{ 1.0f, 0.0f, 0.0f });
+
+	const glm::quat lightYRot = glm::rotate(glm::quat(),
+		glm::radians(m_lightRotationY), glm::vec3{ 0.0f, 1.0f, 0.0f });
+
+	m_mainLight->SetRotation(lightXRot* lightYRot);
+
+	std::cout << "Light rotation X : " << m_lightRotationX << " Y : " << m_lightRotationY << std::endl;
 }

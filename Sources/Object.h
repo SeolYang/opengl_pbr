@@ -42,6 +42,8 @@ public:
 		return res;
 	}
 
+	glm::vec3 Forward() const { return glm::rotate(m_rotation, glm::vec3(0.0f, 0.0f, 1.0f)); }
+
 	bool IsDirty() const { return m_bIsDirty; }
 	void ResolveDirty() { m_bIsDirty = false; }
 

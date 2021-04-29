@@ -40,6 +40,9 @@ protected:
 	void SplitViewport();
 
 private:
+	void UpdateLightRotation();
+
+private:
 	Model*		m_helmet;
 	Model*		m_avocado;
 	Model*		m_duck;
@@ -58,5 +61,8 @@ private:
 
 	float		m_elasedTime = 0.0f;
 	Material*	m_duckMat = nullptr;
+
+	float m_lightRotationX = 90.0f;
+	float m_lightRotationY = 0.0f;
 
 };
