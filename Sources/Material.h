@@ -50,6 +50,9 @@ public:
 	void SetBaseColor(Texture2D* baseColor) { m_baseColor = baseColor; }
 	Texture2D* GetBaseColor() const { return m_baseColor; }
 
+	void SetBaseColorFactor(const glm::vec4& factor) { m_baseColorFactor = factor; }
+	glm::vec4 GetBaseColorFactor() const { return m_baseColorFactor; }
+
 	void SetNormal(Texture2D* normal) { m_normal = normal; }
 	Texture2D* GetNormal() const { return m_normal; }
 

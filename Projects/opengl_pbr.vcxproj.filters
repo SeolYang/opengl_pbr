@@ -129,7 +129,9 @@
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">
       <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
-    <ClCompile Include="..\Sources\Texture3D.cpp" />
+    <ClCompile Include="..\Sources\Texture3D.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\GeometryPass.fs">
