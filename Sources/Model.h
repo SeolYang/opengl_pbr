@@ -40,6 +40,7 @@ public:
 
 	std::string GetFilePath() const { return m_filePath; }
 	Material* GetMaterial(size_t idx) const { return m_materials[idx]; }
+	const std::vector<Material*>& GetMaterials() const { return m_materials; }
 
 	void Render(Shader* shader);
 
