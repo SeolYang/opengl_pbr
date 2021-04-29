@@ -122,7 +122,7 @@ bool TestApp::Init()
 	mainViewport->SetWidth(width);
 	mainViewport->SetHeight(height);
 
-	size_t initSpawnLight = 50;
+	size_t initSpawnLight = 100;
 	while(--initSpawnLight)
 	{
 		RandomLightGen();

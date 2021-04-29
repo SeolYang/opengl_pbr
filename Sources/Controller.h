@@ -124,8 +124,8 @@ public:
 
 public:
    float MouseSensitivity = 0.35f;
-   float CameraSpeed = 4.0f;
-   float SpeedMultiplier = 12.0f;
+   float CameraSpeed = 14.0f;
+   float SpeedMultiplier = 2.5f;
 
 private:
    GLFWwindow* m_window = nullptr;
