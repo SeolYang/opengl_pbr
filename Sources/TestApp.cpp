@@ -8,6 +8,7 @@
 #include "Viewport.h"
 #include "Renderer.h"
 #include "Controller.h"
+#include "Material.h"
 
 #include "GLFW/glfw3.h"
 
@@ -15,6 +16,8 @@
 #include <cmath>
 #include <random>
 #include <algorithm>
+
+#include "Texture2D.h"
 
 bool TestApp::Init()
 {
@@ -46,6 +49,33 @@ bool TestApp::Init()
 	   .Triangulate=false};
 	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
 	m_sponza->SetScale(glm::vec3(0.09f, 0.09f, 0.09f));
+
+	const auto& sponzaMaterials = m_sponza->GetMaterials();
+	for (auto material : sponzaMaterials)
+	{
+		std::string_view baseColorPath = material->GetBaseColor()->GetURI();
+		// Lion : Gold
+		if (baseColorPath == "Resources/Models/Sponza/6772804448157695701.jpg")
+		{
+			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
+			material->SetRoughnessFactor(0.2f);
+			material->SetMetallicFactor(0.9f);
+
+			material->SetForceFactor(EMaterialTexture::BaseColor, true);
+			material->SetBaseColorFactor(glm::vec4(1.0f, 0.766f, 0.336f, 1.0f));
+		}
+
+		// Floor : Chromium
+		if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
+		{
+			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
+			material->SetRoughnessFactor(0.4f);
+			material->SetMetallicFactor(0.97f);
+
+			material->SetForceFactor(EMaterialTexture::BaseColor, true);
+			material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
+		}
+	}
 
 	/*m_helmet = scene->LoadModel("../Resources/Models/DamagedHelmet/DamagedHelmet.gltf", "Helmet");
 	m_helmet->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
