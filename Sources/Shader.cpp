@@ -6,12 +6,10 @@
 #include <iostream>
 
 constexpr unsigned int INVALID_LOC = 0xFFFFFFFF;
-
+/* @TODO	셰이더 로드시 중복되는 코드 함수로 빼내기 */
 Shader::Shader(
 	const std::string& vsPath,
-	const std::string& fsPath) :
-	m_vsPath(vsPath),
-	m_fsPath(fsPath)
+	const std::string& fsPath)
 {
 	std::string vsRaw;
 	std::string fsRaw;
@@ -87,6 +85,104 @@ Shader::Shader(
 	glDeleteShader(fs);
 }
 
+Shader::Shader(const std::string& vsPath, const std::string& gsPath, const std::string& fsPath)
+{
+	std::string vsRaw;
+	std::string gsRaw;
+	std::string fsRaw;
+
+	std::ifstream vsFile;
+	std::ifstream gsFile;
+	std::ifstream fsFile;
+
+	vsFile.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+	gsFile.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+	fsFile.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+	try
+	{
+		vsFile.open(vsPath);
+		gsFile.open(gsPath);
+		fsFile.open(fsPath);
+
+		std::stringstream vsStream;
+		std::stringstream gsStream;
+		std::stringstream fsStream;
+
+		vsStream << vsFile.rdbuf();
+		gsStream << gsFile.rdbuf();
+		fsStream << fsFile.rdbuf();
+
+		vsFile.close();
+		gsFile.close();
+		fsFile.close();
+
+		vsRaw = vsStream.str();
+		gsRaw = gsStream.str();
+		fsRaw = fsStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "Failed to open shader files " << e.what() << std::endl;
+	}
+
+	const char* vsCode = vsRaw.c_str();
+	const char* gsCode = gsRaw.c_str();
+	const char* fsCode = fsRaw.c_str();
+
+	unsigned int vs = 0;
+	unsigned int gs = 0;
+	unsigned int fs = 0;
+	int success = 0;
+	char compileLog[512];
+
+	vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vsCode, nullptr);
+	glCompileShader(vs);
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
+	if (success == 0)
+	{
+		glGetShaderInfoLog(vs, 512, nullptr, compileLog);
+		std::cout << "Failed to compile vertex shader: " << compileLog << std::endl;
+	}
+
+	gs = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(gs, 1, &gsCode, nullptr);
+	glCompileShader(gs);
+	glGetShaderiv(gs, GL_COMPILE_STATUS, &success);
+	if (success == 0)
+	{
+		glGetShaderInfoLog(vs, 512, nullptr, compileLog);
+		std::cout << "Failed to compile geometry shader: " << compileLog << std::endl;
+	}
+
+	fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fsCode, nullptr);
+	glCompileShader(fs);
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
+	if (success == 0)
+	{
+		glGetShaderInfoLog(fs, 512, nullptr, compileLog);
+		std::cout << "Failed to compile fragment shader: " << compileLog << std::endl;
+	}
+
+	m_id = glCreateProgram();
+	glAttachShader(m_id, vs);
+	glAttachShader(m_id, gs);
+	glAttachShader(m_id, fs);
+	glLinkProgram(m_id);
+
+	glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+	if (success == 0)
+	{
+		glGetProgramInfoLog(m_id, 512, nullptr, compileLog);
+		std::cout << "Failed to link shader program: " << compileLog << std::endl;
+	}
+
+	glDeleteShader(vs);
+	glDeleteShader(gs);
+	glDeleteShader(fs);
+}
+
 void Shader::Bind()
 {
 	glUseProgram(m_id);
@@ -152,17 +248,4 @@ unsigned int Shader::FindLoc(const std::string& name)
 	}
 
 	return loc;
-}
-
-std::string Shader::GetPath(EShaderType type) const
-{
-	switch (type)
-	{
-	case EShaderType::VertexShader:
-		return m_vsPath;
-	case EShaderType::FragmentShader:
-		return m_fsPath;
-	}
-
-	return "Unknown";
 }
