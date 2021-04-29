@@ -22,6 +22,29 @@ Texture3D::Texture3D(const std::vector<GLfloat>& rawData, unsigned int width, un
    glBindTexture(GL_TEXTURE_3D, 0);
 }
 
+Texture3D::Texture3D(const std::vector<GLuint>& rawData, unsigned width, unsigned height, unsigned depth,
+   Sampler3D sampler, unsigned maxMipLevel, bool bGenerateMip)
+{
+   glGenTextures(1, &m_id);
+   glBindTexture(GL_TEXTURE_3D, m_id);
+
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, sampler.MinFilter);
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, sampler.MagFilter);
+
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, sampler.WrapS);
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, sampler.WrapR);
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, sampler.WrapT);
+
+   glTexStorage3D(GL_TEXTURE_3D, maxMipLevel, GL_R32UI, width, height, depth);
+   glTexImage3D(GL_TEXTURE_3D, 0, GL_R32UI, width, height, depth, 0, GL_R32UI, GL_UNSIGNED_INT, rawData.data());
+   if (bGenerateMip)
+   {
+      glGenerateMipmap(GL_TEXTURE_3D);
+   }
+
+   glBindTexture(GL_TEXTURE_3D, 0);
+}
+
 void Texture3D::Bind(unsigned int slot)
 {
    glActiveTexture(GL_TEXTURE0 + slot);

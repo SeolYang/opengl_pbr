@@ -14,6 +14,7 @@
     <ClInclude Include="..\Sources\Application.h" />
     <ClInclude Include="..\Sources\Camera.h" />
     <ClInclude Include="..\Sources\Controller.h" />
+    <ClInclude Include="..\Sources\FBO.h" />
     <ClInclude Include="..\Sources\GBuffer.h" />
     <ClInclude Include="..\Sources\Light.h" />
     <ClInclude Include="..\Sources\Material.h" />
@@ -68,6 +69,8 @@
     <None Include="Resources\Shaders\VoxelizationFS.glsl" />
     <None Include="Resources\Shaders\VoxelizationGS.glsl" />
     <None Include="Resources\Shaders\VoxelizationVS.glsl" />
+    <None Include="Resources\Shaders\WorldPosFS.glsl" />
+    <None Include="Resources\Shaders\WorldPosVS.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

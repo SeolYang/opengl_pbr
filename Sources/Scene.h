@@ -30,10 +30,14 @@ public:
 
 	Camera* GetMainCamera() const { return m_cameras[m_mainCameraIdx]; }
 
+	bool IsSceneDirty(bool bIncludeCam = false) const;
+	void ResolveDirty(bool bIncludeCam = false);
+
 private:
 	unsigned int				m_mainCameraIdx;
 	std::vector<Camera*>		m_cameras;
 	std::vector<Light*>		m_lights;
 	std::vector<Model*>		m_models;
+	bool							m_bIsDirty = true;
 
 };

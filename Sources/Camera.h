@@ -4,7 +4,7 @@
 #include "glm/vec3.hpp"
 
 constexpr float DEFAULT_FOV = 45.0f;
-constexpr float DEFAULT_NEAR_PLANE = 1.0e-01f;
+constexpr float DEFAULT_NEAR_PLANE = 0.01f;
 constexpr float DEFAULT_FAR_PLANE = 1.0e+03f;
 
 class Viewport;

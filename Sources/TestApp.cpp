@@ -32,10 +32,10 @@ bool TestApp::Init()
 	.PreTransformVertices = true,
 	.Triangulate = true };
 	m_duck = scene->LoadModel("Duck", "Resources/Models/Duck/Duck.gltf", duckParams);
-	m_duck->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-	m_duck->SetScale(glm::vec3(3.0f, 3.0f, 3.0f));
+	m_duck->SetPosition(glm::vec3(-0.05f, 0.0f, 0.0f));
+	m_duck->SetScale(glm::vec3(0.02f));
 	m_duck->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(270.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
+		glm::radians(180.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	m_duckMat = m_duck->GetMaterial(0);
 	m_duckMat->SetMetallicFactor(0.0f);
 	m_duckMat->SetRoughnessFactor(0.0f);
@@ -48,7 +48,7 @@ bool TestApp::Init()
 	   .PreTransformVertices=false,
 	   .Triangulate=false};
 	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
-	m_sponza->SetScale(glm::vec3(0.09f, 0.09f, 0.09f));
+	m_sponza->SetScale(glm::vec3(0.0005f, 0.0005f, 0.0005f));
 
 	const auto& sponzaMaterials = m_sponza->GetMaterials();
 	for (auto material : sponzaMaterials)
@@ -66,51 +66,49 @@ bool TestApp::Init()
 		}
 
 		// Floor : Chromium
-		if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
-		{
-			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
-			material->SetRoughnessFactor(0.4f);
-			material->SetMetallicFactor(0.97f);
+		//if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
+		//{
+		//	material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
+		//	material->SetRoughnessFactor(0.4f);
+		//	material->SetMetallicFactor(0.97f);
 
-			material->SetForceFactor(EMaterialTexture::BaseColor, true);
-			material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
-		}
+		//	material->SetForceFactor(EMaterialTexture::BaseColor, true);
+		//	material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
+		//}
 	}
 
-	/*m_helmet = scene->LoadModel("../Resources/Models/DamagedHelmet/DamagedHelmet.gltf", "Helmet");
-	m_helmet->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-	m_helmet->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(90.0f), glm::vec3{ 1.0f, 0.0f, 0.0f }));
+	//ModelLoadParams cornellParams
+ //  {
+	//		.CalcTangentSpace = true,
+	//		.ConvertToLeftHanded = true,
+	//		.GenSmoothNormals = false,
+	//		.GenUVs = true,
+	//		.PreTransformVertices = false,
+	//		.Triangulate = false
+ //  };
 
-	m_avocado = scene->LoadModel("../Resources/Models/Avocado/Avocado.gltf", "Avocado");
-	m_avocado->SetPosition(glm::vec3(2.0f, 0.0f, -1.f));
-	m_avocado->SetScale(glm::vec3{ 15.0f, 15.0f, 15.0f });
-	m_avocado->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(135.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-	Material* avocadoMat = m_avocado->GetMaterial(0);
-	avocadoMat->SetUseNormal(true);
+	//Model* cornell = scene->LoadModel("CornellBox", "Resources/Models/cornell.obj", cornellParams);
+	//cornell->SetScale(glm::vec3(0.9f));
 
+	//glm::vec4 cornellColor[7] = {
+	//	glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+	//	glm::vec4(1.0f),
+	//	glm::vec4(1.0f),
+	//	glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+	//	glm::vec4(1.0f),
+	//	glm::vec4(1.0f),
+	//	glm::vec4(1.0f)
+	//};
 
-	m_spheres = scene->LoadModel("../Resources/Models/MetalRoughSpheres/MetalRoughSpheres.gltf", "Spheres");
-	m_spheres->SetPosition(glm::vec3(0.0f, -0.1f, -4.5f));
-	m_spheres->SetScale(glm::vec3{ 0.2f, 0.2f, 0.2f });
-	m_spheres->SetRotation(glm::rotate(glm::rotate(glm::quat(),
-		glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-	
-	m_madoka = scene->LoadModel("../Resources/Models/madoka_machida/scene.gltf", "Madoka");
-	m_madoka->SetPosition(glm::vec3(-0.8f, -1.f, 2.0f));
-	m_madoka->SetScale(glm::vec3(0.065f, 0.065f, 0.065f));
-	m_madoka->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-
-	m_mikuStand = scene->LoadModel("../Resources/Models/mikuStand/scene.gltf", "Miku Stand");
-	m_mikuStand->SetPosition(glm::vec3(0.6f, -1.0f, 1.6f));
-	m_mikuStand->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));*/
+	//auto cornellMaterials = cornell->GetMaterials();
+	//for (size_t idx = 0; idx < cornellMaterials.size(); ++idx)
+	//{
+	//	cornellMaterials[idx]->SetBaseColorFactor(cornellColor[idx]);
+	//}
 
 	m_mainLight = scene->CreateLight("Main");
-	m_mainLight->SetPosition(glm::vec3{ 0.0f, 5.0f, 1.0f });
-	m_mainLight->SetIntensity(glm::vec3{ 15.0f });
+	m_mainLight->SetPosition(glm::vec3{ 0.0f, 0.2f, 0.0f });
+	m_mainLight->SetIntensity(glm::vec3{ 0.2f });
 
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.0f, 0.f));
@@ -122,11 +120,11 @@ bool TestApp::Init()
 	mainViewport->SetWidth(width);
 	mainViewport->SetHeight(height);
 
-	size_t initSpawnLight = 100;
-	while(--initSpawnLight)
-	{
-		RandomLightGen();
-	}
+	//size_t initSpawnLight = 100;
+	//while(--initSpawnLight)
+	//{
+	//	RandomLightGen();
+	//}
 
 	return true;
 }
@@ -164,6 +162,17 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			this->Stop();
 			break;
 
+		case GLFW_KEY_M:
+			this->GetRenderer()->SetRenderMode(this->GetRenderer()->GetRenderMode() == ERenderMode::Deferred ? ERenderMode::VoxelVisualization : ERenderMode::Deferred);
+			break;
+
+		case GLFW_KEY_R:
+			this->m_cam->SetPosition(glm::vec3(0.0f));
+			break;
+
+		case GLFW_KEY_V:
+			this->GetRenderer()->SetVoxelizeEveryFrame(!this->GetRenderer()->IsVoxelizeEveryFrame());
+			break;
 		}
 	}
 }

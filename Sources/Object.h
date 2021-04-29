@@ -21,16 +21,16 @@ public:
 	std::string GetName() const { return m_name; }
 
 	glm::vec3 GetPosition() const { return m_position; }
-	void SetPosition(glm::vec3 position) { m_position = position; }
+	void SetPosition(glm::vec3 position) { m_bIsDirty = true; m_position = position; }
 
 	glm::quat GetRotation() const { return m_rotation; }
-	void SetRotation(glm::quat rotation) { m_rotation = rotation; }
+	void SetRotation(glm::quat rotation) { m_bIsDirty = true; m_rotation = rotation; }
 
 	glm::vec3 GetScale() const { return m_scale; }
-	void SetScale(glm::vec3 scale) { m_scale = scale; }
+	void SetScale(glm::vec3 scale) { m_bIsDirty = true; m_scale = scale; }
 
 	bool IsActivated() const { return m_bIsActive; }
-	void SetActive(bool bIsActive) { m_bIsActive = bIsActive; }
+	void SetActive(bool bIsActive) { m_bIsDirty = true; m_bIsActive = bIsActive; }
 
 	glm::mat4 GetWorldMatrix() const
 	{
@@ -42,10 +42,15 @@ public:
 		return res;
 	}
 
+	bool IsDirty() const { return m_bIsDirty; }
+	void ResolveDirty() { m_bIsDirty = false; }
+
 protected:
 	glm::vec3 m_position;
 	glm::quat m_rotation;
 	glm::vec3 m_scale;
+
+	bool m_bIsDirty = true;
 
 private:
 	std::string m_name;

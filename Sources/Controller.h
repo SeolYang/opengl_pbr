@@ -124,7 +124,7 @@ public:
 
 public:
    float MouseSensitivity = 0.35f;
-   float CameraSpeed = 14.0f;
+   float CameraSpeed = 1.0f;
    float SpeedMultiplier = 2.5f;
 
 private:

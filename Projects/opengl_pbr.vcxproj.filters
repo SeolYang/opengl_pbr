@@ -82,6 +82,9 @@
     <ClInclude Include="..\Sources\Texture3D.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\FBO.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
@@ -177,6 +180,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\VisualizeVoxelFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\WorldPosVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\WorldPosFS.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

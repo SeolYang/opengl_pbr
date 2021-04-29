@@ -44,6 +44,7 @@ Scene::~Scene()
 
 Light* Scene::CreateLight(const std::string& name)
 {
+	m_bIsDirty = true;
 	Light* newLight = new Light(name);
 	m_lights.push_back(newLight);
 	return newLight;
@@ -51,6 +52,7 @@ Light* Scene::CreateLight(const std::string& name)
 
 Camera* Scene::CreateCamera(const std::string& name)
 {
+	m_bIsDirty = true;
 	Camera* newCamera = new Camera(name);
 	m_cameras.push_back(newCamera);
 	return newCamera;
@@ -58,7 +60,68 @@ Camera* Scene::CreateCamera(const std::string& name)
 
 Model* Scene::LoadModel(const std::string& name, const std::string& filePath, const ModelLoadParams& params)
 {
+	m_bIsDirty = true;
 	Model* newModel = new Model(name, filePath, params);
 	m_models.push_back(newModel);
 	return newModel;
+}
+
+bool Scene::IsSceneDirty(bool bIncludeCam) const
+{
+	if (!m_bIsDirty)
+	{
+		for (auto model : m_models)
+		{
+		   if (model->IsDirty())
+		   {
+				return true;
+		   }
+		}
+
+		for (auto light : m_lights)
+		{
+		   if (light->IsDirty())
+		   {
+				return true;
+		   }
+		}
+
+		if (bIncludeCam)
+		{
+			for (auto cam : m_cameras)
+			{
+				if (cam->IsDirty())
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+void Scene::ResolveDirty(bool bIncludeCam)
+{
+	for (auto model : m_models)
+	{
+		model->ResolveDirty();
+	}
+
+	for (auto light : m_lights)
+	{
+		light->ResolveDirty();
+	}
+
+	if (bIncludeCam)
+	{
+		for (auto cam : m_cameras)
+		{
+			cam->ResolveDirty();
+		}
+	}
+
+	m_bIsDirty = false;
 }

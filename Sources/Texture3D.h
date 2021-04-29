@@ -14,6 +14,7 @@ class Texture3D
 {
 public:
    Texture3D(const std::vector<GLfloat>& rawData, unsigned int width, unsigned int height, unsigned int depth, Sampler3D sampler = Sampler3D(), unsigned int maxMipLevel = 7, bool bGenerateMip = true);
+   Texture3D(const std::vector<GLuint>& rawData, unsigned int width, unsigned int height, unsigned int depth, Sampler3D sampler = Sampler3D(), unsigned int maxMipLevel = 7, bool bGenerateMip = true);
    ~Texture3D() = default;
 
    void Bind(unsigned int slot);
