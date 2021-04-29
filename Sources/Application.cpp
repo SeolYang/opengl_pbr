@@ -50,9 +50,9 @@ bool Application::InitBase()
 bool Application::InitWindows()
 {
 	glfwInit();
-	const char* glslVersion = "#version 330 core";
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	const char* glslVersion = "#version 450 core";
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	m_window = glfwCreateWindow(m_windowWidth, m_windowHeight,

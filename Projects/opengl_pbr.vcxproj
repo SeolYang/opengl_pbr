@@ -61,6 +61,13 @@
     <None Include="Resources\Shaders\PBR.vs" />
     <None Include="Resources\Shaders\Phong.fs" />
     <None Include="Resources\Shaders\Phong.vs" />
+    <None Include="Resources\Shaders\VisualizeVoxelFS.glsl" />
+    <None Include="Resources\Shaders\VisualizeVoxelVS.glsl" />
+    <None Include="Resources\Shaders\VoxelConeTracingFS.glsl" />
+    <None Include="Resources\Shaders\VoxelConeTracingVS.glsl" />
+    <None Include="Resources\Shaders\VoxelizationFS.glsl" />
+    <None Include="Resources\Shaders\VoxelizationGS.glsl" />
+    <None Include="Resources\Shaders\VoxelizationVS.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

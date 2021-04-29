@@ -158,5 +158,26 @@
     <None Include="Resources\Shaders\Phong.vs">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Resources\Shaders\VoxelizationVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VoxelizationGS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VoxelizationFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VoxelConeTracingVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VoxelConeTracingFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeVoxelVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeVoxelFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
