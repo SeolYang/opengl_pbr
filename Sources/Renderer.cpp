@@ -73,7 +73,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 
 	m_voxelVolume = new Texture3D(
 		std::vector<GLfloat>(4 * VoxelUnitSize * VoxelUnitSize * VoxelUnitSize, 0.0f),
-		VoxelUnitSize, VoxelUnitSize, VoxelUnitSize);
+		VoxelUnitSize, VoxelUnitSize, VoxelUnitSize, Sampler3D(), std::log2(VoxelUnitSize)+1, true);
 
 	const float gridSize = static_cast<float>(VoxelGridWorldSize);
 	const glm::mat4 projMat = glm::ortho(-gridSize * 0.5f, gridSize * 0.5f, -gridSize * 0.5f, gridSize * 0.5f, gridSize * 0.5f, gridSize * 1.5f);

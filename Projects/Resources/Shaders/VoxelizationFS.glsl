@@ -190,10 +190,10 @@ vec4 CookTorrance()
 
 		kD *= 1.0 - metallic;
 
-		Lo += ((kD * albedo.rgb / PI) + specular) * intensity * NdotL;
+		Lo += ((kD * albedo.rgb / PI) + specular) * intensity * NdotL * visibility;
 
 		vec3 ambient = vec3(0.03) * albedo.rgb * ao;
-		vec3 color = (ambient + emissive + Lo)*visibility;
+		vec3 color = ambient + emissive + Lo;
 		//return vec4(color, 1.0f);
 		float alpha = pow(albedo.a, 4.0);
 		return alpha * vec4(vec3(color), 1.0);
@@ -228,7 +228,7 @@ vec4 LambertianDiffuse()
 		vec3 N = normalize(normal);
 		vec3 L = -normalize(light.Direction);
 		float NdotL = max(dot(N, L), 0.0f);
-		vec3 Lo = ambient + emissive + ((albedo.rgb / PI)) * (visibility * light.Intensity * NdotL) * (1.0-metallic);
+		vec3 Lo = ambient + emissive + ((albedo.rgb / PI)) * (visibility * light.Intensity * NdotL);
 		return vec4(Lo, 1.0f);
 	}
 
@@ -245,7 +245,7 @@ vec4 Color()
 
 		vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
 
-		vec3 Lo = (emissive + albedo.rgb) * visibility;
+		vec3 Lo = emissive + (albedo.rgb * visibility);
 		return vec4(Lo, 1.0f);
 	}
 

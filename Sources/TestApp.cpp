@@ -43,22 +43,22 @@ bool TestApp::Init()
 		{
 			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
 			material->SetRoughnessFactor(0.2f);
-			material->SetMetallicFactor(0.9f);
+			material->SetMetallicFactor(1.0f);
 
 			material->SetForceFactor(EMaterialTexture::BaseColor, true);
 			material->SetBaseColorFactor(glm::vec4(1.0f, 0.766f, 0.336f, 1.0f));
 		}
 
 		 //Floor : Chromium
-		//if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
-		//{
-		//	material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
-		//	material->SetRoughnessFactor(0.4f);
-		//	material->SetMetallicFactor(0.97f);
+		if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
+		{
+			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
+			material->SetRoughnessFactor(0.6f);
+			material->SetMetallicFactor(0.0f);
 
-		//	material->SetForceFactor(EMaterialTexture::BaseColor, true);
-		//	material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
-		//}
+			//material->SetForceFactor(EMaterialTexture::BaseColor, true);
+			//material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
+		}
 	}
 
 	//ModelLoadParams cornellParams
