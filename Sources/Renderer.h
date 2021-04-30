@@ -1,9 +1,14 @@
 #pragma once
 #include "Rendering.h"
-#include "glm/vec4.hpp"
+#include "glm/glm.hpp"
 
 constexpr unsigned int MaximumLights = 128;
-constexpr unsigned int VoxelUnitSize = 256;
+// Voxel Volume Texture Size
+constexpr unsigned int VoxelUnitSize = 512;
+constexpr float VoxelGridWorldSize = 128.0;
+constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
+constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
+constexpr unsigned int ShadowMapRes = 4096;
 
 enum class ERenderMode
 {
@@ -23,6 +28,7 @@ class GBuffer;
 class Texture2D;
 class Texture3D;
 class FBO;
+class ShadowMap;
 class Renderer
 {
 public:
@@ -43,24 +49,38 @@ public:
 private:
 	void DeferredRender(const Scene* scene);
 
+	void Shadow(const Scene* scene);
+
 	void Voxelize(const Scene* scene);
 	void VisualizeVoxel(const Scene* scene);
+	void RenderVoxel(const Scene* scene);
 
 private:
-	ERenderMode m_renderMode = ERenderMode::VoxelVisualization;
+	ERenderMode m_renderMode = ERenderMode::Deferred;
 	// Deferred Rendering
 	GBuffer*	m_gBuffer = nullptr;
 	Shader*	m_geometryPass = nullptr;
 	Shader*	m_lightingPass = nullptr;
 
+	// Shadow Mapping
+	ShadowMap* m_shadowMap = nullptr;
+	Shader* m_shadowPass = nullptr;
+	glm::mat4 m_shadowViewMat = glm::mat4();
+	glm::mat4 m_shadowProjMat = glm::mat4();
+
 	// Voxel Cone Tracing
 	Texture3D*	m_voxelVolume = nullptr;
 	Shader*		m_voxelizePass = nullptr;
+	glm::mat4 m_projX;
+	glm::mat4 m_projY;
+	glm::mat4 m_projZ;
 
 	Shader* m_worldPosPass = nullptr;
 	FBO* m_cubeBack = nullptr;
 	FBO* m_cubeFront = nullptr;
 	Shader* m_visualizeVoxelPass = nullptr;
+	Shader* m_renderVoxelPass = nullptr;
+	GLuint m_texture3DVAO = 0;
 	Model* m_cube = nullptr;
 
 	unsigned int m_quadVAO = 0;

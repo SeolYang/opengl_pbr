@@ -25,8 +25,11 @@ uniform sampler2D normalBuffer;
 uniform sampler2D albedoBuffer;
 uniform sampler2D metallicRoughnessBuffer;
 uniform sampler2D emissiveAOBuffer;
+uniform sampler2DShadow shadowMap;
 
 uniform vec3 camPos;
+uniform mat4 shadowViewMat;
+uniform mat4 shadowProjMat;
 
 const float PI = 3.14159265359;
 
@@ -77,10 +80,14 @@ vec3 pow3(vec3 v, float power)
 
 void main()
 {
+	vec3 worldPos = texture(positionBuffer, texcoord).xyz;
+	vec4 shadowPos = shadowProjMat * shadowViewMat * vec4(worldPos, 1.0);
+	shadowPos.xyz = shadowPos.xyz * 0.5 + vec3(0.5);
+	float visibility = texture(shadowMap, vec3(shadowPos.xy, (shadowPos.z-0.0005f)/(shadowPos.w+0.00001f)));
+
 	vec4 emissiveAO = texture(emissiveAOBuffer, texcoord);
 	float ao = emissiveAO.a;
 
-	vec3 worldPos = texture(positionBuffer, texcoord).xyz;
 	vec3 albedo = texture(albedoBuffer, texcoord).rgb;
 	float alpha = texture(albedoBuffer, texcoord).a;
 	vec3 normal = texture(normalBuffer, texcoord).xyz;
@@ -116,12 +123,12 @@ void main()
 	
 	kD *= 1.0-metallic;
 	
-	Lo += ((kD * albedo / PI) + specular) * intensity * NdotL;
+	Lo += ((kD * albedo / PI) + specular) * intensity * NdotL * visibility;
 
 	vec3 ambient = vec3(0.03)*albedo*ao;
 	vec3 emissive = emissiveAO.rgb;
 
-	vec3 color = ambient + emissive + Lo;
+	vec3 color = ambient + emissive + (Lo);
 
 	color = color/(color+vec3(1.0));
 	color = pow(color, vec3(1.0/2.2));

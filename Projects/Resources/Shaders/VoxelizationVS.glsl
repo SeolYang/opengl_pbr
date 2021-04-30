@@ -5,8 +5,11 @@ layout(location = 2) in vec3 aNormal;
 layout(location = 3) in vec3 aTangent;
 
 uniform mat4 worldMatrix;
+uniform mat4 shadowViewMat;
+uniform mat4 shadowProjMat;
 
 out vec3 worldPosGeom;
+out vec4 shadowPosGeom;
 out vec2 texCoordsGeom;
 out vec3 worldNormalGeom;
 out mat3 tbnGeom;
@@ -25,6 +28,9 @@ void main()
 	vec3 bitangent = normalize(cross(normal, tangent).xyz);
 
 	tbnGeom = mat3(tangent, bitangent, normal);
+
+	shadowPosGeom = shadowProjMat * shadowViewMat * worldPosition;
+	shadowPosGeom.xyz = shadowPosGeom.xyz * 0.5f + vec3(0.5f);
 
 	gl_Position = worldPosition;
 }

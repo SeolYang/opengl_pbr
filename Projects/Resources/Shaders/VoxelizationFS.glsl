@@ -3,38 +3,38 @@
 const unsigned int MaximumLights = 128;
 const float PI = 3.14159265359;
 
-struct Light
+struct DirectionalLight
 {
-   vec3 Position;
+   vec3 Direction;
    vec3 Intensity;
 };
 
 /* Input from previous shader stage */
 in vec3 worldPosFrag;
+in vec4 shadowPosFrag;
 in vec2 texCoordsFrag;
 in vec3 worldNormalFrag;
 in mat3 tbnFrag;
+in mat4 projFrag;
+in flat int axisFrag;
 
 /* Material Uniforms */
 uniform sampler2D baseColorMap; // baseColorMap: sRGB
 uniform vec4 baseColorFactor;
-
 uniform sampler2D normalMap;
-
 uniform sampler2D metallicRoughnessMap; // metallicRoughnessMap: Linear(B:Metallic, G:Roughness)
 uniform float metallicFactor;
 uniform float roughnessFactor;
-
 uniform sampler2D aoMap; // aoMap(Ambient Occlusion Map): Linear(R channel only)
-
 uniform sampler2D emissiveMap; // emissiveMap: sRGB
 uniform vec3 emissiveFactor;
-
 uniform int bUseNormalMap;
 
+uniform sampler2DShadow shadowMap;
+
 /* Uniforms */
-uniform Light lights[MaximumLights];
-uniform int numOfLights;
+//uniform Light lights[MaximumLights];
+uniform DirectionalLight light;
 uniform vec3 camPos;
 layout(RGBA8) uniform image3D voxelVolume;
 //layout(r32ui) coherent volatile uniform uimage3D voxelVolume;
@@ -141,120 +141,65 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 	return ggx1 * ggx2;
 }
 
-vec4 OnlyDiffuse()
+vec4 LambertianDiffuse()
 {
-	const uint maxNumOfLights = min(numOfLights, MaximumLights);
-	vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
-	float ao = texture(aoMap, texCoordsFrag).r;
-	float metallic = metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b;
-
-	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
-	albedo = vec4(pow3(albedo.rgb, 2.2) + baseColorFactor.rgb, albedo.a);
-	vec3 normal = worldNormalFrag;
-	if (bUseNormalMap == 1)
+	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
+	if (visibility > 0.0)
 	{
-		normal = texture(normalMap, texCoordsFrag).rgb;
-		normal = normalize(normal * 2.0 - 1.0);
-		normal = normalize(tbnFrag * normal);
-	}
-	vec3 N = normalize(normal);
+		vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
+		albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
+		
+		float metallic = min(1.0, metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b);
 
-	vec3 Lo = vec3(0.0);
+		vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
 
-	for (int idx = 0; idx < maxNumOfLights; ++idx)
-	{
-		vec3 L = normalize(lights[idx].Position - worldPosFrag);
-		float NdotL = max(dot(N, L), 0.0);
+		float ao = texture(aoMap, texCoordsFrag).r;
+		vec3 ambient = vec3(0.03) * albedo.rgb * ao;
 
-		if (NdotL > 0.0)
+		vec3 normal = worldNormalFrag;
+		if (bUseNormalMap == 1)
 		{
-			float distance = length(lights[idx].Position - worldPosFrag);
-			float attenuation = 1.0 / (distance * distance);
-
-			vec3 intensity = lights[idx].Intensity * attenuation;
-
-			Lo += intensity * NdotL;
+			normal = texture(normalMap, texCoordsFrag).rgb;
+			normal = normalize(normal * 2.0 - 1.0);
+			normal = normalize(tbnFrag * normal);
 		}
+
+		vec3 N = normalize(normal);
+		vec3 L = -normalize(light.Direction);
+		float NdotL = max(dot(N, L), 0.0f);
+		vec3 Lo = ambient + emissive + ((albedo.rgb / PI)) * (visibility * light.Intensity * NdotL);
+		return vec4(Lo, 1.0f);
 	}
 
-	vec3 ambient = vec3(0.03) * albedo.rgb * ao;
-	vec3 diffuse = Lo * (albedo.rgb / PI) * (1.0f - metallic);
-	vec3 color = ambient + emissive + diffuse;
-	float alpha = pow(albedo.a, 4.0);
-	return alpha * vec4(vec3(color), 1.0);
-}
-
-vec4 CookTorrance()
-{
-	const uint maxNumOfLights = min(numOfLights, MaximumLights);
-	vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
-	float ao = texture(aoMap, texCoordsFrag).r;
-	float metallic = metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b;
-	float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
-
-	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
-	albedo = vec4(pow3(albedo.rgb, 2.2) + baseColorFactor.rgb, albedo.a);
-	vec3 normal = worldNormalFrag;
-	if (bUseNormalMap == 1)
-	{
-		normal = texture(normalMap, texCoordsFrag).rgb;
-		normal = normalize(normal * 2.0 - 1.0);
-		normal = normalize(tbnFrag * normal);
-	}
-
-	vec3 N = normalize(normal);
-	vec3 V = normalize(camPos - worldPosFrag);
-
-	vec3 Lo = vec3(0.0);
-
-	for (int idx = 0; idx < maxNumOfLights; ++idx)
-	{
-		vec3 L = normalize(lights[idx].Position - worldPosFrag);
-		vec3 H = normalize(V + L);
-
-		float NdotL = max(dot(N, L), 0.0);
-
-		float distance = length(lights[idx].Position - worldPosFrag);
-		float attenuation = 1.0 / (distance * distance);
-
-		vec3 intensity = lights[idx].Intensity * attenuation;
-
-		vec3 F0 = vec3(0.04);
-		F0 = mix(F0, albedo.rgb, metallic);
-		vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
-		float NDF = DistributionGGX(N, H, roughness);
-		float G = GeometrySmith(N, V, L, roughness);
-
-		vec3 nominator = NDF * G * F;
-		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-		vec3 specular = nominator / max(denominator, 0.001);
-
-		vec3 kS = F;
-		vec3 kD = vec3(1.0) - kS;
-
-		kD *= 1.0 - metallic;
-
-		Lo += ((kD * albedo.rgb / PI) + specular) * intensity * NdotL;
-	}
-
-	vec3 ambient = vec3(0.03) * albedo.rgb * ao;
-	vec3 color = ambient + emissive + Lo;
-	float alpha = pow(albedo.a, 4.0);
-	return alpha * vec4(vec3(color), 1.0);
+	return vec4(0.0f);
 }
 
 void main()
 {
-	if (!IsInsideCube(worldPosFrag, 0.0))
-	{
-		return;
-	}
-
-	vec4 color = OnlyDiffuse();
+	vec4 color = LambertianDiffuse();
 	vec3 voxel = ScaleAndBias(worldPosFrag);
 	ivec3 dimension = imageSize(voxelVolume);
+	ivec3 camPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, dimension.x * gl_FragCoord.z);
+	ivec3 voxelPos;
+	if (axisFrag == 0)
+	{
+		voxelPos.x = dimension.x - camPos.z;
+		voxelPos.z = camPos.x;
+		voxelPos.y = camPos.y;
+	}
+	else if (axisFrag == 1)
+	{
+		voxelPos.z = camPos.y;
+		voxelPos.y = dimension.x - camPos.z;
+		voxelPos.x = camPos.x;
+	}
+	else
+	{
+		voxelPos = camPos;
+	}
 
-	imageStore(voxelVolume, ivec3(dimension * voxel), color);
+	voxelPos.z = dimension.x - voxelPos.z - 1;
+
+	imageStore(voxelVolume, voxelPos, color);
 	//imageAtomicRGBA8Avg(voxelVolume, ivec3(dimension * voxel), color);
 }

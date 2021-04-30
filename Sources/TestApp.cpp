@@ -48,7 +48,7 @@ bool TestApp::Init()
 	   .PreTransformVertices=false,
 	   .Triangulate=false};
 	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
-	m_sponza->SetScale(glm::vec3(0.0005f, 0.0005f, 0.0005f));
+	m_sponza->SetScale(glm::vec3(0.045f));
 
 	const auto& sponzaMaterials = m_sponza->GetMaterials();
 	for (auto material : sponzaMaterials)

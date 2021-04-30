@@ -10,6 +10,7 @@
 #include "Texture2D.h"
 #include "Texture3D.h"
 #include "FBO.h"
+#include "ShadowMap.h"
 
 Renderer::~Renderer()
 {
@@ -43,9 +44,12 @@ Renderer::~Renderer()
 
 	delete m_worldPosPass;
 	delete m_visualizeVoxelPass;
+	delete m_renderVoxelPass;
 	delete m_cube;
 	delete m_cubeBack;
 	delete m_cubeFront;
+	delete m_shadowMap;
+	delete m_shadowPass;
 }
 
 bool Renderer::Init(unsigned int width, unsigned int height)
@@ -73,9 +77,20 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	m_lightingPass->SetInt("metallicRoughnessBuffer", 3);
 	m_lightingPass->SetInt("emissiveAOBuffer", 4);
 
+	m_shadowPass = new Shader(
+		"Resources/Shaders/ShadowVS.vert",
+		"Resources/Shaders/ShadowFS.frag");
+	m_shadowMap = new ShadowMap(ShadowMapRes, ShadowMapRes);
+
 	m_voxelVolume = new Texture3D(
 		std::vector<GLfloat>(4 * VoxelUnitSize * VoxelUnitSize * VoxelUnitSize, 0.0f),
 		VoxelUnitSize, VoxelUnitSize, VoxelUnitSize);
+
+	const float gridSize = static_cast<float>(VoxelGridWorldSize);
+	const glm::mat4 projMat = glm::ortho(-gridSize * 0.5f, gridSize * 0.5f, -gridSize * 0.5f, gridSize * 0.5f, gridSize * 0.5f, gridSize * 1.5f);
+	m_projX = projMat * glm::lookAt(glm::vec3(gridSize, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	m_projY = projMat * glm::lookAt(glm::vec3(0.0f, gridSize, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	m_projZ = projMat * glm::lookAt(glm::vec3(0.0f, 0.0f, gridSize), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	//m_voxelVolume = new Texture3D(
 	//	std::vector<GLuint>(VoxelUnitSize * VoxelUnitSize * VoxelUnitSize, 0),
@@ -96,6 +111,13 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 
 	m_cubeBack = new FBO(m_winWidth, m_winHeight);
 	m_cubeFront = new FBO(m_winWidth, m_winHeight);
+
+	m_renderVoxelPass = new Shader(
+		"Resources/Shaders/RenderVoxel.vert",
+		"Resources/Shaders/RenderVoxel.geom",
+		"Resources/Shaders/RenderVoxel.frag");
+
+	glGenVertexArrays(1, &m_texture3DVAO);
 
 	ModelLoadParams cubeParams
 	{
@@ -138,6 +160,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 
 void Renderer::Render(const Scene* scene)
 {
+	Shadow(scene);
 	switch(m_renderMode)
 	{
 	case ERenderMode::VCT:
@@ -146,12 +169,13 @@ void Renderer::Render(const Scene* scene)
 
 	case ERenderMode::VoxelVisualization:
 		Voxelize(scene);
-		VisualizeVoxel(scene);
+		//VisualizeVoxel(scene);
+		RenderVoxel(scene);
 		break;
 
 	case ERenderMode::Deferred:
 	default:
-		this->DeferredRender(scene);
+		DeferredRender(scene);
 		break;
 	}
 }
@@ -203,9 +227,13 @@ void Renderer::DeferredRender(const Scene* scene)
 			// ########### TEST CODE ##############
 			glViewport(0, 0, m_winWidth, m_winHeight);
 			auto numOfLights = (lights.size() <= MaximumLights) ? lights.size() : MaximumLights;
-			m_gBuffer->BindTextures();
 			m_lightingPass->Bind();
+			m_gBuffer->BindTextures();
+			m_shadowMap->BindAsTexture(5);
+			m_lightingPass->SetInt("shadowMap", 5);
 			m_lightingPass->SetVec3f("camPos", camera->GetPosition());
+			m_lightingPass->SetMat4f("shadowViewMat", m_shadowViewMat);
+			m_lightingPass->SetMat4f("shadowProjMat", m_shadowProjMat);
 			if (!lights.empty())
 			{
 				m_lightingPass->SetVec3f("light.Direction", lights[0]->Forward());
@@ -221,55 +249,99 @@ void Renderer::DeferredRender(const Scene* scene)
 	}
 }
 
+void Renderer::Shadow(const Scene* scene)
+{
+	if (scene->IsSceneDirty())
+	{
+		auto lights = scene->GetLights();
+		if (!lights.empty())
+		{
+			m_shadowPass->Bind();
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+			glFrontFace(GL_CCW);
+
+			m_shadowMap->Bind();
+			glViewport(0, 0, ShadowMapRes, ShadowMapRes);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			m_shadowViewMat = glm::lookAt(-lights[0]->Forward(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			m_shadowProjMat = glm::ortho<float>(-120.0f, 120.0f, -120.0f, 120.0f, -500.0f, 500.0f);
+			m_shadowPass->SetMat4f("viewMatrix", m_shadowViewMat);
+			m_shadowPass->SetMat4f("projMatrix", m_shadowProjMat);
+
+			auto models = scene->GetModels();
+			for (auto model : models)
+			{
+				m_shadowPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
+				model->Render(m_shadowPass);
+			}
+
+			m_shadowMap->Unbind();
+			glViewport(0, 0, m_winWidth, m_winHeight);
+		}
+	}
+}
+
 void Renderer::Voxelize(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
 		if (m_bAlwaysComputeVoxel || scene->IsSceneDirty())
 		{
-			glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
-			m_voxelizePass->Bind();
-
-			Camera* camera = scene->GetMainCamera();
-			m_voxelizePass->SetVec3f("camPos", camera->GetPosition());
-
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-			glDisable(GL_CULL_FACE);
-			glDisable(GL_DEPTH_TEST);
-			glDisable(GL_BLEND);
-
 			const std::vector<Light*> lights = scene->GetLights();
-			const auto numOfLights = (lights.size() <= MaximumLights) ? lights.size() : MaximumLights;
-
-			m_voxelVolume->Bind(5);
-			glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
-
-			m_voxelizePass->SetInt("numOfLights", numOfLights);
-			for (size_t idx = 0; idx < numOfLights; ++idx)
+			if (!lights.empty())
 			{
-				auto indexingStr = "lights[" + std::to_string(idx) + "]";
-				m_voxelizePass->SetVec3f(indexingStr + ".Position", lights[idx]->GetPosition());
-				m_voxelizePass->SetVec3f(indexingStr + ".Intensity", lights[idx]->GetIntensity());
-			}
+				glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+				m_voxelizePass->Bind();
 
-			const std::vector<Model*> models = scene->GetModels();
-			for (auto model : models)
-			{
-				m_voxelizePass->SetMat4f("worldMatrix", model->GetWorldMatrix());
-				if (model != nullptr)
+				Camera* camera = scene->GetMainCamera();
+				m_voxelizePass->SetVec3f("camPos", camera->GetPosition());
+
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+				glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
+				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+				glDisable(GL_CULL_FACE);
+				glDisable(GL_DEPTH_TEST);
+				glDisable(GL_BLEND);
+
+				// Vertex Shader Uniforms
+				m_voxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);
+				m_voxelizePass->SetMat4f("shadowProjMat", m_shadowProjMat);
+
+				// Geometry Shader Uniforms
+				m_voxelizePass->SetMat4f("projXAxis", m_projX);
+				m_voxelizePass->SetMat4f("projYAxis", m_projY);
+				m_voxelizePass->SetMat4f("projZAxis", m_projZ);
+
+				// Fragment Shader Uniforms
+				m_voxelizePass->SetVec3f("light.Direction", lights[0]->Forward());
+				m_voxelizePass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
+				m_voxelizePass->SetInt("shadowMap", 5);
+				m_shadowMap->BindAsTexture(5);
+				m_voxelVolume->Bind(6);
+				glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+				//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
+
+				const std::vector<Model*> models = scene->GetModels();
+				for (auto model : models)
 				{
-					model->Render(m_voxelizePass);
+					m_voxelizePass->SetMat4f("worldMatrix", model->GetWorldMatrix());
+					if (model != nullptr)
+					{
+						model->Render(m_voxelizePass);
+					}
 				}
-			}
 
-			glGenerateMipmap(GL_TEXTURE_3D);
-			m_voxelVolume->Unbind(5);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+				glGenerateMipmap(GL_TEXTURE_3D);
+				m_shadowMap->UnbindAsTexture(5);
+				m_voxelVolume->Unbind(6);
+				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+				glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			}
 		}
 	}
 }
@@ -329,6 +401,40 @@ void Renderer::VisualizeVoxel(const Scene* scene)
 		m_cubeFront->UnbindAsTexture(1);
 		m_voxelVolume->Unbind(2);
    }
+}
+
+void Renderer::RenderVoxel(const Scene* scene)
+{
+	if (scene != nullptr)
+	{
+		//glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, m_winWidth, m_winHeight);
+
+		m_renderVoxelPass->Bind();
+		m_renderVoxelPass->SetInt("volumeDim", VoxelUnitSize);
+		m_voxelVolume->Bind(0);
+		m_renderVoxelPass->SetInt("voxelVolume", 0);
+
+		Camera* camera = scene->GetMainCamera();
+		glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(VoxelSize));
+		glm::mat4 viewMatrix = camera->GetViewMatrix();
+		glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
+		glm::mat4 projMatrix = camera->GetProjMatrix();
+		m_renderVoxelPass->SetMat4f("modelViewMatrix", modelViewMatrix);
+		m_renderVoxelPass->SetMat4f("projectionMatrix", projMatrix);
+
+		glBindVertexArray(m_texture3DVAO);
+		glDrawArrays(GL_POINTS, 0, VoxelNum);
+
+		glBindVertexArray(0);
+		m_voxelVolume->Unbind(0);
+	}
 }
 
 void Renderer::Clear(const glm::vec4& color, bool clearDepth)

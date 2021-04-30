@@ -85,6 +85,9 @@
     <ClInclude Include="..\Sources\FBO.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\ShadowMap.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
@@ -135,6 +138,7 @@
     <ClCompile Include="..\Sources\Texture3D.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\Sources\ShadowMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\GeometryPass.fs">
@@ -186,6 +190,21 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\WorldPosFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\ShadowVS.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\ShadowFS.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\RenderVoxel.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\RenderVoxel.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\RenderVoxel.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
