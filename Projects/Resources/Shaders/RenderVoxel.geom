@@ -21,20 +21,20 @@ void main() {
 	vec4 v7 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-0.5, -0.5, -0.5, 0));
 	vec4 v8 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(0.5, -0.5, -0.5, 0));
 
-	//
+	//               -Z
 	//      v5 _____________ v6
 	//        /|           /|
 	//       / |          / |
-	//      /  |         /  |
+	//      /  |   +y    /  |
 	//     /   |        /   |
 	// v1 /____|_______/ v2 |
 	//    |    |       |    |
 	//    |    |_v7____|____| v8
-	//    |   /        |   /
+	//-x  |   /        |   / +x
 	//    |  /         |  /  
-	//    | /          | /  
+	//    | /     -y   | /  
 	// v3 |/___________|/ v4
-	//
+	//           +Z
 
 	// +Z
     gl_Position = v1;

@@ -24,29 +24,13 @@ bool TestApp::Init()
 	glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	Scene* scene = this->GetScene();
-	ModelLoadParams duckParams{
-	.CalcTangentSpace = true,
-	.ConvertToLeftHanded = true,
-	.GenSmoothNormals = true,
-	.GenUVs = true,
-	.PreTransformVertices = true,
-	.Triangulate = true };
-	m_duck = scene->LoadModel("Duck", "Resources/Models/Duck/Duck.gltf", duckParams);
-	m_duck->SetPosition(glm::vec3(-0.05f, 0.0f, 0.0f));
-	m_duck->SetScale(glm::vec3(2.0f));
-	m_duck->SetRotation(glm::rotate(glm::quat(),
-		glm::radians(180.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
-	m_duckMat = m_duck->GetMaterial(0);
-	m_duckMat->SetMetallicFactor(0.0f);
-	m_duckMat->SetRoughnessFactor(0.0f);
-
 	ModelLoadParams sponzaLoadParams{
 	   .CalcTangentSpace = true,
 	   .ConvertToLeftHanded = true,
-	   .GenSmoothNormals=false,
+	   .GenSmoothNormals=true,
 	   .GenUVs = true,
 	   .PreTransformVertices=false,
-	   .Triangulate=false};
+	   .Triangulate=true};
 	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
 	m_sponza->SetScale(glm::vec3(0.045f));
 
@@ -65,7 +49,7 @@ bool TestApp::Init()
 			material->SetBaseColorFactor(glm::vec4(1.0f, 0.766f, 0.336f, 1.0f));
 		}
 
-		// Floor : Chromium
+		 //Floor : Chromium
 		//if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
 		//{
 		//	material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
@@ -84,11 +68,11 @@ bool TestApp::Init()
 	//		.GenSmoothNormals = false,
 	//		.GenUVs = true,
 	//		.PreTransformVertices = false,
-	//		.Triangulate = false
+	//		.Triangulate = true
  //  };
 
 	//Model* cornell = scene->LoadModel("CornellBox", "Resources/Models/cornell.obj", cornellParams);
-	//cornell->SetScale(glm::vec3(0.9f));
+	//cornell->SetScale(glm::vec3(40.0f));
 
 	//glm::vec4 cornellColor[7] = {
 	//	glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
@@ -108,7 +92,7 @@ bool TestApp::Init()
 
 	m_mainLight = scene->CreateLight("Main");
 	m_mainLight->SetPosition(glm::vec3{ 0.0f, 0.0f, 0.0f });
-	m_mainLight->SetIntensity(glm::vec3{ 3.0f });
+	m_mainLight->SetIntensity(glm::vec3{ 10.0f });
 	this->UpdateLightRotation();
 
 	m_cam = scene->GetMainCamera();
@@ -146,6 +130,7 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 		m_controller->KeyCallback(window, key, scanCode, action, mods);
 	}
 
+	auto renderer = this->GetRenderer();
 	if (action == GLFW_PRESS)
 	{
 		switch (key)
@@ -162,6 +147,38 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			this->GetRenderer()->SetRenderMode(this->GetRenderer()->GetRenderMode() == ERenderMode::Deferred ? ERenderMode::VoxelVisualization : ERenderMode::Deferred);
 			break;
 
+		case GLFW_KEY_LEFT_BRACKET:
+			switch(renderer->GetRenderMode())
+			{
+			case ERenderMode::VCT:
+				renderer->SetRenderMode(ERenderMode::Deferred);
+				break;
+
+			case ERenderMode::VoxelVisualization:
+				renderer->SetRenderMode(ERenderMode::VCT);
+				break;
+
+			default:
+				break;
+			}
+			break;
+
+		case GLFW_KEY_RIGHT_BRACKET:
+			switch (renderer->GetRenderMode())
+			{
+			case ERenderMode::VCT:
+				renderer->SetRenderMode(ERenderMode::VoxelVisualization);
+				break;
+
+			case ERenderMode::Deferred:
+				renderer->SetRenderMode(ERenderMode::VCT);
+				break;
+
+			default:
+				break;
+			}
+			break;
+
 		case GLFW_KEY_R:
 			this->m_cam->SetPosition(glm::vec3(0.0f));
 			break;
@@ -172,22 +189,24 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 
 		case GLFW_KEY_RIGHT:
 			m_lightRotationX += 5.0f;
+			this->UpdateLightRotation();
 			break;
 
 		case GLFW_KEY_LEFT:
 			m_lightRotationX -= 5.0f;
+			this->UpdateLightRotation();
 			break;
 
 		case GLFW_KEY_DOWN:
 			m_lightRotationY -= 10.0f;
+			this->UpdateLightRotation();
 			break;
 
 		case GLFW_KEY_UP:
 			m_lightRotationY += 10.0f;
+			this->UpdateLightRotation();
 			break;
 		}
-
-		this->UpdateLightRotation();
 	}
 }
 

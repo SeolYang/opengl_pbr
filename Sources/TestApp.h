@@ -62,7 +62,7 @@ private:
 	float		m_elasedTime = 0.0f;
 	Material*	m_duckMat = nullptr;
 
-	float m_lightRotationX = 90.0f;
+	float m_lightRotationX = 75.0f;
 	float m_lightRotationY = 0.0f;
 
 };

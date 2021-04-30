@@ -32,24 +32,13 @@ Renderer::~Renderer()
 		m_lightingPass = nullptr;
 	}
 
-	if (m_voxelVolume != nullptr)
-	{
-		delete m_voxelVolume;
-	}
-
-	if (m_voxelizePass != nullptr)
-	{
-		delete m_voxelizePass;
-	}
-
-	delete m_worldPosPass;
-	delete m_visualizeVoxelPass;
-	delete m_renderVoxelPass;
-	delete m_cube;
-	delete m_cubeBack;
-	delete m_cubeFront;
 	delete m_shadowMap;
 	delete m_shadowPass;
+
+	delete m_voxelVolume;
+	delete m_voxelizePass;
+	delete m_renderVoxelPass;
+	delete m_vctPass;
 }
 
 bool Renderer::Init(unsigned int width, unsigned int height)
@@ -101,17 +90,6 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 		"Resources/Shaders/VoxelizationGS.glsl",
 		"Resources/Shaders/VoxelizationFS.glsl");
 
-	m_worldPosPass = new Shader(
-		"Resources/Shaders/WorldPosVS.glsl",
-		"Resources/Shaders/WorldPosFS.glsl");
-
-	m_visualizeVoxelPass = new Shader(
-		"Resources/Shaders/VisualizeVoxelVS.glsl",
-		"Resources/Shaders/VisualizeVoxelFS.glsl");
-
-	m_cubeBack = new FBO(m_winWidth, m_winHeight);
-	m_cubeFront = new FBO(m_winWidth, m_winHeight);
-
 	m_renderVoxelPass = new Shader(
 		"Resources/Shaders/RenderVoxel.vert",
 		"Resources/Shaders/RenderVoxel.geom",
@@ -119,17 +97,9 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 
 	glGenVertexArrays(1, &m_texture3DVAO);
 
-	ModelLoadParams cubeParams
-	{
-			.CalcTangentSpace = true,
-			.ConvertToLeftHanded = true,
-			.GenSmoothNormals = true,
-			.GenUVs = true,
-			.PreTransformVertices = true,
-			.Triangulate = false
-	};
-
-	m_cube = new Model("Cube", "Resources/Models/cube.obj", cubeParams);
+	m_vctPass = new Shader(
+		"Resources/Shaders/VoxelConeTracingVS.vert",
+		"Resources/Shaders/VoxelConeTracingFS.frag");
 
 	float quadVertices[] = {
 		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
@@ -148,12 +118,11 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 
+	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
-
-	//glEnable(GL_MULTISAMPLE);
 
 	return true;
 }
@@ -165,16 +134,15 @@ void Renderer::Render(const Scene* scene)
 	{
 	case ERenderMode::VCT:
 		Voxelize(scene);
+		VoxelConeTracing(scene);
 		break;
 
 	case ERenderMode::VoxelVisualization:
 		Voxelize(scene);
-		//VisualizeVoxel(scene);
 		RenderVoxel(scene);
 		break;
 
 	case ERenderMode::Deferred:
-	default:
 		DeferredRender(scene);
 		break;
 	}
@@ -251,8 +219,9 @@ void Renderer::DeferredRender(const Scene* scene)
 
 void Renderer::Shadow(const Scene* scene)
 {
-	if (scene->IsSceneDirty())
+	if (scene != nullptr && scene->IsSceneDirty() || m_bFirstShadow)
 	{
+		m_bFirstShadow = false;
 		auto lights = scene->GetLights();
 		if (!lights.empty())
 		{
@@ -289,8 +258,9 @@ void Renderer::Voxelize(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
-		if (m_bAlwaysComputeVoxel || scene->IsSceneDirty())
+		if (m_bFirstVoxelize || m_bAlwaysComputeVoxel || scene->IsSceneDirty())
 		{
+			m_bFirstVoxelize = false;
 			const std::vector<Light*> lights = scene->GetLights();
 			if (!lights.empty())
 			{
@@ -303,10 +273,10 @@ void Renderer::Voxelize(const Scene* scene)
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 				glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
-				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+				//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 				glDisable(GL_CULL_FACE);
 				glDisable(GL_DEPTH_TEST);
-				glDisable(GL_BLEND);
+				//glDisable(GL_BLEND);
 
 				// Vertex Shader Uniforms
 				m_voxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);
@@ -322,7 +292,6 @@ void Renderer::Voxelize(const Scene* scene)
 				m_voxelizePass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
 				m_voxelizePass->SetInt("shadowMap", 5);
 				m_shadowMap->BindAsTexture(5);
-				m_voxelVolume->Bind(6);
 				glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 				//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
 
@@ -336,71 +305,13 @@ void Renderer::Voxelize(const Scene* scene)
 					}
 				}
 
-				glGenerateMipmap(GL_TEXTURE_3D);
 				m_shadowMap->UnbindAsTexture(5);
-				m_voxelVolume->Unbind(6);
-				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+				//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+				glGenerateTextureMipmap(m_voxelVolume->GetID());
 				glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 			}
 		}
 	}
-}
-
-void Renderer::VisualizeVoxel(const Scene* scene)
-{
-   if (scene != nullptr)
-   {
-		m_worldPosPass->Bind();
-
-		Camera* camera = scene->GetMainCamera();
-		m_worldPosPass->SetMat4f("worldMatrix", glm::mat4());
-		m_worldPosPass->SetMat4f("viewMatrix", camera->GetViewMatrix());
-		m_worldPosPass->SetMat4f("projMatrix", camera->GetProjMatrix());
-
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-
-		glCullFace(GL_FRONT);
-		m_cubeBack->Bind();
-		glViewport(0, 0, m_cubeBack->GetWidth(), m_cubeBack->GetHeight());
-		m_cubeBack->Clear();
-		m_cube->Render(m_worldPosPass);
-		m_cubeBack->Unbind();
-
-		glCullFace(GL_BACK);
-		m_cubeFront->Bind();
-		glViewport(0, 0, m_cubeFront->GetWidth(), m_cubeFront->GetHeight());
-		m_cubeFront->Clear();
-		m_cube->Render(m_worldPosPass);
-		m_cubeFront->Unbind();
-
-		/* Visualization */
-		m_visualizeVoxelPass->Bind();
-		m_visualizeVoxelPass->SetVec3f("camPos", camera->GetPosition());
-
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-
-		m_cubeBack->BindAsTexture(0);
-		m_visualizeVoxelPass->SetInt("cubeBack", 0);
-		m_cubeFront->BindAsTexture(1);
-		m_visualizeVoxelPass->SetInt("cubeFront", 1);
-		m_voxelVolume->Bind(2);
-		m_visualizeVoxelPass->SetInt("voxelVolume", 2);
-
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, m_winWidth, m_winHeight);
-		this->Clear(glm::vec4(camera->GetClearColor(), 1.0f), true);
-		glBindVertexArray(m_quadVAO);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-		glBindVertexArray(0);
-		m_cubeBack->UnbindAsTexture(0);
-		m_cubeFront->UnbindAsTexture(1);
-		m_voxelVolume->Unbind(2);
-   }
 }
 
 void Renderer::RenderVoxel(const Scene* scene)
@@ -409,7 +320,6 @@ void Renderer::RenderVoxel(const Scene* scene)
 	{
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
-		//glDisable(GL_DEPTH_TEST);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -434,6 +344,57 @@ void Renderer::RenderVoxel(const Scene* scene)
 
 		glBindVertexArray(0);
 		m_voxelVolume->Unbind(0);
+	}
+}
+
+void Renderer::VoxelConeTracing(const Scene* scene)
+{
+	if (scene != nullptr)
+	{
+		if (auto lights = std::move(scene->GetLights()); !lights.empty())
+		{
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_BLEND);
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glViewport(0, 0, m_winWidth, m_winHeight);
+
+			m_vctPass->Bind();
+
+			const Camera* camera = scene->GetMainCamera();
+			m_vctPass->SetMat4f("viewMatrix", camera->GetViewMatrix());
+			m_vctPass->SetMat4f("projMatrix", camera->GetProjMatrix());
+			m_vctPass->SetMat4f("shadowViewMat", m_shadowViewMat);
+			m_vctPass->SetMat4f("shadowProjMat", m_shadowProjMat);
+
+			m_vctPass->SetVec3f("light.Direction", lights[0]->Forward());
+			m_vctPass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
+
+			m_vctPass->SetVec3f("camPos", camera->GetPosition());
+
+			m_shadowMap->BindAsTexture(5);
+			m_vctPass->SetInt("shadowMap", 5);
+
+			m_voxelVolume->Bind(6);
+			m_vctPass->SetInt("voxelVolume", 6);
+			m_vctPass->SetFloat("voxelGridWorldSize", VoxelGridWorldSize);
+			m_vctPass->SetFloat("voxelDim", static_cast<float>(VoxelUnitSize));
+
+			for (auto models = std::move(scene->GetModels()); auto model : models)
+			{
+				m_vctPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
+				if (model != nullptr)
+				{
+					model->Render(m_vctPass);
+				}
+			}
+
+			m_voxelVolume->Unbind(6);
+			m_shadowMap->UnbindAsTexture(5);
+		}
 	}
 }
 

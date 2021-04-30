@@ -4,7 +4,7 @@
 
 constexpr unsigned int MaximumLights = 128;
 // Voxel Volume Texture Size
-constexpr unsigned int VoxelUnitSize = 512;
+constexpr unsigned int VoxelUnitSize = 128;
 constexpr float VoxelGridWorldSize = 128.0;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
@@ -52,8 +52,8 @@ private:
 	void Shadow(const Scene* scene);
 
 	void Voxelize(const Scene* scene);
-	void VisualizeVoxel(const Scene* scene);
 	void RenderVoxel(const Scene* scene);
+	void VoxelConeTracing(const Scene* scene);
 
 private:
 	ERenderMode m_renderMode = ERenderMode::Deferred;
@@ -75,13 +75,10 @@ private:
 	glm::mat4 m_projY;
 	glm::mat4 m_projZ;
 
-	Shader* m_worldPosPass = nullptr;
-	FBO* m_cubeBack = nullptr;
-	FBO* m_cubeFront = nullptr;
-	Shader* m_visualizeVoxelPass = nullptr;
 	Shader* m_renderVoxelPass = nullptr;
 	GLuint m_texture3DVAO = 0;
-	Model* m_cube = nullptr;
+
+	Shader* m_vctPass = nullptr;
 
 	unsigned int m_quadVAO = 0;
 	unsigned int m_quadVBO = 0;
@@ -89,6 +86,8 @@ private:
 	unsigned int m_winWidth = 0;
 	unsigned int m_winHeight = 1;
 
-	bool m_bAlwaysComputeVoxel = true;
+	bool m_bAlwaysComputeVoxel = false;
+	bool m_bFirstVoxelize = true;
+	bool m_bFirstShadow = true;
 
 };

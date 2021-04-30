@@ -210,8 +210,11 @@ void Model::ProcessMesh(const aiScene* scene, const aiMesh* mesh)
 
 void Model::Render(Shader* shader)
 {
-	for (auto& mesh : m_meshes)
+	if (this->IsActivated())
 	{
-		mesh->Render(shader, m_mode);
+		for (auto& mesh : m_meshes)
+		{
+			mesh->Render(shader, m_mode);
+		}
 	}
 }

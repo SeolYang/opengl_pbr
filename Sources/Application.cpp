@@ -107,13 +107,13 @@ int Application::Run()
 	while (m_bIsRunning && !glfwWindowShouldClose(m_window))
 	{
 		auto begin = std::chrono::system_clock::now();
+		glfwPollEvents();
 
 		Update(deltaTime);
 		m_renderer->Render(m_scene);
-		m_scene->ResolveDirty();
 
 		glfwSwapBuffers(m_window);
-		glfwPollEvents();
+		m_scene->ResolveDirty();
 
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<float> dt = (end - begin);

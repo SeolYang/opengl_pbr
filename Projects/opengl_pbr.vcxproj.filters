@@ -174,10 +174,10 @@
     <None Include="Resources\Shaders\VoxelizationFS.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Resources\Shaders\VoxelConeTracingVS.glsl">
+    <None Include="Resources\Shaders\VoxelConeTracingVS.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Resources\Shaders\VoxelConeTracingFS.glsl">
+    <None Include="Resources\Shaders\VoxelConeTracingFS.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\VisualizeVoxelVS.glsl">
