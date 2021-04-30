@@ -36,7 +36,6 @@ void main() {
 	// v3 |/___________|/ v4
 	//
 
-	// TODO: Optimize
 	// +Z
     gl_Position = v1;
     EmitVertex();

@@ -407,7 +407,7 @@ void Renderer::RenderVoxel(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
-		//glEnable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		//glDisable(GL_DEPTH_TEST);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);

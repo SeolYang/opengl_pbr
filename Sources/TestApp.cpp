@@ -33,7 +33,7 @@ bool TestApp::Init()
 	.Triangulate = true };
 	m_duck = scene->LoadModel("Duck", "Resources/Models/Duck/Duck.gltf", duckParams);
 	m_duck->SetPosition(glm::vec3(-0.05f, 0.0f, 0.0f));
-	m_duck->SetScale(glm::vec3(0.02f));
+	m_duck->SetScale(glm::vec3(2.0f));
 	m_duck->SetRotation(glm::rotate(glm::quat(),
 		glm::radians(180.0f), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	m_duckMat = m_duck->GetMaterial(0);
@@ -114,6 +114,7 @@ bool TestApp::Init()
 	m_cam = scene->GetMainCamera();
 	m_cam->SetPosition(glm::vec3(0.0f, 0.05f, 0.f));
 	m_controller = new Controller(m_cam, this->GetWindow());
+	m_controller->CameraSpeed = 15.0f;
 
 	unsigned int width = this->GetWidth();
 	unsigned int height = this->GetHeight();
@@ -169,19 +170,19 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			this->GetRenderer()->SetVoxelizeEveryFrame(!this->GetRenderer()->IsVoxelizeEveryFrame());
 			break;
 
-		case GLFW_KEY_UP:
-			m_lightRotationX += 10.0f;
-			break;
-
-		case GLFW_KEY_DOWN:
-			m_lightRotationX -= 10.0f;
+		case GLFW_KEY_RIGHT:
+			m_lightRotationX += 5.0f;
 			break;
 
 		case GLFW_KEY_LEFT:
+			m_lightRotationX -= 5.0f;
+			break;
+
+		case GLFW_KEY_DOWN:
 			m_lightRotationY -= 10.0f;
 			break;
 
-		case GLFW_KEY_RIGHT:
+		case GLFW_KEY_UP:
 			m_lightRotationY += 10.0f;
 			break;
 		}

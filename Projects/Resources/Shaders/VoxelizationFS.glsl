@@ -141,6 +141,66 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 	return ggx1 * ggx2;
 }
 
+vec4 CookTorrance()
+{
+	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
+	if (visibility > 0.0f)
+	{
+		vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
+		float ao = texture(aoMap, texCoordsFrag).r;
+		float metallic = metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b;
+		float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
+
+		vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
+		albedo = vec4(pow3(albedo.rgb, 2.2) + baseColorFactor.rgb, albedo.a);
+		vec3 normal = worldNormalFrag;
+		if (bUseNormalMap == 1)
+		{
+			normal = texture(normalMap, texCoordsFrag).rgb;
+			normal = normalize(normal * 2.0 - 1.0);
+			normal = normalize(tbnFrag * normal);
+		}
+
+		vec3 N = normalize(normal);
+		vec3 V = normalize(camPos - worldPosFrag);
+
+		vec3 Lo = vec3(0.0);
+
+		vec3 L = normalize(-light.Direction);
+		vec3 H = normalize(V + L);
+
+		float NdotL = max(dot(N, L), 0.0);
+
+		vec3 intensity = light.Intensity;
+
+		vec3 F0 = vec3(0.04);
+		F0 = mix(F0, albedo.rgb, metallic);
+		vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+		float NDF = DistributionGGX(N, H, roughness);
+		float G = GeometrySmith(N, V, L, roughness);
+
+		vec3 nominator = NDF * G * F;
+		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+		vec3 specular = nominator / max(denominator, 0.001);
+
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+
+		kD *= 1.0 - metallic;
+
+		Lo += ((kD * albedo.rgb / PI) + specular) * intensity * NdotL;
+
+		vec3 ambient = vec3(0.03) * albedo.rgb * ao;
+		vec3 color = (ambient + emissive + Lo)*visibility;
+		//return vec4(color, 1.0f);
+		float alpha = pow(albedo.a, 4.0);
+		return alpha * vec4(vec3(color), 1.0);
+	}
+	
+	return vec4(0.0f, 0.0f, 0.0f, 1.0f);
+}
+
 vec4 LambertianDiffuse()
 {
 	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
@@ -171,31 +231,52 @@ vec4 LambertianDiffuse()
 		return vec4(Lo, 1.0f);
 	}
 
-	return vec4(0.0f);
+	return vec4(0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+vec4 Color()
+{
+	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
+	if (visibility > 0.0)
+	{
+		vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
+		albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
+
+		vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
+
+		float ao = texture(aoMap, texCoordsFrag).r;
+		vec3 ambient = vec3(0.03) * albedo.rgb * ao;
+
+		vec3 Lo = (ambient + emissive + albedo.rgb) * visibility;
+		return vec4(Lo, 1.0f);
+	}
+
+	return vec4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void main()
 {
-	vec4 color = LambertianDiffuse();
+	//vec4 color = LambertianDiffuse();
+	vec4 color = CookTorrance();
 	vec3 voxel = ScaleAndBias(worldPosFrag);
 	ivec3 dimension = imageSize(voxelVolume);
-	ivec3 camPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, dimension.x * gl_FragCoord.z);
+	ivec3 voxelCamPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, dimension.x * gl_FragCoord.z);
 	ivec3 voxelPos;
 	if (axisFrag == 0)
 	{
-		voxelPos.x = dimension.x - camPos.z;
-		voxelPos.z = camPos.x;
-		voxelPos.y = camPos.y;
+		voxelPos.x = dimension.x - voxelCamPos.z;
+		voxelPos.z = voxelCamPos.x;
+		voxelPos.y = voxelCamPos.y;
 	}
 	else if (axisFrag == 1)
 	{
-		voxelPos.z = camPos.y;
-		voxelPos.y = dimension.x - camPos.z;
-		voxelPos.x = camPos.x;
+		voxelPos.z = voxelCamPos.y;
+		voxelPos.y = dimension.x - voxelCamPos.z;
+		voxelPos.x = voxelCamPos.x;
 	}
 	else
 	{
-		voxelPos = camPos;
+		voxelPos = voxelCamPos;
 	}
 
 	voxelPos.z = dimension.x - voxelPos.z - 1;
