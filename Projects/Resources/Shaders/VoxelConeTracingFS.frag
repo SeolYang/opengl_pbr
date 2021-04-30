@@ -204,7 +204,7 @@ void main()
 	vec4 tracedSpecular = ConeTrace(N, reflectDir, mix(0.01, 0.07, roughness*roughness), specularOcclusion);
 	tracedSpecular.xyz = tracedSpecular.xyz * (nominator_traced/max(denominator_traced, 0.001) * max(dot(N, reflectDir), 0.0));
 
-	vec3 specularReflection = (directSpecular + 2.0 * tracedSpecular.xyz);
+	vec3 specularReflection = (directSpecular + tracedSpecular.xyz);
 	vec3 kS_traced = F_traced;
 	vec3 kD_traced = vec3(1.0)-kS_traced;
 	kD_traced *= (1.0-metallic);

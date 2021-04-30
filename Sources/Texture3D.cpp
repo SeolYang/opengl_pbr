@@ -62,6 +62,6 @@ void Texture3D::Clear(GLfloat clearColor[4])
    GLint prevBoundTexture = 0;
    glGetIntegerv(GL_TEXTURE_BINDING_3D, &prevBoundTexture);
    glBindTexture(GL_TEXTURE_3D, m_id);
-   glClearTexImage(m_id, 0, GL_RGBA, GL_FLOAT, &clearColor);
+   glClearTexImage(m_id, 0, GL_RGBA, GL_FLOAT, clearColor);
    glBindTexture(GL_TEXTURE_3D, prevBoundTexture);
 }

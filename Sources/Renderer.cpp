@@ -244,8 +244,11 @@ void Renderer::Shadow(const Scene* scene)
 			auto models = scene->GetModels();
 			for (auto model : models)
 			{
-				m_shadowPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
-				model->Render(m_shadowPass);
+				if (model->bCastShadow)
+				{
+					m_shadowPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
+					model->Render(m_shadowPass);
+				}
 			}
 
 			m_shadowMap->Unbind();
@@ -264,7 +267,10 @@ void Renderer::Voxelize(const Scene* scene)
 			const std::vector<Light*> lights = scene->GetLights();
 			if (!lights.empty())
 			{
-				glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+				GLfloat volumeClear[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+				m_voxelVolume->Clear(volumeClear);
+
+				//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
 				m_voxelizePass->Bind();
 
 				Camera* camera = scene->GetMainCamera();
@@ -292,6 +298,7 @@ void Renderer::Voxelize(const Scene* scene)
 				m_voxelizePass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
 				m_voxelizePass->SetInt("shadowMap", 5);
 				m_shadowMap->BindAsTexture(5);
+
 				glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 				//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
 
@@ -308,7 +315,7 @@ void Renderer::Voxelize(const Scene* scene)
 				m_shadowMap->UnbindAsTexture(5);
 				//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 				glGenerateTextureMipmap(m_voxelVolume->GetID());
-				glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+				//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 			}
 		}
 	}

@@ -238,18 +238,13 @@ vec4 LambertianDiffuse()
 vec4 Color()
 {
 	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
-	if (visibility > 0.0)
-	{
-		vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
-		albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
+	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
+	albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
 
-		vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
+	vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
 
-		vec3 Lo = emissive + (albedo.rgb * visibility);
-		return vec4(Lo, 1.0f);
-	}
-
-	return vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	vec3 Lo = emissive + (albedo.rgb * visibility);
+	return vec4(Lo, 1.0f);
 }
 
 void main()

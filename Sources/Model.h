@@ -51,6 +51,9 @@ private:
 	void ProcessNode(const aiScene* scene, const aiNode* node);
 	void ProcessMesh(const aiScene* scene, const aiMesh* mesh);
 
+public:
+	bool bCastShadow = true;
+
 private:
 	std::string m_filePath;
 	std::string m_folderPath;

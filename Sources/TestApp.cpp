@@ -49,17 +49,26 @@ bool TestApp::Init()
 			material->SetBaseColorFactor(glm::vec4(1.0f, 0.766f, 0.336f, 1.0f));
 		}
 
-		 //Floor : Chromium
+		 //Floor
 		if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
 		{
 			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
-			material->SetRoughnessFactor(0.6f);
+			material->SetRoughnessFactor(0.7f);
 			material->SetMetallicFactor(0.0f);
 
 			//material->SetForceFactor(EMaterialTexture::BaseColor, true);
 			//material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
 		}
 	}
+
+	const ModelLoadParams sphereLoadParams{ };
+	m_sphere = scene->LoadModel("Sphere", "Resources/Models/sphere.obj", sphereLoadParams);
+	m_sphere->bCastShadow = false;
+	auto sphereMat = m_sphere->GetMaterial(0);
+	sphereMat->SetForceFactor(EMaterialTexture::Emissive, true);
+	sphereMat->SetForceFactor(EMaterialTexture::BaseColor, true);
+	sphereMat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	sphereMat->SetEmissiveFactor(glm::vec3(1.0f, 0.0f, 0.0f));
 
 	//ModelLoadParams cornellParams
  //  {
@@ -111,6 +120,13 @@ bool TestApp::Init()
 
 void TestApp::Update(float dt)
 {
+	m_elapsedTime += dt;
+	float elapsedTimeCos = std::cos(m_elapsedTime);
+	float elapsedTimeSin = std::sin(m_elapsedTime);
+
+	m_sphere->SetPosition(m_sphereOrbitRad * (glm::vec3(0.0f, 1.0f, 0.0f) + (0.5f * glm::vec3(1.5f * elapsedTimeCos, elapsedTimeSin, 2.0f * elapsedTimeCos * elapsedTimeSin))));
+	m_sphere->GetMaterial(0)->SetEmissiveFactor(glm::vec3(elapsedTimeCos * elapsedTimeSin, elapsedTimeCos, elapsedTimeSin * elapsedTimeSin));
+
 	m_controller->Update(dt);
 }
 

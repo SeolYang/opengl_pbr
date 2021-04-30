@@ -5,7 +5,7 @@
 constexpr unsigned int MaximumLights = 128;
 // Voxel Volume Texture Size
 constexpr unsigned int VoxelUnitSize = 128;
-constexpr float VoxelGridWorldSize = 128.0;
+constexpr float VoxelGridWorldSize = 120.0;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;
