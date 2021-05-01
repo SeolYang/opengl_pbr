@@ -1,6 +1,7 @@
 #pragma once
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
+#include <string>
 
 enum EMaterialTexture
 {
@@ -93,7 +94,11 @@ public:
 	   }
 	}
 
+	void SetName(std::string_view name) { m_name = name; }
+	std::string_view GetName() const { return m_name; }
+
 private:
+	std::string m_name = "UnknownMaterial";
 	Texture2D* m_baseColor;
 	glm::vec4 m_baseColorFactor;
 	bool m_bForceBaseColorFactor = false;

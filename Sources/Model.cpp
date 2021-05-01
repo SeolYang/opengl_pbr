@@ -118,6 +118,7 @@ void Model::ProcessMesh(const aiScene* scene, const aiMesh* mesh)
 
 		/* Material Data Process */
 		const auto newMat = new Material();
+		newMat->SetName(mesh->mName.C_Str());
 
 		aiString baseColorFileName;
 		aiString metallicRoughnessFileName;
