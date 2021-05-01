@@ -33,7 +33,7 @@ bool TestApp::Init()
 	   .PreTransformVertices=false,
 	   .Triangulate=false};
 	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
-	m_sponza->SetScale(glm::vec3(0.045f));
+	m_sponza->SetScale(glm::vec3(0.05f));
 
 	const auto& sponzaMaterials = m_sponza->GetMaterials();
 	for (auto material : sponzaMaterials)
@@ -43,7 +43,7 @@ bool TestApp::Init()
 		if (baseColorPath == "Resources/Models/Sponza/6772804448157695701.jpg")
 		{
 			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
-			material->SetRoughnessFactor(0.2f);
+			material->SetRoughnessFactor(0.1f);
 			material->SetMetallicFactor(1.0f);
 
 			material->SetForceFactor(EMaterialTexture::BaseColor, true);
@@ -53,8 +53,9 @@ bool TestApp::Init()
 		 //Floor
 		if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
 		{
+			m_floorMaterial = material;
 			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
-			material->SetRoughnessFactor(0.7f);
+			material->SetRoughnessFactor(m_floorRoughness);
 			material->SetMetallicFactor(0.0f);
 
 			//material->SetForceFactor(EMaterialTexture::BaseColor, true);
@@ -80,9 +81,9 @@ bool TestApp::Init()
 		.Triangulate = true
 	};
 	m_quad = scene->LoadModel("Quad", "Resources/Models/quad.obj", quadLoadParams);
-	m_quad->bCastShadow = false;
+	//m_quad->bCastShadow = false;
 	m_quad->bDoubleSided = true;
-	m_quad->SetPosition(glm::vec3(-55.0f, 5.5f, 1.5f));
+	m_quad->SetPosition(glm::vec3(-45.0f, 5.5f, 1.5f));
 	m_quad->SetRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_quad->SetScale(glm::vec3(7.5f, 4.5f, 1.0f));
 	auto quadMat = m_quad->GetMaterial(0);
@@ -99,7 +100,7 @@ bool TestApp::Init()
 		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
 		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
 	}
-	quadMat->SetEmissiveIntensity(5.0f);
+	quadMat->SetEmissiveIntensity(10.0f);
 
 	m_mainLight = scene->CreateLight("Main");
 	// Direct Sunlight
@@ -155,12 +156,42 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 		m_controller->KeyCallback(window, key, scanCode, action, mods);
 	}
 
-	auto renderer = this->GetRenderer();
 	if (action == GLFW_PRESS)
 	{
+		auto renderer = this->GetRenderer();
 		switch (key)
 		{
-		case GLFW_KEY_L:
+		default:
+			break;
+
+		case GLFW_KEY_1:
+			renderer->bEnableDirectDiffuse = !renderer->bEnableDirectDiffuse;
+			break;
+
+		case GLFW_KEY_2:
+			renderer->bEnableIndirectDiffuse = !renderer->bEnableIndirectDiffuse;
+			break;
+
+		case GLFW_KEY_3:
+			renderer->bEnableDirectSpecular = !renderer->bEnableDirectSpecular;
+			break;
+
+		case GLFW_KEY_4:
+			renderer->bEnableIndirectSpecular = !renderer->bEnableIndirectSpecular;
+			break;
+
+		case GLFW_KEY_5:
+			renderer->bDebugAmbientOcclusion = !renderer->bDebugAmbientOcclusion;
+			break;
+
+		case GLFW_KEY_PAGE_UP:
+			renderer->VCTSpecularSampleNum *= 2;
+			std::cout << "Indirect Specular Samples : " << renderer->VCTSpecularSampleNum << std::endl;
+			break;
+
+		case GLFW_KEY_PAGE_DOWN:
+			renderer->VCTSpecularSampleNum = std::max<unsigned int>(1, renderer->VCTSpecularSampleNum / 2);
+			std::cout << "Indirect Specular Samples : " << renderer->VCTSpecularSampleNum << std::endl;
 			break;
 
 		case GLFW_KEY_ESCAPE:
@@ -229,6 +260,18 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 
 		case GLFW_KEY_E:
 			m_sphere->SetActive(!m_sphere->IsActivated());
+			break;
+
+		case GLFW_KEY_MINUS:
+			m_floorRoughness -= 0.1f;
+			m_floorRoughness = std::max(0.0f, m_floorRoughness);
+			m_floorMaterial->SetRoughnessFactor(m_floorRoughness);
+			break;
+
+		case GLFW_KEY_EQUAL:
+			m_floorRoughness += 0.1f;
+			m_floorRoughness = std::min(1.0f, m_floorRoughness);
+			m_floorMaterial->SetRoughnessFactor(m_floorRoughness);
 			break;
 		}
 	}
