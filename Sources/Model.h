@@ -53,6 +53,7 @@ private:
 
 public:
 	bool bCastShadow = true;
+	bool bDoubleSided = false;
 
 private:
 	std::string m_filePath;
