@@ -5,7 +5,7 @@
 constexpr unsigned int MaximumLights = 128;
 // Voxel Volume Texture Size
 constexpr unsigned int VoxelUnitSize = 128;
-constexpr float VoxelGridWorldSize = 120.0;
+constexpr float VoxelGridWorldSize = 135.0;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;
@@ -47,6 +47,7 @@ public:
 	bool IsVoxelizeEveryFrame() const { return m_bAlwaysComputeVoxel; }
 
 private:
+	void RenderScene(const Scene* scene, Shader* shader);
 	void DeferredRender(const Scene* scene);
 
 	void Shadow(const Scene* scene);
@@ -63,12 +64,15 @@ private:
 	Shader*	m_lightingPass = nullptr;
 
 	// Shadow Mapping
+	bool m_bFirstShadow = true;
 	ShadowMap* m_shadowMap = nullptr;
 	Shader* m_shadowPass = nullptr;
 	glm::mat4 m_shadowViewMat = glm::mat4();
 	glm::mat4 m_shadowProjMat = glm::mat4();
 
 	// Voxel Cone Tracing
+	bool m_bAlwaysComputeVoxel = false;
+	bool m_bFirstVoxelize = true;
 	Texture3D*	m_voxelVolume = nullptr;
 	Shader*		m_voxelizePass = nullptr;
 	glm::mat4 m_projX;
@@ -85,9 +89,5 @@ private:
 
 	unsigned int m_winWidth = 0;
 	unsigned int m_winHeight = 1;
-
-	bool m_bAlwaysComputeVoxel = false;
-	bool m_bFirstVoxelize = true;
-	bool m_bFirstShadow = true;
 
 };

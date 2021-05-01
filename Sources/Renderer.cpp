@@ -148,6 +148,32 @@ void Renderer::Render(const Scene* scene)
 	}
 }
 
+void Renderer::RenderScene(const Scene* scene, Shader* shader)
+{
+	if (const Camera* camera = scene->GetMainCamera(); 
+		(camera != nullptr && camera->IsActivated()))
+	{
+		shader->SetMat4f("viewMatrix", camera->GetViewMatrix());
+		shader->SetMat4f("projMatrix", camera->GetProjMatrix());
+		shader->SetVec3f("camPos", camera->GetPosition());
+
+		if (auto lights = scene->GetLights(); !lights.empty())
+		{
+			shader->SetVec3f("light.Direction", lights[0]->Forward());
+			shader->SetVec3f("light.Intensity", lights[0]->GetIntensity());
+		}
+
+		for (auto models = scene->GetModels(); auto model : models)
+		{
+			if (model != nullptr)
+			{
+				shader->SetMat4f("worldMatrix", model->GetWorldMatrix());
+				model->Render(shader);
+			}
+		}
+	}
+}
+
 void Renderer::DeferredRender(const Scene* scene)
 {
 	if (scene != nullptr)
@@ -157,44 +183,25 @@ void Renderer::DeferredRender(const Scene* scene)
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
 
-		const std::vector<Camera*>& cameras = scene->GetCameras();
-		const std::vector<Model*>& models = scene->GetModels();
-		const std::vector<Light*>& lights = scene->GetLights();
 
 		// @TODO: Impl render to multiple render targets(textures) which owned by cameras
 		Camera* camera = scene->GetMainCamera();
-		Clear(glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
 		if (camera != nullptr && camera->IsActivated())
 		{
 			m_gBuffer->BindFrameBuffer();
-
 			glm::vec3 clearColor = camera->GetClearColor();
 			Clear(glm::vec4{ clearColor, 1.0f });
 
 			Viewport* viewport = camera->GetViewport();
 			glViewport(0, 0, viewport->GetWidth(), viewport->GetHeight());
 
-			glm::mat4 viewMat = camera->GetViewMatrix();
-			glm::mat4 projMat = camera->GetProjMatrix();
-
 			m_geometryPass->Bind();
-			m_geometryPass->SetMat4f("viewMatrix", viewMat);
-			m_geometryPass->SetMat4f("projMatrix", projMat);
-
 			glEnable(GL_DEPTH_TEST);
-			for (auto model : models)
-			{
-				m_geometryPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
-				if (model != nullptr)
-				{
-					model->Render(m_geometryPass);
-				}
-			}
+			RenderScene(scene, m_geometryPass);
 			m_gBuffer->UnbindFrameBuffer();
 
 			// ########### TEST CODE ##############
 			glViewport(0, 0, m_winWidth, m_winHeight);
-			auto numOfLights = (lights.size() <= MaximumLights) ? lights.size() : MaximumLights;
 			m_lightingPass->Bind();
 			m_gBuffer->BindTextures();
 			m_shadowMap->BindAsTexture(5);
@@ -202,6 +209,8 @@ void Renderer::DeferredRender(const Scene* scene)
 			m_lightingPass->SetVec3f("camPos", camera->GetPosition());
 			m_lightingPass->SetMat4f("shadowViewMat", m_shadowViewMat);
 			m_lightingPass->SetMat4f("shadowProjMat", m_shadowProjMat);
+
+		   const std::vector<Light*>& lights = scene->GetLights();
 			if (!lights.empty())
 			{
 				m_lightingPass->SetVec3f("light.Direction", lights[0]->Forward());
@@ -238,21 +247,13 @@ void Renderer::Shadow(const Scene* scene)
 
 			m_shadowViewMat = glm::lookAt(-lights[0]->Forward(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			m_shadowProjMat = glm::ortho<float>(-120.0f, 120.0f, -120.0f, 120.0f, -500.0f, 500.0f);
-			m_shadowPass->SetMat4f("viewMatrix", m_shadowViewMat);
-			m_shadowPass->SetMat4f("projMatrix", m_shadowProjMat);
+			m_shadowPass->SetMat4f("shadowViewMatrix", m_shadowViewMat);
+			m_shadowPass->SetMat4f("shadowProjMatrix", m_shadowProjMat);
 
 			auto models = scene->GetModels();
-			for (auto model : models)
-			{
-				if (model->bCastShadow)
-				{
-					m_shadowPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
-					model->Render(m_shadowPass);
-				}
-			}
+			RenderScene(scene, m_shadowPass);
 
 			m_shadowMap->Unbind();
-			glViewport(0, 0, m_winWidth, m_winHeight);
 		}
 	}
 }
@@ -264,59 +265,40 @@ void Renderer::Voxelize(const Scene* scene)
 		if (m_bFirstVoxelize || m_bAlwaysComputeVoxel || scene->IsSceneDirty())
 		{
 			m_bFirstVoxelize = false;
-			const std::vector<Light*> lights = scene->GetLights();
-			if (!lights.empty())
-			{
-				GLfloat volumeClear[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
-				m_voxelVolume->Clear(volumeClear);
+			GLfloat volumeClear[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+			m_voxelVolume->Clear(volumeClear);
 
-				//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
-				m_voxelizePass->Bind();
+			m_voxelizePass->Bind();
 
-				Camera* camera = scene->GetMainCamera();
-				m_voxelizePass->SetVec3f("camPos", camera->GetPosition());
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_DEPTH_TEST);
 
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			// Vertex Shader Uniforms
+			m_voxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);
+			m_voxelizePass->SetMat4f("shadowProjMat", m_shadowProjMat);
 
-				glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
-				//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-				glDisable(GL_CULL_FACE);
-				glDisable(GL_DEPTH_TEST);
-				//glDisable(GL_BLEND);
+			// Geometry Shader Uniforms
+			m_voxelizePass->SetMat4f("projXAxis", m_projX);
+			m_voxelizePass->SetMat4f("projYAxis", m_projY);
+			m_voxelizePass->SetMat4f("projZAxis", m_projZ);
 
-				// Vertex Shader Uniforms
-				m_voxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);
-				m_voxelizePass->SetMat4f("shadowProjMat", m_shadowProjMat);
+			// Fragment Shader Uniforms
+			m_voxelizePass->SetInt("shadowMap", 5);
+			m_shadowMap->BindAsTexture(5);
 
-				// Geometry Shader Uniforms
-				m_voxelizePass->SetMat4f("projXAxis", m_projX);
-				m_voxelizePass->SetMat4f("projYAxis", m_projY);
-				m_voxelizePass->SetMat4f("projZAxis", m_projZ);
+			glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-				// Fragment Shader Uniforms
-				m_voxelizePass->SetVec3f("light.Direction", lights[0]->Forward());
-				m_voxelizePass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
-				m_voxelizePass->SetInt("shadowMap", 5);
-				m_shadowMap->BindAsTexture(5);
+			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
+			RenderScene(scene, m_voxelizePass);
 
-				glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-				//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
+			m_shadowMap->UnbindAsTexture(5);
+			glGenerateTextureMipmap(m_voxelVolume->GetID());
 
-				const std::vector<Model*> models = scene->GetModels();
-				for (auto model : models)
-				{
-					m_voxelizePass->SetMat4f("worldMatrix", model->GetWorldMatrix());
-					if (model != nullptr)
-					{
-						model->Render(m_voxelizePass);
-					}
-				}
-
-				m_shadowMap->UnbindAsTexture(5);
-				//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-				glGenerateTextureMipmap(m_voxelVolume->GetID());
-				//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
-			}
+			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
+			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 		}
 	}
 }
@@ -358,50 +340,32 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
-		if (auto lights = std::move(scene->GetLights()); !lights.empty())
-		{
-			glEnable(GL_CULL_FACE);
-			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glBindRenderbuffer(GL_RENDERBUFFER, 0);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glViewport(0, 0, m_winWidth, m_winHeight);
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, m_winWidth, m_winHeight);
 
-			m_vctPass->Bind();
+		m_vctPass->Bind();
 
-			const Camera* camera = scene->GetMainCamera();
-			m_vctPass->SetMat4f("viewMatrix", camera->GetViewMatrix());
-			m_vctPass->SetMat4f("projMatrix", camera->GetProjMatrix());
-			m_vctPass->SetMat4f("shadowViewMat", m_shadowViewMat);
-			m_vctPass->SetMat4f("shadowProjMat", m_shadowProjMat);
+		m_vctPass->SetMat4f("shadowViewMat", m_shadowViewMat);
+		m_vctPass->SetMat4f("shadowProjMat", m_shadowProjMat);
 
-			m_vctPass->SetVec3f("light.Direction", lights[0]->Forward());
-			m_vctPass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
+		m_shadowMap->BindAsTexture(5);
+		m_vctPass->SetInt("shadowMap", 5);
 
-			m_vctPass->SetVec3f("camPos", camera->GetPosition());
+		m_voxelVolume->Bind(6);
+		m_vctPass->SetInt("voxelVolume", 6);
+		m_vctPass->SetFloat("voxelGridWorldSize", VoxelGridWorldSize);
+		m_vctPass->SetFloat("voxelDim", static_cast<float>(VoxelUnitSize));
 
-			m_shadowMap->BindAsTexture(5);
-			m_vctPass->SetInt("shadowMap", 5);
+		RenderScene(scene, m_vctPass);
 
-			m_voxelVolume->Bind(6);
-			m_vctPass->SetInt("voxelVolume", 6);
-			m_vctPass->SetFloat("voxelGridWorldSize", VoxelGridWorldSize);
-			m_vctPass->SetFloat("voxelDim", static_cast<float>(VoxelUnitSize));
-
-			for (auto models = std::move(scene->GetModels()); auto model : models)
-			{
-				m_vctPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
-				if (model != nullptr)
-				{
-					model->Render(m_vctPass);
-				}
-			}
-
-			m_voxelVolume->Unbind(6);
-			m_shadowMap->UnbindAsTexture(5);
-		}
+		m_voxelVolume->Unbind(6);
+		m_shadowMap->UnbindAsTexture(5);
 	}
 }
 
