@@ -118,7 +118,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -185,7 +185,6 @@ void Renderer::DeferredRender(const Scene* scene)
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
-
 
 		// @TODO: Impl render to multiple render targets(textures) which owned by cameras
 		Camera* camera = scene->GetMainCamera();
@@ -363,6 +362,19 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 		m_vctPass->SetInt("voxelVolume", 6);
 		m_vctPass->SetFloat("voxelGridWorldSize", VoxelGridWorldSize);
 		m_vctPass->SetFloat("voxelDim", static_cast<float>(VoxelUnitSize));
+
+		/* VCT params */
+		m_vctPass->SetFloat("maxDist_VCT", VCTMaxDistance);
+		m_vctPass->SetFloat("step_VCT", VCTStep);
+		m_vctPass->SetFloat("alphaThreshold_VCT", VCTAlphaThreshold);
+		m_vctPass->SetInt("specularSampleNum_VCT", VCTSpecularSampleNum);
+
+		/* Debug flags */
+		m_vctPass->SetInt("enableDirectDiffuse", bEnableDirectDiffuse ? 1 : 0);
+		m_vctPass->SetInt("enableIndirectDiffuse", bEnableIndirectDiffuse ? 1 : 0);
+		m_vctPass->SetInt("enableDirectSpecular", bEnableDirectSpecular ? 1 : 0);
+		m_vctPass->SetInt("enableIndirectSpecular", bEnableIndirectSpecular ? 1 : 0);
+		m_vctPass->SetInt("debugAmbientOcclusion", bDebugAmbientOcclusion ? 1 : 0);
 
 		RenderScene(scene, m_vctPass);
 

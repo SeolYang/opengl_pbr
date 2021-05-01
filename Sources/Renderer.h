@@ -2,10 +2,9 @@
 #include "Rendering.h"
 #include "glm/glm.hpp"
 
-constexpr unsigned int MaximumLights = 128;
 // Voxel Volume Texture Size
 constexpr unsigned int VoxelUnitSize = 128;
-constexpr float VoxelGridWorldSize = 135.0;
+constexpr float VoxelGridWorldSize = 256.0;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;
@@ -55,6 +54,18 @@ private:
 	void Voxelize(const Scene* scene);
 	void RenderVoxel(const Scene* scene);
 	void VoxelConeTracing(const Scene* scene);
+
+public:
+	bool bEnableDirectDiffuse = true;
+	bool bEnableIndirectDiffuse = true;
+	bool bEnableDirectSpecular = true;
+	bool bEnableIndirectSpecular = true;
+	bool bDebugAmbientOcclusion = false;
+
+	float VCTMaxDistance = 100.0f;
+	float VCTStep = 0.5f;
+	float VCTAlphaThreshold = 1.0f;
+	unsigned int VCTSpecularSampleNum = 4;
 
 private:
 	ERenderMode m_renderMode = ERenderMode::VCT;
