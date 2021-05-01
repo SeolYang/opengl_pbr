@@ -47,7 +47,7 @@ public:
 	bool IsVoxelizeEveryFrame() const { return m_bAlwaysComputeVoxel; }
 
 private:
-	void RenderScene(const Scene* scene, Shader* shader);
+	void RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting = false);
 	void DeferredRender(const Scene* scene);
 
 	void Shadow(const Scene* scene);
@@ -57,7 +57,7 @@ private:
 	void VoxelConeTracing(const Scene* scene);
 
 private:
-	ERenderMode m_renderMode = ERenderMode::Deferred;
+	ERenderMode m_renderMode = ERenderMode::VCT;
 	// Deferred Rendering
 	GBuffer*	m_gBuffer = nullptr;
 	Shader*	m_geometryPass = nullptr;

@@ -148,7 +148,7 @@ void Renderer::Render(const Scene* scene)
 	}
 }
 
-void Renderer::RenderScene(const Scene* scene, Shader* shader)
+void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting)
 {
 	if (const Camera* camera = scene->GetMainCamera(); 
 		(camera != nullptr && camera->IsActivated()))
@@ -167,8 +167,11 @@ void Renderer::RenderScene(const Scene* scene, Shader* shader)
 		{
 			if (model != nullptr)
 			{
-				shader->SetMat4f("worldMatrix", model->GetWorldMatrix());
-				model->Render(shader);
+				if (!bIsShadowCasting || model->bCastShadow)
+				{
+					shader->SetMat4f("worldMatrix", model->GetWorldMatrix());
+					model->Render(shader);
+				}
 			}
 		}
 	}
@@ -250,8 +253,7 @@ void Renderer::Shadow(const Scene* scene)
 			m_shadowPass->SetMat4f("shadowViewMatrix", m_shadowViewMat);
 			m_shadowPass->SetMat4f("shadowProjMatrix", m_shadowProjMat);
 
-			auto models = scene->GetModels();
-			RenderScene(scene, m_shadowPass);
+			RenderScene(scene, m_shadowPass, true);
 
 			m_shadowMap->Unbind();
 		}
