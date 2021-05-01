@@ -16,6 +16,7 @@
 #include <cmath>
 #include <random>
 #include <algorithm>
+#include <filesystem>
 
 #include "Texture2D.h"
 
@@ -28,16 +29,16 @@ bool TestApp::Init()
 	   .CalcTangentSpace = true,
 	   .ConvertToLeftHanded = true,
 	   .GenSmoothNormals=true,
-	   .GenUVs = true,
+	   .GenUVs = false,
 	   .PreTransformVertices=false,
-	   .Triangulate=true};
+	   .Triangulate=false};
 	m_sponza = scene->LoadModel("Sponza", "Resources/Models/Sponza/Sponza.gltf", sponzaLoadParams);
 	m_sponza->SetScale(glm::vec3(0.045f));
 
 	const auto& sponzaMaterials = m_sponza->GetMaterials();
 	for (auto material : sponzaMaterials)
 	{
-		std::string_view baseColorPath = material->GetBaseColor()->GetURI();
+		const std::string_view baseColorPath = material->GetBaseColor()->GetURI();
 		// Lion : Gold
 		if (baseColorPath == "Resources/Models/Sponza/6772804448157695701.jpg")
 		{
@@ -64,48 +65,53 @@ bool TestApp::Init()
 	const ModelLoadParams sphereLoadParams{ };
 	m_sphere = scene->LoadModel("Sphere", "Resources/Models/sphere.obj", sphereLoadParams);
 	m_sphere->bCastShadow = false;
+	m_sphere->SetActive(false);
 	auto sphereMat = m_sphere->GetMaterial(0);
 	sphereMat->SetForceFactor(EMaterialTexture::Emissive, true);
 	sphereMat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	sphereMat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	sphereMat->SetEmissiveFactor(glm::vec3(1.0f, 0.0f, 0.0f));
 
-	//ModelLoadParams cornellParams
- //  {
-	//		.CalcTangentSpace = true,
-	//		.ConvertToLeftHanded = true,
-	//		.GenSmoothNormals = false,
-	//		.GenUVs = true,
-	//		.PreTransformVertices = false,
-	//		.Triangulate = true
- //  };
+	const ModelLoadParams quadLoadParams{
+		.CalcTangentSpace = true,
+		.ConvertToLeftHanded = true,
+		.GenSmoothNormals = true,
+		.GenUVs = true,
+		.PreTransformVertices = false,
+		.Triangulate = true
+	};
+	m_quad = scene->LoadModel("Quad", "Resources/Models/quad.obj", quadLoadParams);
+	m_quad->bCastShadow = false;
+	m_quad->bDoubleSided = true;
+	m_quad->SetPosition(glm::vec3(-55.0f, 5.5f, 1.5f));
+	m_quad->SetRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	m_quad->SetScale(glm::vec3(7.5f, 4.5f, 1.0f));
+	auto quadMat = m_quad->GetMaterial(0);
+	quadMat->SetForceFactor(EMaterialTexture::BaseColor, true);
+	quadMat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	//Model* cornell = scene->LoadModel("CornellBox", "Resources/Models/cornell.obj", cornellParams);
-	//cornell->SetScale(glm::vec3(40.0f));
-
-	//glm::vec4 cornellColor[7] = {
-	//	glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
-	//	glm::vec4(1.0f),
-	//	glm::vec4(1.0f),
-	//	glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-	//	glm::vec4(1.0f),
-	//	glm::vec4(1.0f),
-	//	glm::vec4(1.0f)
-	//};
-
-	//auto cornellMaterials = cornell->GetMaterials();
-	//for (size_t idx = 0; idx < cornellMaterials.size(); ++idx)
-	//{
-	//	cornellMaterials[idx]->SetBaseColorFactor(cornellColor[idx]);
-	//}
+	std::filesystem::path animeEmissiveTexture = "Resources/Textures/67243791_p0.jpg";
+	if (std::filesystem::exists(animeEmissiveTexture))
+	{
+		quadMat->SetEmissive(new Texture2D("Resources/Textures/67243791_p0.jpg"));
+	}
+	else
+	{
+		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
+		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
+	}
+	quadMat->SetEmissiveIntensity(5.0f);
 
 	m_mainLight = scene->CreateLight("Main");
-	m_mainLight->SetPosition(glm::vec3{ 0.0f, 0.0f, 0.0f });
-	m_mainLight->SetIntensity(glm::vec3{ 10.0f });
+	// Direct Sunlight
+	//m_mainLight->SetIntensity(glm::vec3{ 10.0f });
+	// Clear Blue Sky
+	//m_mainLight->SetIntensity(10.0f * glm::vec3{0.25098f, 0.611765f, 1.0f});
+	// 100W Tungsten
+	m_mainLight->SetIntensity(10.0f * glm::vec3(1.0f, 0.945f, 0.6667f));
 	this->UpdateLightRotation();
 
 	m_cam = scene->GetMainCamera();
-	m_cam->SetPosition(glm::vec3(0.0f, 0.05f, 0.f));
+	m_cam->SetPosition(glm::vec3(0.0f, 6.0f, 0.f));
 	m_controller = new Controller(m_cam, this->GetWindow());
 	m_controller->CameraSpeed = 15.0f;
 
@@ -124,8 +130,11 @@ void TestApp::Update(float dt)
 	float elapsedTimeCos = std::cos(m_elapsedTime);
 	float elapsedTimeSin = std::sin(m_elapsedTime);
 
-	m_sphere->SetPosition(m_sphereOrbitRad * (glm::vec3(0.0f, 1.0f, 0.0f) + (0.5f * glm::vec3(1.5f * elapsedTimeCos, elapsedTimeSin, 2.0f * elapsedTimeCos * elapsedTimeSin))));
-	m_sphere->GetMaterial(0)->SetEmissiveFactor(glm::vec3(elapsedTimeCos * elapsedTimeSin, elapsedTimeCos, elapsedTimeSin * elapsedTimeSin));
+	if (m_sphere->IsActivated())
+	{
+		m_sphere->SetPosition(m_sphereOrbitRad * (glm::vec3(0.0f, 1.0f, 0.0f) + (0.5f * glm::vec3(1.5f * elapsedTimeCos, elapsedTimeSin, 2.0f * elapsedTimeCos * elapsedTimeSin))));
+		m_sphere->GetMaterial(0)->SetEmissiveFactor(glm::vec3(elapsedTimeCos * elapsedTimeSin, elapsedTimeCos, elapsedTimeSin * elapsedTimeSin));
+	}
 
 	m_controller->Update(dt);
 }
@@ -152,26 +161,21 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 		switch (key)
 		{
 		case GLFW_KEY_L:
-			RandomLightGen();
 			break;
 
 		case GLFW_KEY_ESCAPE:
 			this->Stop();
 			break;
 
-		case GLFW_KEY_M:
-			this->GetRenderer()->SetRenderMode(this->GetRenderer()->GetRenderMode() == ERenderMode::Deferred ? ERenderMode::VoxelVisualization : ERenderMode::Deferred);
-			break;
-
 		case GLFW_KEY_LEFT_BRACKET:
 			switch(renderer->GetRenderMode())
 			{
-			case ERenderMode::VCT:
-				renderer->SetRenderMode(ERenderMode::Deferred);
+			case ERenderMode::Deferred:
+				renderer->SetRenderMode(ERenderMode::VCT);
 				break;
 
 			case ERenderMode::VoxelVisualization:
-				renderer->SetRenderMode(ERenderMode::VCT);
+				renderer->SetRenderMode(ERenderMode::Deferred);
 				break;
 
 			default:
@@ -183,11 +187,11 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			switch (renderer->GetRenderMode())
 			{
 			case ERenderMode::VCT:
-				renderer->SetRenderMode(ERenderMode::VoxelVisualization);
+				renderer->SetRenderMode(ERenderMode::Deferred);
 				break;
 
 			case ERenderMode::Deferred:
-				renderer->SetRenderMode(ERenderMode::VCT);
+				renderer->SetRenderMode(ERenderMode::VoxelVisualization);
 				break;
 
 			default:
@@ -222,56 +226,12 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			m_lightRotationY += 10.0f;
 			this->UpdateLightRotation();
 			break;
+
+		case GLFW_KEY_E:
+			m_sphere->SetActive(!m_sphere->IsActivated());
+			break;
 		}
 	}
-}
-
-void TestApp::RandomLightGen()
-{
-	static unsigned int count = 0;
-	static std::random_device device;
-	static std::mt19937 engine(device());
-
-	std::uniform_real_distribution<float> rad_dist(0.0f, 60.0f);
-	std::uniform_real_distribution<float> pos_dist(-100.0f, 100.0f);
-
-	auto* newLight = GetScene()->CreateLight("Random" + std::to_string(count));
-	newLight->SetIntensity(glm::vec3(
-		rad_dist(engine),
-		rad_dist(engine),
-		rad_dist(engine)));
-	newLight->SetPosition(glm::vec3(
-		pos_dist(engine),
-		std::max(0.0f, pos_dist(engine)),
-		pos_dist(engine)));
-}
-
-void TestApp::SplitViewport()
-{
-	bool status = !m_secondaryCam->IsActivated();
-
-	unsigned int width = GetWidth();
-	unsigned int height = GetHeight();
-	unsigned int halfWinWidth = width / 2;
-	Viewport* mainViewport = m_cam->GetViewport();
-	Viewport* secondaryViewport = m_secondaryCam->GetViewport();
-
-	if (status)
-	{
-		mainViewport->SetWidth(halfWinWidth);
-		mainViewport->SetHeight(height);
-
-		secondaryViewport->SetWidth(halfWinWidth);
-		secondaryViewport->SetHeight(height);
-		secondaryViewport->SetX(halfWinWidth);
-	}
-	else
-	{
-		mainViewport->SetWidth(width);
-		mainViewport->SetHeight(height);
-	}
-
-	m_secondaryCam->SetActive(status);
 }
 
 void TestApp::UpdateLightRotation()

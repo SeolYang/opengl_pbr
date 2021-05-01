@@ -11,12 +11,7 @@ class TestApp : public Application
 public:
 	TestApp(const std::string& title,
 		unsigned int width, unsigned int height) :
-	   m_sponza(nullptr),
-		m_mainLight(nullptr),
-		m_cam(nullptr),
-		m_secondaryCam(nullptr),
-		Application(title, 
-			width, height)
+		Application(title, width, height)
 	{
 	}
 
@@ -29,24 +24,21 @@ protected:
 
 	virtual void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods);
 
-	void RandomLightGen();
-	void SplitViewport();
-
 private:
 	void UpdateLightRotation();
 
 private:
-	Model* m_sponza;
-	Model* m_sphere;
+	Model* m_sponza = nullptr;
+	Model* m_sphere = nullptr;
+	Model* m_quad = nullptr;
 				
-	Light* m_mainLight;
+	Light* m_mainLight = nullptr;
 				
 	Camera*		m_cam;
-	Camera*		m_secondaryCam;
 	Controller* m_controller = nullptr;
 				
 	float m_elapsedTime = 0.0f;
-	float m_lightRotationX = 75.0f;
+	float m_lightRotationX = 105.0f;
 	float m_lightRotationY = 0.0f;
 
 	float m_sphereOrbitRad = 10.0f;
