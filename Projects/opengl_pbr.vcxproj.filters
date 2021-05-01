@@ -37,9 +37,6 @@
     <ClInclude Include="..\Sources\Scene.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Settings.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\Model.h">
       <Filter>Sources</Filter>
     </ClInclude>
@@ -136,9 +133,6 @@
       <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Texture3D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\ShadowMap.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
