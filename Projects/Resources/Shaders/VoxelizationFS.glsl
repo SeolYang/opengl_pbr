@@ -22,13 +22,14 @@ in flat int axisFrag;
 uniform sampler2D baseColorMap; // baseColorMap: sRGB
 uniform vec4 baseColorFactor;
 uniform sampler2D normalMap;
+uniform int bUseNormalMap;
 uniform sampler2D metallicRoughnessMap; // metallicRoughnessMap: Linear(B:Metallic, G:Roughness)
 uniform float metallicFactor;
 uniform float roughnessFactor;
 uniform sampler2D aoMap; // aoMap(Ambient Occlusion Map): Linear(R channel only)
 uniform sampler2D emissiveMap; // emissiveMap: sRGB
 uniform vec3 emissiveFactor;
-uniform int bUseNormalMap;
+uniform float emissiveIntensity;
 
 uniform sampler2DShadow shadowMap;
 
@@ -241,7 +242,7 @@ vec4 Color()
 	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
 	albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
 
-	vec3 emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor;
+	vec3 emissive = emissiveIntensity * (pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor);
 
 	vec3 Lo = emissive + (albedo.rgb * visibility);
 	return vec4(Lo, 1.0f);

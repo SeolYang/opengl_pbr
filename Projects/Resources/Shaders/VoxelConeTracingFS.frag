@@ -19,13 +19,14 @@ const float PI = 3.14159265359;
 uniform sampler2D baseColorMap; // baseColorMap: sRGB
 uniform vec4 baseColorFactor;
 uniform sampler2D normalMap;
+uniform int bUseNormalMap;
 uniform sampler2D metallicRoughnessMap; // metallicRoughnessMap: Linear(B:Metallic, G:Roughness)
 uniform float metallicFactor;
 uniform float roughnessFactor;
 uniform sampler2D aoMap; // aoMap(Ambient Occlusion Map): Linear(R channel only)
 uniform sampler2D emissiveMap; // emissiveMap: sRGB
 uniform vec3 emissiveFactor;
-uniform int bUseNormalMap;
+uniform float emissiveIntensity;
 
 /* Uniforms */
 uniform DirectionalLight light;
@@ -76,10 +77,12 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 	return ggx1 * ggx2;
 }
 
-/* Voxel Cone Tracing */
+/* Voxel Cone Tracing(VCT Params) */
+uniform float maxDist_VCT = 150.0f;
+uniform float distanceMultiplier_VCT = 0.3f;
+uniform float alphaThreshold_VCT =0.95f;
+
 mat3 tangentToWorld;
-const float MaxDist = 200.0f;
-const float AlphaThreshold = 0.95f;
 const int NumOfCones = 6;
 vec3 coneDirections[6] = vec3[](
 	vec3(0.0, 1.0, 0.0),
@@ -110,17 +113,18 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	float dist = voxelSize;
 	vec3 origin = worldPosFrag + (normal*voxelSize);
 
-	while (dist < MaxDist && alpha < AlphaThreshold)
+	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
 	{
 		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
 		float lodLevel = log2(coneDiameter / voxelSize);
 		vec4 voxelColor = SampleVoxelVolume(origin+(dist*direction), lodLevel);
 
 		float a = (1.0 - alpha);
-		color += a*voxelColor.rgb;
+		color += a*voxelColor.rgb; // @TODO Distance base Attenuation
 		alpha += a*voxelColor.a;
 		occlusion += (a*voxelColor.a)/(1.0 + (0.03*coneDiameter));
-		dist += coneDiameter*0.5;
+
+		dist += coneDiameter*distanceMultiplier_VCT; 
 	}
 
 	return vec4(color, alpha);
@@ -154,7 +158,7 @@ void main()
 	albedo = vec4(pow(albedo.rgb, vec3(2.2)) + baseColorFactor.rgb, albedo.a);
 
 	tangentToWorld = inverse(tbnFrag);
-	vec3 emissive = pow(texture(emissiveMap, texCoordsFrag).rgb, vec3(2.2)) + emissiveFactor;
+	vec3 emissive = emissiveIntensity * (pow(texture(emissiveMap, texCoordsFrag).rgb, vec3(2.2)) + emissiveFactor);
 
 	float ao = texture(aoMap, texCoordsFrag).r;
 

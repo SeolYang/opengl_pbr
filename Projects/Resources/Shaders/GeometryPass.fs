@@ -16,6 +16,7 @@ uniform sampler2D baseColorMap;
 uniform vec4 baseColorFactor;
 
 uniform sampler2D normalMap;
+uniform int bUseNormalMap;
 
 // metallicRoughnessMap: Linear(B:Metallic, G:Roughness)
 uniform sampler2D metallicRoughnessMap;
@@ -28,8 +29,8 @@ uniform sampler2D aoMap;
 // emissiveMap: sRGB
 uniform sampler2D emissiveMap;
 uniform vec3 emissiveFactor;
+uniform float emissiveIntensity;
 
-uniform int bUseNormalMap;
 
 const float PI = 3.14159265359;
 
@@ -61,6 +62,7 @@ void main()
 
 	vec3 emissive = pow3(texture(emissiveMap, texcoord).rgb, 2.2);
 	emissive += pow3(emissiveFactor, 2.2);
+	emissive *= emissiveIntensity;
 
 	float metallic = metallicFactor + texture(metallicRoughnessMap, texcoord).b;
 	float roughness = roughnessFactor + texture(metallicRoughnessMap, texcoord).g;
