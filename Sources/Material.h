@@ -74,6 +74,9 @@ public:
 	void SetEmissiveFactor(const glm::vec3& factor) { m_emissiveFactor = factor; }
 	glm::vec3 GetEmissiveFactor() const { return m_emissiveFactor; }
 
+	void SetEmissiveIntensity(float factor) { m_emissiveIntensity = factor; }
+	float GetEmissiveIntensity() const { return m_emissiveIntensity; }
+
 	void SetForceFactor(EMaterialTexture type, bool bForce)
 	{
 	   switch (type)
@@ -104,6 +107,7 @@ private:
 
 	Texture2D* m_emissive;
 	glm::vec3 m_emissiveFactor;
+	float m_emissiveIntensity = 1.0f;
 	bool m_bForceEmissiveFactor = false;
 
 	Texture2D* m_normal;

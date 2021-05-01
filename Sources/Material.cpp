@@ -81,7 +81,7 @@ void Material::Bind(Shader* shader)
 
 		shader->SetInt("aoMap", EMaterialTextureSlot::AO);
 
-		if (m_emissive != nullptr && m_bForceEmissiveFactor)
+		if (m_emissive != nullptr && !m_bForceEmissiveFactor)
 		{
 			m_emissive->Bind(EMaterialTextureSlot::Emissive);
 			shader->SetVec3f("emissiveFactor", glm::vec3(0.0f));
@@ -91,6 +91,7 @@ void Material::Bind(Shader* shader)
 			shader->SetVec3f("emissiveFactor", m_emissiveFactor);
 		}
 		shader->SetInt("emissiveMap", EMaterialTextureSlot::Emissive);
+		shader->SetFloat("emissiveIntensity", m_emissiveIntensity);
 
 	}
 }
@@ -128,5 +129,6 @@ void Material::Unbind(Shader* shader)
 		shader->SetFloat("metallicFactor", 0.0f);
 		shader->SetFloat("roughnessFactor", 0.0f);
 		shader->SetVec3f("emissiveFactor", glm::vec3(0.0f));
+		shader->SetFloat("emissiveIntensity", 1.0f);
 	}
 }
