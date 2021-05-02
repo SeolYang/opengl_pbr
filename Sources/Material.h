@@ -97,6 +97,10 @@ public:
 	void SetName(std::string_view name) { m_name = name; }
 	std::string_view GetName() const { return m_name; }
 
+public:
+	float IOR = 1.0f;
+	bool bRefract = false;
+
 private:
 	std::string m_name = "UnknownMaterial";
 	Texture2D* m_baseColor;

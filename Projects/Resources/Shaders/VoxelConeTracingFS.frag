@@ -27,6 +27,8 @@ uniform sampler2D aoMap; // aoMap(Ambient Occlusion Map): Linear(R channel only)
 uniform sampler2D emissiveMap; // emissiveMap: sRGB
 uniform vec3 emissiveFactor;
 uniform float emissiveIntensity;
+uniform float ior = 1.0;
+uniform int isRefract = 0;
 
 /* Uniforms */
 uniform DirectionalLight light;
@@ -184,7 +186,39 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = voxelSize;
-	vec3 origin = worldPosFrag + (0.6f*normal*voxelSize);
+	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
+	vec3 origin = worldPosFrag + (1.0f*normal*voxelSize);
+
+	// @TODO Distance base Attenuation
+	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
+	{
+		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
+		float lodLevel = log2(coneDiameter / voxelSize);
+		vec4 voxelColor = SampleVoxelVolume(origin+(dist*direction), lodLevel);
+
+		float a = (1.0 - alpha);
+		color += a*voxelColor.rgb;
+		alpha += a*voxelColor.a;
+		occlusion += (a*voxelColor.a)/(1.0 + (0.03*coneDiameter));
+
+		dist += coneDiameter*step_VCT; 
+	}
+
+	return vec4(color, alpha);
+}
+
+vec4 ConeTraceRefraction(vec3 normal, vec3 direction, float tanHalfAngle, out float occlusion)
+{
+    vec3 N = -normal;
+	float lod = 0.0f;
+	vec3 color = vec3(0.0f);
+	float alpha = 0.0f;
+	occlusion = 0.0f;
+
+	float voxelSize = voxelGridWorldSize / voxelDim;
+	float dist = voxelSize;
+	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
+	vec3 origin = worldPosFrag + (2.0f*N*voxelSize);
 
 	// @TODO Distance base Attenuation
 	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
@@ -238,7 +272,7 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 		if (NoL > 0.0)
 		{
 			float specularOcc = 0.0;
-			vec3 tracedColor = ConeTrace(N, L, mix(0.03, 0.09, roughness), specularOcc).rgb;
+			vec3 tracedColor = ConeTrace(N, L, 0.07, specularOcc).rgb;
 
 			float G = GeometrySmithIndirect(N, V, L, roughness);
 			float Fc = pow(1.0-VoH, 5);
@@ -246,13 +280,27 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 			specularLighting += tracedColor*F*G*VoH/(NoH*NoV);
 		}
 	}
-
 	return specularLighting/float(numSamples);
+}
+
+vec3 IndirectSpecularDir(const uint numSamples, float roughness, vec3 N, vec3 V)
+{
+	vec3 direction = vec3(0.0f);
+	for( uint idx = 0; idx < numSamples; ++idx)
+	{
+		vec2 xi = Hammersley(idx, numSamples);
+		vec3 H = ImportanceSampleGGX(xi, roughness, N);
+		vec3 L = normalize(2.0*dot(V, H)*H-V);
+
+		direction += L;
+	}
+
+	return direction/float(numSamples);
 }
 
 void main()
 {
-	float visibility = (texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f)/(shadowPosFrag.w + 0.0001f)))) > 0.0 ? 1.0 : 0.0;
+	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w)));
 	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
 	if (albedo.a < 0.1)
 	{
@@ -302,8 +350,26 @@ void main()
 	vec3 directDiffuse = kD_direct * (albedo.rgb/PI);
 	
 	/* Indirect Specular */
-	vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
-	vec3 indirectSpecular = 2.0f * IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
+	vec3 L_reflect = normalize(reflect(-V, N));
+	vec3 H_reflect = normalize(V + L_reflect);
+	float NdotL_reflect = max(dot(N, L_reflect), 0.0);
+	vec3 F_reflect = FresnelSchlick(max(dot(H_reflect, V), 0.0), F0);
+	float NDF_reflect = DistributionGGX(N, H_reflect, roughness);
+	float G_reflect = GeometrySmithIndirect(N, V, L_reflect, roughness);
+	vec3 nominator_reflect = NDF_reflect*G_reflect*F_reflect;
+	float denominator_reflect = 4.0*max(dot(N, V), 0.0) * max(dot(N, L_reflect), 0.0);
+	vec3 reflectSpecular = nominator_reflect/max(denominator_reflect, 0.001f);
+	float socc = 0.0f;
+
+	vec3 F_indirect = F_reflect;
+	//vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
+	//vec3 indirectSpecular = reflectSpecular*ConeTrace(N, L_reflect, 0.07, socc).rgb;
+	vec3 indirectSpecular = reflectSpecular*ConeTrace(N, L_reflect, 0.07, socc).rgb;
+	//vec3 indirectSpecular = IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
+	//vec3 indirectSpecular = (IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect) + 0.1f*F_indirect*ConeTrace(N, normalize(reflect(-V, N)), 0.07, socc).rgb);
+	//vec3 indirectSpecular = IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
+	//vec3 indirectSpecular = F_indirect*ConeTrace(N, normalize(reflect(-V, N)), mix(0.03, 1.0, roughness), socc).rgb;
+	//vec3 indirectSpecular = F_indirect*ConeTrace(N, IndirectSpecularDir(specularSampleNum_VCT, roughness, N, V), mix(0.05, 0.65, roughness), socc).rgb;
 	vec3 kS_indirect = F_indirect;
 	vec3 kD_indirect = vec3(1.0) - kS_indirect;
 	kD_indirect *= (1.0-metallic);
@@ -312,7 +378,7 @@ void main()
 	float occlusion = 0.0f;
 	vec3 indirectDiffuse = 4.0f * IndirectDiffuse(N, occlusion).rgb;
 	occlusion = min(1.0, 1.5 * occlusion);
-	indirectDiffuse = 2.0f * occlusion * kD_indirect * indirectDiffuse * (albedo.rgb/PI);
+	indirectDiffuse = (2.0f * occlusion * kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 	directDiffuse *= 2.0f * occlusion;
 
 	directDiffuse = (enableDirectDiffuse == 1) ? directDiffuse : vec3(0.0f);
@@ -323,7 +389,18 @@ void main()
 	vec3 directLight = (directDiffuse + directSpecular) * light.Intensity * NdotL * visibility;
 	vec3 indirectLight = (indirectDiffuse+indirectSpecular);
 
-	fragColor = (debugAmbientOcclusion == 1) ? vec4(vec3(occlusion), 1.0f) : vec4(emissive + directLight + indirectLight, albedo.a);
+	// Refraction test
+	vec3 refracted = vec3(0.0f);
+	if (isRefract == 1)
+	{
+		refracted = ConeTraceRefraction(N, refract(-V, N, ior), 0.03, socc).rgb;
+		fragColor = vec4(refracted, 1.0f);
+	}
+	else
+	{
+		fragColor = (debugAmbientOcclusion == 1) ? vec4(vec3(occlusion), 1.0f) : vec4(emissive + directLight + indirectLight, albedo.a);
+	}
+
 	fragColor.xyz = fragColor.xyz/(fragColor.xyz+vec3(1.0));
 	fragColor.xyz = pow(fragColor.xyz, vec3(1.0/2.2));
 }

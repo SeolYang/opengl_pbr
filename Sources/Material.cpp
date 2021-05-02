@@ -92,6 +92,16 @@ void Material::Bind(Shader* shader)
 		}
 		shader->SetInt("emissiveMap", EMaterialTextureSlot::Emissive);
 		shader->SetFloat("emissiveIntensity", m_emissiveIntensity);
+
+		if (bRefract)
+		{
+			shader->SetInt("isRefract", 1);
+		}
+		else
+		{
+			shader->SetInt("isRefract", 0);
+		}
+		shader->SetFloat("ior", IOR);
 	}
 }
 

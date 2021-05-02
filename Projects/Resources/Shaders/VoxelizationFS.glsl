@@ -101,10 +101,9 @@ void imageAtomicRGBA8Avg(layout(r32ui) coherent volatile uimage3D img, ivec3 coo
 
 vec4 LambertianDiffuse()
 {
-	float visibility = (texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.0001f)))) > 0.0 ? 1.0 : 0.0;
+	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w)));
 	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
 	albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
-
 	vec3 emissive = emissiveIntensity * (pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor);
 
 	vec3 normal = worldNormalFrag;
@@ -119,7 +118,7 @@ vec4 LambertianDiffuse()
 	vec3 L = -normalize(light.Direction);
 	float NdotL = max(dot(N, L), 0.0f);
 	vec3 Lo = emissive + ((albedo.rgb / PI) * light.Intensity * NdotL * visibility);
-	return vec4(Lo, 1.0f);
+	return vec4(Lo, albedo.a);
 }
 
 vec4 Color()
@@ -137,6 +136,11 @@ vec4 Color()
 void main()
 {
 	vec4 color = LambertianDiffuse();
+	if (color.a < 0.1)
+	{
+		return;
+	}
+
 	vec3 voxel = ScaleAndBias(worldPosFrag);
 	ivec3 dimension = imageSize(voxelVolume);
 	ivec3 voxelCamPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, dimension.x * gl_FragCoord.z);
