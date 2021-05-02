@@ -345,12 +345,17 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
+		auto lights = scene->GetLights();
+		auto lightIntensity = lights[0]->GetIntensity();
+		const auto lightDirection = -glm::normalize(lights[0]->Forward());
+		const float UoL = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), lightDirection);
+		lightIntensity *= UoL;
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(lightIntensity.x, lightIntensity.y, lightIntensity.z, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, m_winWidth, m_winHeight);
 

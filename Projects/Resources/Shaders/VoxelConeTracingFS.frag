@@ -164,7 +164,9 @@ vec3 coneDirections[6] = vec3[](
 	vec3(-0.509037, 0.5, -0.700629),
 	vec3(-0.823639, 0.5, 0.267617));
 
-float coneWeights[6] = float[](0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f);
+//float coneWeights[6] = float[](0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f);
+//float coneWeights[6] = float[](PI/4.0f, 3.0*PI/20.0, 3.0*PI/20.0, 3.0*PI/20.0, 3.0*PI/20.0, 3.0*PI/20.0);
+float coneWeights[6] = float[](0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f);
 
 vec4 SampleVoxelVolume(vec3 worldPos, float lod)
 {
@@ -357,9 +359,9 @@ void main()
 
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
-	vec3 indirectDiffuse = IndirectDiffuse(N, occlusion).rgb;
-	occlusion = min(1.0, 1.5 * occlusion);
-	indirectDiffuse = 4.0f * 2.0f * occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
+	vec3 indirectDiffuse = 4.0f*IndirectDiffuse(N, occlusion).rgb;
+	occlusion = 2.0f * min(1.0, 1.5 * occlusion);
+	indirectDiffuse =  occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 
 	directDiffuse = (enableDirectDiffuse == 1) ? directDiffuse : vec3(0.0f);
 	indirectDiffuse = (enableIndirectDiffuse == 1) ? indirectDiffuse : vec3(0.0f);
