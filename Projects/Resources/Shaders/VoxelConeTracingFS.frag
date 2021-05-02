@@ -46,8 +46,7 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
-	float invRoughness = 1.0-roughness;
-	return F0+(max(vec3(invRoughness), F0)-F0);
+	return F0 + (max(vec3(1.0-roughness), F0) - F0) * pow(max(1.0-cosTheta, 0.0), 5.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -147,8 +146,6 @@ vec3 ImportanceSampleGGX(vec2 Xi, float roughness, vec3 N)
 uniform float maxDist_VCT = 100.0f;
 uniform float step_VCT = 0.5f;
 uniform float alphaThreshold_VCT = 1.0f;
-//uniform float indirectDiffuseMultiplier_VCT = 4.0f;
-//uniform float indirectSpecularMultiplier_VCT = 4.0f;
 uniform int specularSampleNum_VCT = 4;
 
 uniform int enableDirectDiffuse = 1;
@@ -187,7 +184,7 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = voxelSize;
 	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
-	vec3 origin = worldPosFrag + (1.0f*normal*voxelSize);
+	vec3 origin = worldPosFrag + (normal*voxelSize);
 
 	// @TODO Distance base Attenuation
 	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
@@ -272,11 +269,11 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 		if (NoL > 0.0)
 		{
 			float specularOcc = 0.0;
-			vec3 tracedColor = ConeTrace(N, L, 0.07, specularOcc).rgb;
+			vec3 tracedColor = ConeTrace(N, L, mix(0.01, 0.8, roughness*roughness), specularOcc).rgb;
 
 			float G = GeometrySmithIndirect(N, V, L, roughness);
 			float Fc = pow(1.0-VoH, 5);
-			vec3 F = (1.0-Fc)*specularColor*Fc;
+			vec3 F = (1.0-Fc)*specularColor+Fc;
 			specularLighting += tracedColor*F*G*VoH/(NoH*NoV);
 		}
 	}
@@ -315,8 +312,7 @@ void main()
 	float ao = texture(aoMap, texCoordsFrag).r;
 
 	float metallic = metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b;
-	float roughness = max(roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g, 0.1);
-	//float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
+	float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
 
 	vec3 normal = worldNormalFrag;
 	if (bUseNormalMap == 1)
@@ -351,36 +347,19 @@ void main()
 	vec3 directDiffuse = kD_direct * (albedo.rgb/PI);
 	
 	/* Indirect Specular */
-	vec3 L_reflect = normalize(reflect(-V, N));
-	vec3 H_reflect = normalize(V + L_reflect);
-	float NdotL_reflect = max(dot(N, L_reflect), 0.0);
-	vec3 F_reflect = FresnelSchlick(max(dot(H_reflect, V), 0.0), F0);
-	float NDF_reflect = DistributionGGX(N, H_reflect, roughness);
-	float G_reflect = GeometrySmithIndirect(N, V, L_reflect, roughness);
-	vec3 nominator_reflect = NDF_reflect*G_reflect*F_reflect;
-	float denominator_reflect = 4.0*max(dot(N, V), 0.0) * max(dot(N, L_reflect), 0.0);
-	vec3 reflectSpecular = nominator_reflect/max(denominator_reflect, 0.001f);
-	float socc = 0.0f;
-
-	vec3 F_indirect = F_reflect;
-	//vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
-	//vec3 indirectSpecular = reflectSpecular*ConeTrace(N, L_reflect, 0.07, socc).rgb;
-	vec3 indirectSpecular = reflectSpecular*ConeTrace(N, L_reflect, 0.07, socc).rgb;
-	//vec3 indirectSpecular = IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
-	//vec3 indirectSpecular = (IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect) + 0.1f*F_indirect*ConeTrace(N, normalize(reflect(-V, N)), 0.07, socc).rgb);
-	//vec3 indirectSpecular = IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
-	//vec3 indirectSpecular = F_indirect*ConeTrace(N, normalize(reflect(-V, N)), mix(0.03, 1.0, roughness), socc).rgb;
-	//vec3 indirectSpecular = F_indirect*ConeTrace(N, IndirectSpecularDir(specularSampleNum_VCT, roughness, N, V), mix(0.05, 0.65, roughness), socc).rgb;
+	//vec3 F_indirect = F_reflect;
+	//vec3 F_indirect = (FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness)+F_reflect)/2.0;
+	vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
+	vec3 indirectSpecular = 2.0*IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
 	vec3 kS_indirect = F_indirect;
 	vec3 kD_indirect = vec3(1.0) - kS_indirect;
 	kD_indirect *= (1.0-metallic);
 
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
-	vec3 indirectDiffuse = 4.0f * IndirectDiffuse(N, occlusion).rgb;
+	vec3 indirectDiffuse = IndirectDiffuse(N, occlusion).rgb;
 	occlusion = min(1.0, 1.5 * occlusion);
-	indirectDiffuse = (2.0f * occlusion * kD_indirect * indirectDiffuse * (albedo.rgb/PI));
-	directDiffuse *= 2.0f * occlusion;
+	indirectDiffuse = 4.0f * 2.0f * occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 
 	directDiffuse = (enableDirectDiffuse == 1) ? directDiffuse : vec3(0.0f);
 	indirectDiffuse = (enableIndirectDiffuse == 1) ? indirectDiffuse : vec3(0.0f);
@@ -394,6 +373,7 @@ void main()
 	vec3 refracted = vec3(0.0f);
 	if (isRefract == 1)
 	{
+		float socc;
 		refracted = ConeTraceRefraction(N, refract(-V, N, ior), 0.03, socc).rgb;
 		fragColor = vec4(refracted, 1.0f);
 	}

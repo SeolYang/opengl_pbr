@@ -62,10 +62,17 @@ bool TestApp::Init()
 	helmet->SetRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	helmet->GetMaterial(0)->SetEmissiveIntensity(5.0f);
 
-	const ModelLoadParams sphereLoadParams{ };
+	const ModelLoadParams sphereLoadParams{
+      .CalcTangentSpace = true,
+		.ConvertToLeftHanded = false,
+		.GenSmoothNormals = true,
+		.GenUVs = true,
+		.PreTransformVertices = true,
+		.Triangulate = true
+	};
 	m_sphere = scene->LoadModel("Sphere", "Resources/Models/sphere.obj", sphereLoadParams);
 	m_sphere->bCastShadow = false;
-	m_sphere->SetActive(true);
+	m_sphere->SetActive(false);
 	auto sphereMat = m_sphere->GetMaterial(0);
 	//sphereMat->SetForceFactor(EMaterialTexture::Emissive, true);
 	sphereMat->SetForceFactor(EMaterialTexture::BaseColor, true);
@@ -73,6 +80,15 @@ bool TestApp::Init()
 	//sphereMat->SetBaseColorFactor(glm::vec4(1.0f));
 	sphereMat->bRefract = true;
 	sphereMat->IOR = 1.2f;
+
+	Model* metallicSphere = scene->LoadModel("MetallicSphere", "Resources/Models/sphere.obj", sphereLoadParams);
+	metallicSphere->SetPosition(glm::vec3(-5.0f, 5.0f, 0.0f));
+	auto metallicSphereMat = metallicSphere->GetMaterial(0);
+	metallicSphereMat->SetForceFactor(EMaterialTexture::BaseColor, true);
+	metallicSphereMat->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
+	metallicSphereMat->SetBaseColorFactor(glm::vec4(1.0f));
+	metallicSphereMat->SetMetallicFactor(1.0f);
+	metallicSphereMat->SetRoughnessFactor(0.0f);
 
 	const ModelLoadParams quadLoadParams{
 		.CalcTangentSpace = true,

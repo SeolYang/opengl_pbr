@@ -136,6 +136,7 @@ vec4 Color()
 void main()
 {
 	vec4 color = LambertianDiffuse();
+	//vec4 color = Color();
 	if (color.a < 0.1)
 	{
 		return;
