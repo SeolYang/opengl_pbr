@@ -63,7 +63,7 @@ public:
 	bool bDebugAmbientOcclusion = false;
 
 	float VCTMaxDistance = 150.0f;
-	float VCTStep = 0.5f;
+	float VCTStep = 0.25f;
 	float VCTAlphaThreshold = 1.0f;
 	unsigned int VCTSpecularSampleNum = 1;
 

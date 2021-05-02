@@ -315,7 +315,8 @@ void main()
 	float ao = texture(aoMap, texCoordsFrag).r;
 
 	float metallic = metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b;
-	float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
+	float roughness = max(roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g, 0.1);
+	//float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
 
 	vec3 normal = worldNormalFrag;
 	if (bUseNormalMap == 1)
