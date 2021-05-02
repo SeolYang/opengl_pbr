@@ -101,7 +101,7 @@ void imageAtomicRGBA8Avg(layout(r32ui) coherent volatile uimage3D img, ivec3 coo
 
 vec4 LambertianDiffuse()
 {
-	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
+	float visibility = (texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.0001f)))) > 0.0 ? 1.0 : 0.0;
 	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
 	albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
 

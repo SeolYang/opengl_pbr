@@ -143,6 +143,7 @@ void Renderer::Render(const Scene* scene)
 		break;
 
 	case ERenderMode::Deferred:
+		Voxelize(scene);
 		DeferredRender(scene);
 		break;
 	}

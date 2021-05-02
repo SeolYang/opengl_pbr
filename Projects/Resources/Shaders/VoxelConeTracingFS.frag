@@ -184,19 +184,17 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = voxelSize;
-	vec3 origin = worldPosFrag + (normal*voxelSize);
+	vec3 origin = worldPosFrag + (0.6f*normal*voxelSize);
 
+	// @TODO Distance base Attenuation
 	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
 	{
 		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
 		float lodLevel = log2(coneDiameter / voxelSize);
 		vec4 voxelColor = SampleVoxelVolume(origin+(dist*direction), lodLevel);
 
-		//float attenuation = min(1.0f, 1.0f/(0.05f * (dist)));
-		float attenuation = 1.0f;
-
 		float a = (1.0 - alpha);
-		color += a*voxelColor.rgb*attenuation; // @TODO Distance base Attenuation
+		color += a*voxelColor.rgb;
 		alpha += a*voxelColor.a;
 		occlusion += (a*voxelColor.a)/(1.0 + (0.03*coneDiameter));
 
@@ -240,7 +238,7 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 		if (NoL > 0.0)
 		{
 			float specularOcc = 0.0;
-			vec3 tracedColor = ConeTrace(N, L, 0.03, specularOcc).rgb;
+			vec3 tracedColor = ConeTrace(N, L, mix(0.03, 0.09, roughness), specularOcc).rgb;
 
 			float G = GeometrySmithIndirect(N, V, L, roughness);
 			float Fc = pow(1.0-VoH, 5);
@@ -254,7 +252,7 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 
 void main()
 {
-	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f)/(shadowPosFrag.w + 0.0001f)));
+	float visibility = (texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f)/(shadowPosFrag.w + 0.0001f)))) > 0.0 ? 1.0 : 0.0;
 	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
 	if (albedo.a < 0.1)
 	{

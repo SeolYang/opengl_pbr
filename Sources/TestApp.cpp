@@ -39,17 +39,6 @@ bool TestApp::Init()
 	for (auto material : sponzaMaterials)
 	{
 		const std::string_view baseColorPath = material->GetBaseColor()->GetURI();
-		// Lion : Gold
-		if (baseColorPath == "Resources/Models/Sponza/6772804448157695701.jpg")
-		{
-			material->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
-			material->SetRoughnessFactor(0.1f);
-			material->SetMetallicFactor(1.0f);
-
-			material->SetForceFactor(EMaterialTexture::BaseColor, true);
-			material->SetBaseColorFactor(glm::vec4(1.0f, 0.766f, 0.336f, 1.0f));
-		}
-
 		 //Floor
 		if (baseColorPath == "Resources/Models/Sponza/5823059166183034438.jpg")
 		{
@@ -62,6 +51,18 @@ bool TestApp::Init()
 			//material->SetBaseColorFactor(glm::vec4(0.55f, 0.556f, 0.554f, 1.0f));
 		}
 	}
+
+	const ModelLoadParams helmetLoadParams{
+	   .CalcTangentSpace = true,
+		.ConvertToLeftHanded = true,
+		.GenSmoothNormals = true,
+		.GenUVs = false,
+		.PreTransformVertices = true,
+		.Triangulate = false };
+	auto helmet = scene->LoadModel("Helmet", "Resources/Models/DamagedHelmet/DamagedHelmet.gltf", helmetLoadParams);
+	helmet->SetPosition(glm::vec3(0.0f, 6.0f, 0.0f));
+	helmet->SetScale(glm::vec3(2.0f));
+	helmet->SetRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
 	const ModelLoadParams sphereLoadParams{ };
 	m_sphere = scene->LoadModel("Sphere", "Resources/Models/sphere.obj", sphereLoadParams);
@@ -185,13 +186,21 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 
 		case GLFW_KEY_PAGE_UP:
-			renderer->VCTSpecularSampleNum *= 2;
+			renderer->VCTSpecularSampleNum = std::min<unsigned int>(64, renderer->VCTSpecularSampleNum * 2);
 			std::cout << "Indirect Specular Samples : " << renderer->VCTSpecularSampleNum << std::endl;
 			break;
 
 		case GLFW_KEY_PAGE_DOWN:
 			renderer->VCTSpecularSampleNum = std::max<unsigned int>(1, renderer->VCTSpecularSampleNum / 2);
 			std::cout << "Indirect Specular Samples : " << renderer->VCTSpecularSampleNum << std::endl;
+			break;
+
+		case GLFW_KEY_F1:
+			m_quad->SetPosition(m_quad->GetPosition() - glm::vec3(10.0f, 0.0f, 0.0f));
+			break;
+
+		case GLFW_KEY_F2:
+			m_quad->SetPosition(m_quad->GetPosition() + glm::vec3(10.0f, 0.0f, 0.0f));
 			break;
 
 		case GLFW_KEY_ESCAPE:

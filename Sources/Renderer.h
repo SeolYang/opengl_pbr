@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 
 // Voxel Volume Texture Size
-constexpr unsigned int VoxelUnitSize = 128;
+constexpr unsigned int VoxelUnitSize = 256;
 constexpr float VoxelGridWorldSize = 256.0;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
@@ -62,10 +62,10 @@ public:
 	bool bEnableIndirectSpecular = true;
 	bool bDebugAmbientOcclusion = false;
 
-	float VCTMaxDistance = 100.0f;
-	float VCTStep = 0.5f;
+	float VCTMaxDistance = 150.0f;
+	float VCTStep = 0.3f;
 	float VCTAlphaThreshold = 1.0f;
-	unsigned int VCTSpecularSampleNum = 4;
+	unsigned int VCTSpecularSampleNum = 1;
 
 private:
 	ERenderMode m_renderMode = ERenderMode::VCT;

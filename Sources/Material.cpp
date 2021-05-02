@@ -92,7 +92,6 @@ void Material::Bind(Shader* shader)
 		}
 		shader->SetInt("emissiveMap", EMaterialTextureSlot::Emissive);
 		shader->SetFloat("emissiveIntensity", m_emissiveIntensity);
-
 	}
 }
 
