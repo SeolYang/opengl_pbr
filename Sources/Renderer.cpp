@@ -266,6 +266,10 @@ void Renderer::Voxelize(const Scene* scene)
 	{
 		if (m_bFirstVoxelize || m_bAlwaysComputeVoxel || scene->IsSceneDirty())
 		{
+			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			//glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, 0.25f);
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
 			m_bFirstVoxelize = false;
 			GLfloat volumeClear[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 			m_voxelVolume->Clear(volumeClear);
@@ -298,8 +302,7 @@ void Renderer::Voxelize(const Scene* scene)
 			glGenerateTextureMipmap(m_voxelVolume->GetID());
 
 			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
-			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
-			//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 		}
 	}
