@@ -116,7 +116,12 @@ vec4 LambertianDiffuse()
 	vec3 emissive = emissiveFactor;
 	if (bOverrideEmissive != 1)
 	{
-		emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2);
+		vec4 emissiveColor = texture(emissiveMap, texCoordsFrag).rgba;
+		emissive = pow(emissiveColor.rgb, vec3(2.2));
+		if (emissiveColor.a < 1.0)
+		{
+			albedo.a = emissiveColor.a;
+		}
 	}
 	emissive *= emissiveIntensity;
 

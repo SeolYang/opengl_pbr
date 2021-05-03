@@ -315,17 +315,22 @@ void main()
 		albedo = vec4(pow(albedo.rgb, vec3(2.2)), albedo.a);
 	}
 
+	vec3 emissive = emissiveFactor;
+	if (bOverrideEmissive != 1)
+	{
+		vec4 emissiveColor = texture(emissiveMap, texCoordsFrag).rgba;
+		emissive = pow(emissiveColor.rgb, vec3(2.2));
+		if (emissiveColor.a < 1.0)
+		{
+			albedo.a = emissiveColor.a;
+		}
+	}
+	emissive *= emissiveIntensity;
+
 	if (isRefract != 1 && albedo.a < 0.1)
 	{
 		discard;
 	}
-	
-	vec3 emissive = emissiveFactor;
-	if (bOverrideEmissive != 1)
-	{
-		emissive = pow(texture(emissiveMap, texCoordsFrag).rgb, vec3(2.2));
-	}
-	emissive *= emissiveIntensity;
 
 	tangentToWorld = inverse(tbnFrag);
 

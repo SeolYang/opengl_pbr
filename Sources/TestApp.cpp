@@ -189,10 +189,10 @@ bool TestApp::Init()
 	quadMat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	quadMat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	std::filesystem::path animeEmissiveTexture = "Resources/Textures/fd376fc20378ec4fe5f372a82b6d55ccd9dbec2e.png";
+	std::filesystem::path animeEmissiveTexture = "Resources/Textures/Charmander.png";
 	if (std::filesystem::exists(animeEmissiveTexture))
 	{
-		quadMat->SetEmissive(new Texture2D("Resources/Textures/fd376fc20378ec4fe5f372a82b6d55ccd9dbec2e.png"));
+		quadMat->SetEmissive(new Texture2D("Resources/Textures/Charmander.png"));
 	}
 	else
 	{
