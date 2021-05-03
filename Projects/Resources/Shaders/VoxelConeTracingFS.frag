@@ -409,5 +409,5 @@ void main()
 	}
 
 	fragColor.xyz = fragColor.xyz/(fragColor.xyz+vec3(1.0));
-	fragColor.xyz = pow(fragColor.xyz, vec3(1.0/2.2));
+	fragColor.xyz = pow(fragColor.xyz, vec3(1.0/2.4));
 }

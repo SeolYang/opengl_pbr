@@ -12,29 +12,15 @@ out vec4 fragColor;
 void main() {
 	fragColor = color[0];
 
-	vec4 v1 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-0.5, 0.5, 0.5, 0));
-	vec4 v2 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(0.5, 0.5, 0.5, 0));
-	vec4 v3 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-0.5, -0.5, 0.5, 0));
-	vec4 v4 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(0.5, -0.5, 0.5, 0));
-	vec4 v5 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-0.5, 0.5, -0.5, 0));
-	vec4 v6 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(0.5, 0.5, -0.5, 0));
-	vec4 v7 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-0.5, -0.5, -0.5, 0));
-	vec4 v8 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(0.5, -0.5, -0.5, 0));
-
-	//               -Z
-	//      v5 _____________ v6
-	//        /|           /|
-	//       / |          / |
-	//      /  |   +y    /  |
-	//     /   |        /   |
-	// v1 /____|_______/ v2 |
-	//    |    |       |    |
-	//    |    |_v7____|____| v8
-	//-x  |   /        |   / +x
-	//    |  /         |  /  
-	//    | /     -y   | /  
-	// v3 |/___________|/ v4
-	//           +Z
+    float scale = 0.2f;
+	vec4 v1 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-scale, scale, scale, 0));
+	vec4 v2 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(scale, scale, scale, 0));
+	vec4 v3 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-scale, -scale, scale, 0));
+	vec4 v4 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(scale, -scale, scale, 0));
+	vec4 v5 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-scale, scale, -scale, 0));
+	vec4 v6 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(scale, scale, -scale, 0));
+	vec4 v7 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-scale, -scale, -scale, 0));
+	vec4 v8 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(scale, -scale, -scale, 0));
 
 	// +Z
     gl_Position = v1;
