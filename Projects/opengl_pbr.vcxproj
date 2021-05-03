@@ -39,7 +39,6 @@
   <ItemGroup>
     <ClCompile Include="..\Sources\Application.cpp" />
     <ClCompile Include="..\Sources\Camera.cpp" />
-    <ClCompile Include="..\Sources\CameraPath.cpp" />
     <ClCompile Include="..\Sources\GBuffer.cpp" />
     <ClCompile Include="..\Sources\Light.cpp" />
     <ClCompile Include="..\Sources\main.cpp" />

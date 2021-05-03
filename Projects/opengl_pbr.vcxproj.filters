@@ -138,9 +138,6 @@
     <ClCompile Include="..\Sources\Texture3D.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\Sources\CameraPath.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\GeometryPass.fs">
