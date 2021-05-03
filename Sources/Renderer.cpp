@@ -291,7 +291,6 @@ void Renderer::Voxelize(const Scene* scene)
 			m_voxelizePass->Bind();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glEnable(GL_CULL_FACE);
 			glEnable(GL_DEPTH_TEST);
 
 			// Vertex Shader Uniforms
@@ -310,7 +309,7 @@ void Renderer::Voxelize(const Scene* scene)
 			glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
 			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
-			RenderScene(scene, m_voxelizePass, false, true);
+			RenderScene(scene, m_voxelizePass, false, false);
 
 			m_shadowMap->UnbindAsTexture(5);
 			glGenerateTextureMipmap(m_voxelVolume->GetID());

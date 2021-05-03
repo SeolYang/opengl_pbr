@@ -40,8 +40,8 @@ private:
 	Controller* m_controller = nullptr;
 				
 	float m_elapsedTime = 0.0f;
-	float m_lightRotationX = 105.0f;
-	float m_lightRotationY = 0.0f;
+	float m_lightRotationX = 100.0f;
+	float m_lightRotationY = -20.0f;
 
 	float m_sphereOrbitRad = 10.0f;
 

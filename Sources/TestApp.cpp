@@ -183,23 +183,23 @@ bool TestApp::Init()
 	//m_quad->bCastShadow = false;
 	m_quad->bDoubleSided = true;
 	m_quad->SetPosition(glm::vec3(45.0f, 5.5f, 1.5f));
-	m_quad->SetRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	m_quad->SetRotation(glm::rotate(glm::quat(), glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_quad->SetScale(glm::vec3(7.5f, 4.5f, 1.0f));
 	auto quadMat = m_quad->GetMaterial(0);
 	quadMat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	quadMat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	std::filesystem::path animeEmissiveTexture = "Resources/Textures/67243791_p0.jpg";
+	std::filesystem::path animeEmissiveTexture = "Resources/Textures/fd376fc20378ec4fe5f372a82b6d55ccd9dbec2e.png";
 	if (std::filesystem::exists(animeEmissiveTexture))
 	{
-		quadMat->SetEmissive(new Texture2D("Resources/Textures/67243791_p0.jpg"));
+		quadMat->SetEmissive(new Texture2D("Resources/Textures/fd376fc20378ec4fe5f372a82b6d55ccd9dbec2e.png"));
 	}
 	else
 	{
 		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
 		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
 	}
-	quadMat->SetEmissiveIntensity(10.0f);
+	quadMat->SetEmissiveIntensity(2.0f);
 
 	m_mainLight = scene->CreateLight("Main");
 	// Direct Sunlight
@@ -263,6 +263,7 @@ bool TestApp::Init()
 	.Speed = 0.2f
 		});
 
+	m_camPath.bResetOnFinish = true;
 	return true;
 }
 
