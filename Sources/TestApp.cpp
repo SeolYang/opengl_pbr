@@ -169,7 +169,7 @@ bool TestApp::Init()
 	refractiveBunnyMat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	refractiveBunnyMat->SetBaseColorFactor(glm::vec4(0.0f));
 	refractiveBunnyMat->bRefract = true;
-	refractiveBunnyMat->IOR = 1.1f;
+	refractiveBunnyMat->IOR = 1.2f;
 
 	const ModelLoadParams quadLoadParams{
 		.CalcTangentSpace = true,

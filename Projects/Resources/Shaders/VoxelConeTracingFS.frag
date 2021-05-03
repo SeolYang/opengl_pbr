@@ -30,6 +30,10 @@ uniform float emissiveIntensity;
 uniform float ior = 1.0;
 uniform int isRefract = 0;
 
+uniform int bOverrideBaseColor = 0;
+uniform int bOverrideMetallicRoughness = 0;
+uniform int bOverrideEmissive = 0;
+
 /* Uniforms */
 uniform DirectionalLight light;
 uniform vec3 camPos;
@@ -147,6 +151,8 @@ uniform float maxDist_VCT = 100.0f;
 uniform float step_VCT = 0.5f;
 uniform float alphaThreshold_VCT = 1.0f;
 uniform int specularSampleNum_VCT = 4;
+uniform float attenuationFactor_VCT = 0.3f;
+uniform float attenuationThreshold_VCT = 0.0015f;
 
 uniform int enableDirectDiffuse = 1;
 uniform int enableIndirectDiffuse = 1;
@@ -186,17 +192,20 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = voxelSize;
 	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
-	vec3 origin = worldPosFrag + (normal*voxelSize);
+	vec3 origin = worldPosFrag + (2.0*normal*voxelSize);
+
+	float attenuation = 1.0f;
 
 	// @TODO Distance base Attenuation
-	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
+	while (attenuation > attenuationThreshold_VCT && dist < maxDist_VCT && alpha < alphaThreshold_VCT)
 	{
+		attenuation = min(1.0/(attenuationFactor_VCT*dist), 1.0);
 		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
 		float lodLevel = log2(coneDiameter / voxelSize);
 		vec4 voxelColor = SampleVoxelVolume(origin+(dist*direction), lodLevel);
 
 		float a = (1.0 - alpha);
-		color += a*voxelColor.rgb;
+		color += a*voxelColor.rgb*attenuation;
 		alpha += a*voxelColor.a;
 		occlusion += (a*voxelColor.a)/(1.0 + (0.03*coneDiameter));
 
@@ -245,8 +254,7 @@ vec4 IndirectDiffuse(vec3 normal, out float occlusionOut)
 	{
 		// tan(pi/6) = 0.577 (pi/6 rad = 30 degrees)
 		float occlusion = 0.0f;
-		color += coneWeights[cone] *
-		 ConeTrace(normal, tangentToWorld*coneDirections[cone], 0.577, occlusion);
+		color += coneWeights[cone] * ConeTrace(normal, tangentToWorld*coneDirections[cone], 0.577, occlusion);
 		occlusionOut += coneWeights[cone] * occlusion;
 	}
 
@@ -300,21 +308,37 @@ vec3 IndirectSpecularDir(const uint numSamples, float roughness, vec3 N, vec3 V)
 void main()
 {
 	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w)));
-	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
-	if (albedo.a < 0.1)
+	vec4 albedo = baseColorFactor;
+	if (bOverrideBaseColor != 1)
+	{
+		albedo = texture(baseColorMap, texCoordsFrag).rgba;
+		albedo = vec4(pow(albedo.rgb, vec3(2.2)), albedo.a);
+	}
+
+	if (isRefract != 1 && albedo.a < 0.1)
 	{
 		discard;
 	}
-
-	albedo = vec4(pow(albedo.rgb, vec3(2.2)) + baseColorFactor.rgb, albedo.a);
+	
+	vec3 emissive = emissiveFactor;
+	if (bOverrideEmissive != 1)
+	{
+		emissive = pow(texture(emissiveMap, texCoordsFrag).rgb, vec3(2.2));
+	}
+	emissive *= emissiveIntensity;
 
 	tangentToWorld = inverse(tbnFrag);
-	vec3 emissive = emissiveIntensity * (pow(texture(emissiveMap, texCoordsFrag).rgb, vec3(2.2)) + emissiveFactor);
 
 	float ao = texture(aoMap, texCoordsFrag).r;
 
-	float metallic = metallicFactor + texture(metallicRoughnessMap, texCoordsFrag).b;
-	float roughness = roughnessFactor + texture(metallicRoughnessMap, texCoordsFrag).g;
+
+	float metallic = metallicFactor;
+	float roughness = roughnessFactor;
+	if (bOverrideMetallicRoughness != 1)
+	{
+		metallic = texture(metallicRoughnessMap, texCoordsFrag).b;
+		roughness = texture(metallicRoughnessMap, texCoordsFrag).g;
+	}
 
 	vec3 normal = worldNormalFrag;
 	if (bUseNormalMap == 1)
@@ -352,14 +376,14 @@ void main()
 	//vec3 F_indirect = F_reflect;
 	//vec3 F_indirect = (FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness)+F_reflect)/2.0;
 	vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
-	vec3 indirectSpecular = 2.0*IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
+	vec3 indirectSpecular = IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
 	vec3 kS_indirect = F_indirect;
 	vec3 kD_indirect = vec3(1.0) - kS_indirect;
 	kD_indirect *= (1.0-metallic);
 
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
-	vec3 indirectDiffuse = 4.0f*IndirectDiffuse(N, occlusion).rgb;
+	vec3 indirectDiffuse = 2.0f*IndirectDiffuse(N, occlusion).rgb;
 	occlusion = 2.0f * min(1.0, 1.5 * occlusion);
 	indirectDiffuse =  occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 
@@ -376,7 +400,7 @@ void main()
 	if (isRefract == 1)
 	{
 		float socc;
-		refracted = ConeTraceRefraction(N, refract(-V, N, ior), 0.03, socc).rgb;
+		refracted = ConeTraceRefraction(N, refract(-V, N, 1.0f/ior), 0.03, socc).rgb; // Snell's law n = n_0(air/vaccum ior)/n2
 		fragColor = vec4(refracted, 1.0f);
 	}
 	else

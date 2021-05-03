@@ -279,8 +279,9 @@ void Renderer::Voxelize(const Scene* scene)
 	{
 		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
 		{
-			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
-			//glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, 0.25f);
+			glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			//glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, -3.5f);
+			
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 			m_bFirstVoxelize = false;
@@ -316,7 +317,7 @@ void Renderer::Voxelize(const Scene* scene)
 
 			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 		}
 	}
 }

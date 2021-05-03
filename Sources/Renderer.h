@@ -4,7 +4,7 @@
 
 // Voxel Volume Texture Size
 constexpr unsigned int VoxelUnitSize = 128;
-constexpr float VoxelGridWorldSize = 140.0f;
+constexpr float VoxelGridWorldSize = 145.0f;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;

@@ -29,6 +29,10 @@ uniform sampler2D emissiveMap; // emissiveMap: sRGB
 uniform vec3 emissiveFactor;
 uniform float emissiveIntensity;
 
+uniform int bOverrideBaseColor = 0;
+uniform int bOverrideMetallicRoughness = 0;
+uniform int bOverrideEmissive = 0;
+
 uniform sampler2DShadow shadowMap;
 
 /* Uniforms */
@@ -101,10 +105,20 @@ void imageAtomicRGBA8Avg(layout(r32ui) coherent volatile uimage3D img, ivec3 coo
 
 vec4 LambertianDiffuse()
 {
-	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w)));
-	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
-	albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
-	vec3 emissive = emissiveIntensity * (pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor);
+	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
+	vec4 albedo = baseColorFactor;
+	if (bOverrideBaseColor != 1)
+	{
+		albedo = texture(baseColorMap, texCoordsFrag).rgba;
+		albedo.xyz = pow(albedo.xyz, vec3(2.2));
+	}
+	
+	vec3 emissive = emissiveFactor;
+	if (bOverrideEmissive != 1)
+	{
+		emissive = pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2);
+	}
+	emissive *= emissiveIntensity;
 
 	vec3 normal = worldNormalFrag;
 	if (bUseNormalMap == 1)
@@ -119,18 +133,6 @@ vec4 LambertianDiffuse()
 	float NdotL = max(dot(N, L), 0.0f);
 	vec3 Lo = emissive + ((albedo.rgb / PI) * light.Intensity * NdotL * visibility);
 	return vec4(Lo, albedo.a);
-}
-
-vec4 Color()
-{
-	float visibility = texture(shadowMap, vec3(shadowPosFrag.xy, (shadowPosFrag.z - 0.0005f) / (shadowPosFrag.w + 0.00001f)));
-	vec4 albedo = texture(baseColorMap, texCoordsFrag).rgba;
-	albedo = vec4((pow3(albedo.rgb, 2.2) + baseColorFactor.rgb), albedo.a);
-
-	vec3 emissive = emissiveIntensity * (pow3(texture(emissiveMap, texCoordsFrag).rgb, 2.2) + emissiveFactor);
-
-	vec3 Lo = emissive + (albedo.rgb * visibility);
-	return vec4(Lo, 1.0f);
 }
 
 void main()
