@@ -12,8 +12,8 @@ class TestApp : public Application
 {
 public:
 	TestApp(const std::string& title,
-		unsigned int width, unsigned int height) :
-		Application(title, width, height)
+		unsigned int width, unsigned int height, bool bFullScreen) :
+		Application(title, width, height, bFullScreen)
 	{
 	}
 

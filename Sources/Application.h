@@ -9,7 +9,7 @@ class Viewport;
 class Application
 {
 public:
-	Application(const std::string& title, unsigned int width, unsigned int height);
+	Application(const std::string& title, unsigned int width, unsigned int height, bool bFullscreen = false);
 	~Application();
 
 	std::string GetTitle() const { return m_title; }
@@ -50,5 +50,6 @@ private:
 
 	unsigned int m_windowWidth;
 	unsigned int m_windowHeight;
+	bool m_bFullScreen = false;
 
 };

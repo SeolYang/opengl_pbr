@@ -7,7 +7,7 @@
 
 int main()
 {
-	Application* app = new TestApp("Test", 1280, 720);
+	Application* app = new TestApp("Test", 1920, 1080, true);
 
 	int res = app->Run();
 	delete app;

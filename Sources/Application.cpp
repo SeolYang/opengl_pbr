@@ -9,13 +9,14 @@
 #include <chrono>
 #include <iostream>
 
-Application::Application(const std::string& title, unsigned int width, unsigned int height) :
+Application::Application(const std::string& title, unsigned int width, unsigned int height, bool bFullscreen) :
 	m_bIsRunning(false),
 	m_title(title),
 	m_scene(nullptr),
 	m_renderer(nullptr),
 	m_windowWidth(width),
-	m_windowHeight(height)
+	m_windowHeight(height),
+   m_bFullScreen(bFullscreen)
 {
 }
 
@@ -57,8 +58,24 @@ bool Application::InitWindows()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	m_window = glfwCreateWindow(m_windowWidth, m_windowHeight,
-		m_title.c_str(), nullptr, nullptr);
+	if (m_bFullScreen)
+	{
+		const auto monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+		glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+		glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+		m_window = glfwCreateWindow(m_windowWidth, m_windowHeight,
+			m_title.c_str(), monitor, nullptr);
+	}
+	else
+	{
+		m_window = glfwCreateWindow(m_windowWidth, m_windowHeight,
+			m_title.c_str(), nullptr, nullptr);
+	}
+
+
 	if (m_window == nullptr)
 	{
 		std::cout << "Failed to init glfw window" << std::endl;
