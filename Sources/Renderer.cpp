@@ -277,7 +277,7 @@ void Renderer::Voxelize(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
-		if (m_bFirstVoxelize || m_bAlwaysComputeVoxel || scene->IsSceneDirty())
+		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
 		{
 			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
 			//glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, 0.25f);
@@ -290,8 +290,8 @@ void Renderer::Voxelize(const Scene* scene)
 			m_voxelizePass->Bind();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glDisable(GL_CULL_FACE);
-			glDisable(GL_DEPTH_TEST);
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_DEPTH_TEST);
 
 			// Vertex Shader Uniforms
 			m_voxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);

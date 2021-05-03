@@ -62,9 +62,9 @@ public:
 	bool bEnableIndirectSpecular = true;
 	bool bDebugAmbientOcclusion = false;
 
-	float VCTMaxDistance = 150.0f;
+	float VCTMaxDistance = 100.0f;
 	float VCTStep = 0.25f;
-	float VCTAlphaThreshold = 0.99f;
+	float VCTAlphaThreshold = 0.98f;
 	unsigned int VCTSpecularSampleNum = 1;
 
 private:
@@ -100,5 +100,7 @@ private:
 
 	unsigned int m_winWidth = 0;
 	unsigned int m_winHeight = 1;
+
+	bool m_bVoxelized = false;
 
 };
