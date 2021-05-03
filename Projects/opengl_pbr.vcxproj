@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="..\Sources\Application.h" />
     <ClInclude Include="..\Sources\Camera.h" />
+    <ClInclude Include="..\Sources\CameraPath.h" />
     <ClInclude Include="..\Sources\Controller.h" />
     <ClInclude Include="..\Sources\FBO.h" />
     <ClInclude Include="..\Sources\GBuffer.h" />
@@ -38,6 +39,7 @@
   <ItemGroup>
     <ClCompile Include="..\Sources\Application.cpp" />
     <ClCompile Include="..\Sources\Camera.cpp" />
+    <ClCompile Include="..\Sources\CameraPath.cpp" />
     <ClCompile Include="..\Sources\GBuffer.cpp" />
     <ClCompile Include="..\Sources\Light.cpp" />
     <ClCompile Include="..\Sources\main.cpp" />

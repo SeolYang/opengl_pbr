@@ -377,7 +377,7 @@ void main()
 	{
 		float socc;
 		refracted = ConeTraceRefraction(N, refract(-V, N, ior), 0.03, socc).rgb;
-		fragColor = vec4(refracted + indirectSpecular + (directSpecular*light.Intensity*NdotL*visibility), 1.0f);
+		fragColor = vec4(refracted, 1.0f);
 	}
 	else
 	{

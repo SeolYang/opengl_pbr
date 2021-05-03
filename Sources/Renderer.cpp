@@ -130,26 +130,24 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 void Renderer::Render(const Scene* scene)
 {
 	Shadow(scene);
+	Voxelize(scene);
 	switch(m_renderMode)
 	{
 	case ERenderMode::VCT:
-		Voxelize(scene);
 		VoxelConeTracing(scene);
 		break;
 
 	case ERenderMode::VoxelVisualization:
-		Voxelize(scene);
 		RenderVoxel(scene);
 		break;
 
 	case ERenderMode::Deferred:
-		Voxelize(scene);
 		DeferredRender(scene);
 		break;
 	}
 }
 
-void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting)
+void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting, bool bForceCullFace)
 {
 	if (const Camera* camera = scene->GetMainCamera(); 
 		(camera != nullptr && camera->IsActivated()))
@@ -168,10 +166,25 @@ void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCas
 		{
 			if (model != nullptr)
 			{
-				if (!bIsShadowCasting || model->bCastShadow)
+				if (model->IsActivated())
 				{
-					shader->SetMat4f("worldMatrix", model->GetWorldMatrix());
-					model->Render(shader);
+					if (!bIsShadowCasting || model->bCastShadow)
+					{
+						if (!bForceCullFace)
+						{
+							if (model->bDoubleSided)
+							{
+								glDisable(GL_CULL_FACE);
+							}
+							else
+							{
+								glEnable(GL_CULL_FACE);
+							}
+						}
+
+						shader->SetMat4f("worldMatrix", model->GetWorldMatrix());
+						model->Render(shader);
+					}
 				}
 			}
 		}
@@ -296,7 +309,7 @@ void Renderer::Voxelize(const Scene* scene)
 			glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
 			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
-			RenderScene(scene, m_voxelizePass);
+			RenderScene(scene, m_voxelizePass, false, true);
 
 			m_shadowMap->UnbindAsTexture(5);
 			glGenerateTextureMipmap(m_voxelVolume->GetID());

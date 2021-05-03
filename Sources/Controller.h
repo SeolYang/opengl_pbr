@@ -122,6 +122,16 @@ public:
       }
    }
 
+   void SetVerticalAngle(float angle)
+   {
+      m_verticalAngle = angle;
+   }
+
+   void SetHorizontalAngle(float angle)
+   {
+      m_horizontalAngle = angle;
+   }
+
 public:
    float MouseSensitivity = 0.25f;
    float CameraSpeed = 1.0f;

@@ -85,6 +85,9 @@
     <ClInclude Include="..\Sources\ShadowMap.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\CameraPath.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
@@ -133,6 +136,9 @@
       <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Texture3D.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\CameraPath.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>

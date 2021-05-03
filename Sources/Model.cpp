@@ -213,15 +213,6 @@ void Model::Render(Shader* shader)
 {
 	if (this->IsActivated())
 	{
-		if (bDoubleSided)
-		{
-			glDisable(GL_CULL_FACE);
-		}
-		else
-		{
-			glEnable(GL_CULL_FACE);
-		}
-
 		for (auto& mesh : m_meshes)
 		{
 			mesh->Render(shader, m_mode);

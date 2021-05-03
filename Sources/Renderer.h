@@ -46,7 +46,7 @@ public:
 	bool IsVoxelizeEveryFrame() const { return m_bAlwaysComputeVoxel; }
 
 private:
-	void RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting = false);
+	void RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting = false, bool bForceCullFace = false);
 	void DeferredRender(const Scene* scene);
 
 	void Shadow(const Scene* scene);

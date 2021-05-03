@@ -1,5 +1,7 @@
 #pragma once
 #include "Application.h"
+#include "CameraPath.h"
+#include <glm/glm.hpp>
 
 class Model;
 class Camera;
@@ -44,6 +46,9 @@ private:
 	float m_sphereOrbitRad = 10.0f;
 
 	Material* m_floorMaterial = nullptr;
-	float m_floorRoughness = 0.5f;
+	float m_floorRoughness = 1.0f;
+
+	CameraPath m_camPath;
+	bool m_bEnableCamPath = false;
 
 };
