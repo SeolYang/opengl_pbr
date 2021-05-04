@@ -23,6 +23,7 @@ public:
    unsigned int GetID() const { return m_id; }
 
    void Clear(GLfloat clearColor[4]);
+   void Clear(unsigned int value = 0);
 
    unsigned int GetWidth() const { return m_width; }
    unsigned int GetHeight() const { return m_height; }

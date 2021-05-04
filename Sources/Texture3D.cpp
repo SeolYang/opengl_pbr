@@ -43,8 +43,8 @@ Texture3D::Texture3D(const std::vector<GLuint>& rawData, unsigned width, unsigne
    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, sampler.WrapR);
    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, sampler.WrapT);
 
-   glTexStorage3D(GL_TEXTURE_3D, maxMipLevel, GL_R32UI, width, height, depth);
-   glTexImage3D(GL_TEXTURE_3D, 0, GL_R32UI, width, height, depth, 0, GL_RED, GL_UNSIGNED_INT, rawData.data());
+   glTexStorage3D(GL_TEXTURE_3D, maxMipLevel+1, GL_R32UI, width, height, depth);
+   glTexImage3D(GL_TEXTURE_3D, 0, GL_R32UI, width, height, depth, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, rawData.data());
    if (bGenerateMip)
    {
       glGenerateMipmap(GL_TEXTURE_3D);
@@ -71,5 +71,14 @@ void Texture3D::Clear(GLfloat clearColor[4])
    glGetIntegerv(GL_TEXTURE_BINDING_3D, &prevBoundTexture);
    glBindTexture(GL_TEXTURE_3D, m_id);
    glClearTexImage(m_id, 0, GL_RGBA, GL_FLOAT, clearColor);
+   glBindTexture(GL_TEXTURE_3D, prevBoundTexture);
+}
+
+void Texture3D::Clear(unsigned int value)
+{
+   GLint prevBoundTexture = 0;
+   glGetIntegerv(GL_TEXTURE_BINDING_3D, &prevBoundTexture);
+   glBindTexture(GL_TEXTURE_3D, m_id);
+   glClearTexImage(m_id, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &value);
    glBindTexture(GL_TEXTURE_3D, prevBoundTexture);
 }
