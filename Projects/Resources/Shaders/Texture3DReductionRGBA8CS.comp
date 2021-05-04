@@ -1,0 +1,130 @@
+#version 450 core
+// 512*512*512 텍스처 기준 base = 0 일때 Dispatch(128, 128, 128)
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+// baseMipmap.Size3D = uvec3(baseMipmap.Size1D)
+uniform sampler3D srcTexture; // Base mipmap
+layout(RGBA8, binding = 0) uniform image3D targetMip0; // baseMipmap.Size3D / 2
+layout(RGBA8, binding = 1) uniform image3D targetMip1; // baseMipmap.Size3D / 4
+
+uniform int srcMiplevel;
+uniform int requireMiplevels;
+uniform float texelSize; // 1.0f/(baseMipmap.Size1D)
+
+// Workgroup 내에서 공유됨
+shared float cacheR[64];
+shared float cacheG[64];
+shared float cacheB[64];
+shared float cacheA[64];
+
+void StoreColorToCache(uint idx, vec4 color)
+{
+    cacheR[idx] = color.r;
+    cacheG[idx] = color.g;
+    cacheB[idx] = color.b;
+    cacheA[idx] = color.a;
+}
+
+vec4 LoadColorFromCache(uint idx)
+{
+    return vec4(
+    cacheR[idx],
+    cacheG[idx],
+    cacheB[idx],
+    cacheA[idx]);
+}
+
+bool IsValidVoxel(vec4 color)
+{
+    return color.a > 0.0f;
+}
+
+void main()
+{
+    vec4 reduced[8];
+    vec3 texCoords = (vec3(gl_GlobalInvocationID.xyz) + 0.5f) * texelSize; // Middle of voxel
+
+    // 원본 텍스처 값을 캐시에 셋팅
+    reduced[0] = textureLod(srcTexture, texCoords, float(srcMiplevel));
+    StoreColorToCache(gl_LocalInvocationIndex, reduced[0]);
+    groupMemoryBarrier();
+    barrier();
+
+    // 한 단계 낮은 밉맵 생성 (targetMip0.Size3D = baseMipmap.Size3D / 2)
+    if ((gl_LocalInvocationIndex & 0x15) == 0)
+    {
+        reduced[1] = LoadColorFromCache(gl_LocalInvocationIndex + 1);
+        reduced[2] = LoadColorFromCache(gl_LocalInvocationIndex + 4);
+        reduced[3] = LoadColorFromCache(gl_LocalInvocationIndex + 5);
+        reduced[4] = LoadColorFromCache(gl_LocalInvocationIndex + 16);
+        reduced[5] = LoadColorFromCache(gl_LocalInvocationIndex + 17);
+        reduced[6] = LoadColorFromCache(gl_LocalInvocationIndex + 20);
+        reduced[7] = LoadColorFromCache(gl_LocalInvocationIndex + 21);
+
+        vec4 nominator = vec4(0.0f);
+        float denominator = 0.0f;
+        for (int idx = 0; idx < 8; ++idx)
+        {
+            if (IsValidVoxel(reduced[idx]))
+            {
+                nominator += reduced[idx];
+                denominator +=  1.0f;
+            }
+        }
+
+        const float epsilon = 0.0000001f;
+        if ((denominator-epsilon) <= 0.0f)
+        {
+            reduced[0] = vec4(0.0f);
+        }
+        else
+        {
+            reduced[0] = nominator/denominator;
+        }
+
+        StoreColorToCache(gl_LocalInvocationIndex, reduced[0]);
+        imageStore(targetMip0, ivec3(gl_GlobalInvocationID)/2, reduced[0]);
+    }
+
+    if (requireMiplevels == 1)
+    {
+        return;
+    }
+    groupMemoryBarrier();
+    barrier();
+
+    // 두 단계 낮은 밉맵 생성 (targetMip0.Size3D = baseMipmap.Size3D / 4)
+    if (gl_LocalInvocationIndex==0)
+    {
+        reduced[1] = LoadColorFromCache(gl_LocalInvocationIndex + 2);
+        reduced[2] = LoadColorFromCache(gl_LocalInvocationIndex + 8);
+        reduced[3] = LoadColorFromCache(gl_LocalInvocationIndex + 10);
+        reduced[4] = LoadColorFromCache(gl_LocalInvocationIndex + 32);
+        reduced[5] = LoadColorFromCache(gl_LocalInvocationIndex + 34);
+        reduced[6] = LoadColorFromCache(gl_LocalInvocationIndex + 40);
+        reduced[7] = LoadColorFromCache(gl_LocalInvocationIndex + 42);
+
+        vec4 nominator = vec4(0.0f);
+        float denominator = 0.0f;
+        for (int idx = 0; idx < 8; ++idx)
+        {
+            if (IsValidVoxel(reduced[idx]))
+            {
+                nominator += reduced[idx];
+                denominator +=  1.0f;
+            }
+        }
+
+        const float epsilon = 0.0000001f;
+        if ((denominator-epsilon) <= 0.0f)
+        {
+            reduced[0] = vec4(0.0f);
+        }
+        else
+        {
+            reduced[0] = nominator/denominator;
+        }
+
+        imageStore(targetMip1, ivec3(gl_GlobalInvocationID)/4, reduced[0]);
+    }
+}

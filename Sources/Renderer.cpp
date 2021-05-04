@@ -73,7 +73,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 
 	m_voxelVolume = new Texture3D(
 		std::vector<GLfloat>(4 * VoxelUnitSize * VoxelUnitSize * VoxelUnitSize, 0.0f),
-		VoxelUnitSize, VoxelUnitSize, VoxelUnitSize, Sampler3D(), std::log2(VoxelUnitSize)+1, true);
+		VoxelUnitSize, VoxelUnitSize, VoxelUnitSize, Sampler3D(), std::log2(VoxelUnitSize), true);
 
 	const float gridSize = static_cast<float>(VoxelGridWorldSize);
 	const glm::mat4 projMat = glm::ortho(-gridSize * 0.5f, gridSize * 0.5f, -gridSize * 0.5f, gridSize * 0.5f, gridSize * 0.5f, gridSize * 1.5f);
@@ -123,6 +123,8 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
+
+	m_texture3DReductionRGBA = new Shader("Resources/Shaders/Texture3DReductionRGBA8CS.comp");
 
 	return true;
 }
@@ -314,9 +316,11 @@ void Renderer::Voxelize(const Scene* scene)
 
 			m_shadowMap->UnbindAsTexture(5);
 
-			glGenerateTextureMipmap(m_voxelVolume->GetID());
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+
+			//glGenerateTextureMipmap(m_voxelVolume->GetID());
+			this->GenerateTexture3DMipmap(m_voxelVolume);
 		}
 	}
 }
@@ -402,6 +406,52 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 
 		m_voxelVolume->Unbind(6);
 		m_shadowMap->UnbindAsTexture(5);
+	}
+}
+
+void Renderer::GenerateTexture3DMipmap(Texture3D* target)
+{
+	if (target != nullptr)
+	{
+		const int targetMaxMipLevel = static_cast<int>(target->GetMaxMipLevel());
+		if (target->GetMaxMipLevel() > 0)
+		{
+			m_texture3DReductionRGBA->Bind();
+
+			target->Bind(0);
+			m_texture3DReductionRGBA->SetInt("srcTexture", 0);
+
+			for (int base = 0; base < targetMaxMipLevel; base += 2)
+			{
+				const int genMipLevel0 = base + 1;
+				const int genMipLevel1 = base + 2;
+				int genMips = 0;
+				const int baseMipmapDim = std::pow(2, (targetMaxMipLevel - base));
+
+				if (genMipLevel0 <= targetMaxMipLevel)
+				{
+					glBindImageTexture(0, target->GetID(), genMipLevel0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+					++genMips;
+				}
+				if (genMipLevel1 <= targetMaxMipLevel)
+				{
+					glBindImageTexture(1, target->GetID(), genMipLevel1, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+					++genMips;
+				}
+
+				m_texture3DReductionRGBA->SetInt("srcMipLevel", base);
+				m_texture3DReductionRGBA->SetInt("requireMiplevels", genMips);
+				m_texture3DReductionRGBA->SetFloat("texelSize", 1.0f / static_cast<float>(baseMipmapDim));
+
+				unsigned int workGroupNum = static_cast<unsigned int>(baseMipmapDim) / 4;
+				if (workGroupNum == 0)
+				{
+					workGroupNum = 1;
+				}
+
+				m_texture3DReductionRGBA->Dispatch(workGroupNum, workGroupNum, workGroupNum);
+			}
+		}
 	}
 }
 

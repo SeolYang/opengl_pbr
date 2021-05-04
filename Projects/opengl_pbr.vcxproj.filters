@@ -179,12 +179,6 @@
     <None Include="Resources\Shaders\VoxelConeTracingFS.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Resources\Shaders\VisualizeVoxelVS.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Resources\Shaders\VisualizeVoxelFS.glsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="Resources\Shaders\WorldPosVS.glsl">
       <Filter>Shaders</Filter>
     </None>
@@ -204,6 +198,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\RenderVoxel.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\Texture3DReductionRGBA8CS.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\Texture3DReductionRGBA16FCS.comp">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

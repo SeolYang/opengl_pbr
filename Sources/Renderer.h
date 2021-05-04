@@ -4,7 +4,7 @@
 
 // Voxel Volume Texture Size
 constexpr unsigned int VoxelUnitSize = 256;
-constexpr float VoxelGridWorldSize = 256;
+constexpr float VoxelGridWorldSize = 150.0f;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;
@@ -55,6 +55,9 @@ private:
 	void RenderVoxel(const Scene* scene);
 	void VoxelConeTracing(const Scene* scene);
 
+	// 이미 생성 과정에서 mipmap generation이 되었다고 가정
+	void GenerateTexture3DMipmap(Texture3D* target);
+
 public:
 	bool bEnableDirectDiffuse = true;
 	bool bEnableIndirectDiffuse = true;
@@ -102,5 +105,7 @@ private:
 	unsigned int m_winHeight = 1;
 
 	bool m_bVoxelized = false;
+
+	Shader* m_texture3DReductionRGBA = nullptr;
 
 };
