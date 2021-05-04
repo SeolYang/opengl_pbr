@@ -68,9 +68,9 @@ public:
 	bool bDebugAmbientOcclusion = false;
 
 	float VCTMaxDistance = 100.0f;
-	float VCTStep = 0.25f;
+	float VCTStep = 0.5f;
 	float VCTAlphaThreshold = 0.98f;
-	unsigned int VCTSpecularSampleNum = 4;
+	unsigned int VCTSpecularSampleNum = 2;
 
 private:
 	ERenderMode m_renderMode = ERenderMode::VCT;
@@ -109,6 +109,7 @@ private:
 	unsigned int m_winHeight = 1;
 
 	bool m_bVoxelized = false;
+	bool m_bNeedVoxelize = true;
 
 	Shader* m_texture3DReductionRGBA = nullptr;
 	Shader* m_decodeR32UIToRGBA8 = nullptr;

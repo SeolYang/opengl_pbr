@@ -46,7 +46,7 @@ private:
 	float m_sphereOrbitRad = 10.0f;
 
 	Material* m_floorMaterial = nullptr;
-	float m_floorRoughness = 0.0f;
+	float m_floorRoughness = 1.0f;
 
 	CameraPath m_camPath;
 	bool m_bEnableCamPath = false;

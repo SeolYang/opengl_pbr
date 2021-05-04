@@ -344,13 +344,18 @@ void Renderer::Voxelize(const Scene* scene)
 
 void Renderer::EncodedVoxelize(const Scene* scene)
 {
-	if (scene != nullptr && m_encodedVoxelVolume != nullptr)
+	if (scene != nullptr)
 	{
-		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
+		m_bNeedVoxelize |= (scene->IsSceneDirty() || m_bAlwaysComputeVoxel);
+		if (m_bVoxelized)
+		{
+			this->GenerateTexture3DMipmap(m_voxelVolume);
+			m_bVoxelized = false;
+		}
+		else if (m_encodedVoxelVolume != nullptr && m_bNeedVoxelize)
 		{
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-			m_bFirstVoxelize = false;
 			const unsigned int clearValue = 0;
 			m_encodedVoxelVolume->Clear(clearValue);
 
@@ -380,8 +385,9 @@ void Renderer::EncodedVoxelize(const Scene* scene)
 			m_shadowMap->UnbindAsTexture(5);
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-		   this->DecodeR32UI(m_encodedVoxelVolume, m_voxelVolume);
-			this->GenerateTexture3DMipmap(m_voxelVolume);
+			this->DecodeR32UI(m_encodedVoxelVolume, m_voxelVolume);
+			m_bVoxelized = true;
+			m_bNeedVoxelize = false;
 		}
 	}
 }
