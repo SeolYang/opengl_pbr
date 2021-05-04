@@ -155,6 +155,8 @@ uniform int specularSampleNum_VCT = 4;
 uniform float attenuationFactor_VCT = 0.3f;
 uniform float attenuationThreshold_VCT = 0.0015f;
 uniform float initialStep_VCT = 1.25f;
+uniform float indirectDiffusePower_VCT = 4.0f;
+uniform float indirectSpecularPower_VCT = 2.0f;
 
 uniform int enableDirectDiffuse = 1;
 uniform int enableIndirectDiffuse = 1;
@@ -193,7 +195,6 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = initialStep_VCT*voxelSize;
-	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
 	vec3 origin = worldPosFrag + (dist*normal);
 
 	float attenuation = 1.0f;
@@ -382,14 +383,14 @@ void main()
 	//vec3 F_indirect = F_reflect;
 	//vec3 F_indirect = (FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness)+F_reflect)/2.0;
 	vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
-	vec3 indirectSpecular = 2.0f * IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
+	vec3 indirectSpecular = indirectSpecularPower_VCT * IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
 	vec3 kS_indirect = F_indirect;
 	vec3 kD_indirect = vec3(1.0) - kS_indirect;
 	kD_indirect *= (1.0-metallic);
 
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
-	vec3 indirectDiffuse = 4.0f*IndirectDiffuse(N, occlusion).rgb;
+	vec3 indirectDiffuse = indirectDiffusePower_VCT * IndirectDiffuse(N, occlusion).rgb;
 	occlusion = 2.0f * min(1.0, 1.5 * occlusion);
 	indirectDiffuse =  occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 

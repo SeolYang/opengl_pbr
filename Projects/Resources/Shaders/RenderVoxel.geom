@@ -12,7 +12,7 @@ out vec4 fragColor;
 void main() {
 	fragColor = color[0];
 
-    float scale = 0.2f;
+    float scale = 0.5f;
 	vec4 v1 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-scale, scale, scale, 0));
 	vec4 v2 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(scale, scale, scale, 0));
 	vec4 v3 = projectionMatrix * modelViewMatrix * (gl_in[0].gl_Position + vec4(-scale, -scale, scale, 0));
