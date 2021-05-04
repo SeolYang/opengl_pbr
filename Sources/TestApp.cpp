@@ -83,73 +83,73 @@ bool TestApp::Init()
 	sphereMat->IOR = 1.2f;
 
 	auto emissiveSphere0 = scene->LoadModel("EmissiveSphere0", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere0->SetPosition(glm::vec3(20.0f, 27.5f, -20.0f));
+	emissiveSphere0->SetPosition(glm::vec3(20.0f, 30.0f, -20.0f));
 	auto emissiveSphere0Mat = emissiveSphere0->GetMaterial(0);
 
 	emissiveSphere0Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere0Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere0Mat->SetEmissiveFactor(glm::vec3(0.0f, 1.0f, 0.0f));
-	emissiveSphere0Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere0Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere0Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	auto emissiveSphere1 = scene->LoadModel("EmissiveSphere1", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere1->SetPosition(glm::vec3(0.0f, 27.5f, -20.0f));
+	emissiveSphere1->SetPosition(glm::vec3(0.0f, 30.0f, -20.0f));
 	auto emissiveSphere1Mat = emissiveSphere1->GetMaterial(0);
 
 	emissiveSphere1Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere1Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere1Mat->SetEmissiveFactor(glm::vec3(0.0f, 1.0f, 1.0f));
-	emissiveSphere1Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere1Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere1Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	auto emissiveSphere2 = scene->LoadModel("EmissiveSphere2", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere2->SetPosition(glm::vec3(-20.0f, 27.5f, -20.0f));
+	emissiveSphere2->SetPosition(glm::vec3(-20.0f, 30.0f, -20.0f));
 	auto emissiveSphere2Mat = emissiveSphere2->GetMaterial(0);
 
 	emissiveSphere2Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere2Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere2Mat->SetEmissiveFactor(glm::vec3(1.0f, 1.0f, 0.0f));
-	emissiveSphere2Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere2Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere2Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	auto emissiveSphere3 = scene->LoadModel("EmissiveSphere3", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere3->SetPosition(glm::vec3(-40.0f, 27.5f, -20.0f));
+	emissiveSphere3->SetPosition(glm::vec3(-40.0f, 30.0f, -20.0f));
 	auto emissiveSphere3Mat = emissiveSphere3->GetMaterial(0);
 
 	emissiveSphere3Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere3Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere3Mat->SetEmissiveFactor(glm::vec3(1.0f, 0.0f, 0.0f));
-	emissiveSphere3Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere3Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere3Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	auto emissiveSphere4 = scene->LoadModel("EmissiveSphere4", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere4->SetPosition(glm::vec3(-60.0f, 27.5f, -20.0f));
+	emissiveSphere4->SetPosition(glm::vec3(-60.0f, 30.0f, -20.0f));
 	auto emissiveSphere4Mat = emissiveSphere4->GetMaterial(0);
 
 	emissiveSphere4Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere4Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere4Mat->SetEmissiveFactor(glm::vec3(1.0f, 1.0f, 1.0f));
-	emissiveSphere4Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere4Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere4Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	auto emissiveSphere5 = scene->LoadModel("EmissiveSphere5", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere5->SetPosition(glm::vec3(-60.0f, 27.5f, -7.0f));
+	emissiveSphere5->SetPosition(glm::vec3(-60.0f, 30.0f, -7.0f));
 	auto emissiveSphere5Mat = emissiveSphere5->GetMaterial(0);
 
 	emissiveSphere5Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere5Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere5Mat->SetEmissiveFactor(glm::vec3(1.0f, 1.0f, 1.0f));
-	emissiveSphere5Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere5Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere5Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	auto emissiveSphere6 = scene->LoadModel("EmissiveSphere4", "Resources/Models/sphere.obj", sphereLoadParams);
-	emissiveSphere6->SetPosition(glm::vec3(-60.0f, 27.5f, 10.0f));
+	emissiveSphere6->SetPosition(glm::vec3(-60.0f, 30.0f, 10.0f));
 	auto emissiveSphere6Mat = emissiveSphere6->GetMaterial(0);
 
 	emissiveSphere6Mat->SetForceFactor(EMaterialTexture::BaseColor, true);
 	emissiveSphere6Mat->SetForceFactor(EMaterialTexture::Emissive, true);
 	emissiveSphere6Mat->SetEmissiveFactor(glm::vec3(1.0f, 1.0f, 1.0f));
-	emissiveSphere6Mat->SetEmissiveIntensity(5.0f);
+	emissiveSphere6Mat->SetEmissiveIntensity(1.0f);
 	emissiveSphere6Mat->SetBaseColorFactor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	Model* metallicSphere = scene->LoadModel("MetallicSphere", "Resources/Models/sphere.obj", sphereLoadParams);
@@ -199,15 +199,15 @@ bool TestApp::Init()
 		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
 		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
 	}
-	quadMat->SetEmissiveIntensity(2.0f);
+	quadMat->SetEmissiveIntensity(1.0f);
 
 	m_mainLight = scene->CreateLight("Main");
 	// Direct Sunlight
-	//m_mainLight->SetIntensity(glm::vec3{ 10.0f });
+	m_mainLight->SetIntensity(glm::vec3{ 5.0f });
 	// Clear Blue Sky
 	//m_mainLight->SetIntensity(10.0f * glm::vec3{0.25098f, 0.611765f, 1.0f});
 	// 100W Tungsten
-	m_mainLight->SetIntensity(10.0f * glm::vec3(1.0f, 0.945f, 0.6667f));
+	//m_mainLight->SetIntensity(10.0f * glm::vec3(1.0f, 0.945f, 0.6667f));
 	this->UpdateLightRotation();
 
 	m_cam = scene->GetMainCamera();
