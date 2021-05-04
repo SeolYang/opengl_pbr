@@ -1,0 +1,26 @@
+#version 450 core
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+layout(R32UI, binding = 0) uniform uimage3D inputTexture;
+layout(RGBA8, binding = 1) uniform image3D outputTexture;
+
+bool IsValidVoxel(uint value)
+{
+    return value > 0;
+}
+
+vec4 ConvertRGBA8ToVec4(uint val)
+{
+    return vec4(float((val & 0x000000FF)), 
+                float((val & 0x0000FF00) >> 8U), 
+                float((val & 0x00FF0000) >> 16U), 
+                float((val & 0xFF000000) >> 24U));
+}
+
+void main()
+{
+    ivec3 voxelPos = ivec3(gl_GlobalInvocationID).xyz;
+	uint val = imageLoad(inputTexture, voxelPos).r;
+    vec4 decoded = ConvertRGBA8ToVec4(val);
+	imageStore(outputTexture, voxelPos, vec4(decoded.rgb/255.0f, decoded.a));
+}

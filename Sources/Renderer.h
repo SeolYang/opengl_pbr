@@ -3,8 +3,8 @@
 #include "glm/glm.hpp"
 
 // Voxel Volume Texture Size
-constexpr unsigned int VoxelUnitSize = 256;
-constexpr float VoxelGridWorldSize = 150.0f;
+constexpr unsigned int VoxelUnitSize = 512;
+constexpr float VoxelGridWorldSize = 150;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;
@@ -52,11 +52,13 @@ private:
 	void Shadow(const Scene* scene);
 
 	void Voxelize(const Scene* scene);
+	void EncodedVoxelize(const Scene* scene);
 	void RenderVoxel(const Scene* scene);
 	void VoxelConeTracing(const Scene* scene);
 
 	// 이미 생성 과정에서 mipmap generation이 되었다고 가정
 	void GenerateTexture3DMipmap(Texture3D* target);
+	void DecodeR32UI(Texture3D* src, Texture3D* dest);
 
 public:
 	bool bEnableDirectDiffuse = true;
@@ -66,9 +68,9 @@ public:
 	bool bDebugAmbientOcclusion = false;
 
 	float VCTMaxDistance = 100.0f;
-	float VCTStep = 0.5f;
+	float VCTStep = 0.25f;
 	float VCTAlphaThreshold = 0.98f;
-	unsigned int VCTSpecularSampleNum = 1;
+	unsigned int VCTSpecularSampleNum = 4;
 
 private:
 	ERenderMode m_renderMode = ERenderMode::VCT;
@@ -87,7 +89,9 @@ private:
 	// Voxel Cone Tracing
 	bool m_bAlwaysComputeVoxel = false;
 	bool m_bFirstVoxelize = true;
+	Texture3D*	m_encodedVoxelVolume = nullptr;
 	Texture3D*	m_voxelVolume = nullptr;
+	Shader* m_encodedVoxelizePass = nullptr;
 	Shader*		m_voxelizePass = nullptr;
 	glm::mat4 m_projX;
 	glm::mat4 m_projY;
@@ -107,5 +111,6 @@ private:
 	bool m_bVoxelized = false;
 
 	Shader* m_texture3DReductionRGBA = nullptr;
+	Shader* m_decodeR32UIToRGBA8 = nullptr;
 
 };

@@ -14,6 +14,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{c7d95f49-1829-471f-adc9-b1e1d706d8d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\R32UI">
+      <UniqueIdentifier>{52c07aba-6f2c-481e-b8bb-73712f7ab127}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Sources\Application.h">
@@ -206,5 +209,13 @@
     <None Include="Resources\Shaders\Texture3DReductionRGBA16FCS.comp">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Resources\Shaders\VoxelizationR32UIFS.frag">
+      <Filter>Shaders\R32UI</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Resources\Shaders\DecodeR32UIToRGBA8CS.comp">
+      <Filter>Shaders\R32UI</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -81,9 +81,22 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	m_projY = projMat * glm::lookAt(glm::vec3(0.0f, gridSize, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 	m_projZ = projMat * glm::lookAt(glm::vec3(0.0f, 0.0f, gridSize), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	//m_voxelVolume = new Texture3D(
-	//	std::vector<GLuint>(VoxelUnitSize * VoxelUnitSize * VoxelUnitSize, 0),
-	//	VoxelUnitSize, VoxelUnitSize, VoxelUnitSize);
+	const auto encodedVoxelVolumeSampler = Sampler3D{
+		.MinFilter = GL_NEAREST,
+		.MagFilter = GL_NEAREST,
+		.WrapS = GL_CLAMP_TO_BORDER,
+		.WrapT = GL_CLAMP_TO_BORDER,
+		.WrapR = GL_CLAMP_TO_BORDER,
+	};
+
+	m_encodedVoxelVolume = new Texture3D(
+		std::vector<GLuint>(VoxelUnitSize * VoxelUnitSize * VoxelUnitSize, 0),
+		VoxelUnitSize, VoxelUnitSize, VoxelUnitSize, encodedVoxelVolumeSampler, 0, false);
+
+	m_encodedVoxelizePass = new Shader(
+		"Resources/Shaders/VoxelizationVS.glsl",
+		"Resources/Shaders/VoxelizationGS.glsl",
+		"Resources/Shaders/VoxelizationR32UIFS.frag");
 
 	m_voxelizePass = new Shader(
 		"Resources/Shaders/VoxelizationVS.glsl",
@@ -125,6 +138,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glFrontFace(GL_CCW);
 
 	m_texture3DReductionRGBA = new Shader("Resources/Shaders/Texture3DReductionRGBA8CS.comp");
+	m_decodeR32UIToRGBA8 = new Shader("Resources/Shaders/DecodeR32UIToRGBA8CS.comp");
 
 	return true;
 }
@@ -132,7 +146,8 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 void Renderer::Render(const Scene* scene)
 {
 	Shadow(scene);
-	Voxelize(scene);
+	//Voxelize(scene);
+	EncodedVoxelize(scene);
 	switch(m_renderMode)
 	{
 	case ERenderMode::VCT:
@@ -317,9 +332,55 @@ void Renderer::Voxelize(const Scene* scene)
 			m_shadowMap->UnbindAsTexture(5);
 
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_CULL_FACE);
 			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 
 			//glGenerateTextureMipmap(m_voxelVolume->GetID());
+			this->GenerateTexture3DMipmap(m_voxelVolume);
+		}
+	}
+}
+
+void Renderer::EncodedVoxelize(const Scene* scene)
+{
+	if (scene != nullptr && m_encodedVoxelVolume != nullptr)
+	{
+		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
+		{
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+			m_bFirstVoxelize = false;
+			const unsigned int clearValue = 0;
+			m_encodedVoxelVolume->Clear(clearValue);
+
+			m_encodedVoxelizePass->Bind();
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_CULL_FACE);
+
+			// Vertex Shader Uniforms
+			m_encodedVoxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);
+			m_encodedVoxelizePass->SetMat4f("shadowProjMat", m_shadowProjMat);
+
+			// Geometry Shader Uniforms
+			m_encodedVoxelizePass->SetMat4f("projXAxis", m_projX);
+			m_encodedVoxelizePass->SetMat4f("projYAxis", m_projY);
+			m_encodedVoxelizePass->SetMat4f("projZAxis", m_projZ);
+
+			// Fragment Shader Uniforms
+			m_encodedVoxelizePass->SetInt("shadowMap", 5);
+			m_shadowMap->BindAsTexture(5);
+
+			glBindImageTexture(0, m_encodedVoxelVolume->GetID(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
+			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
+			RenderScene(scene, m_encodedVoxelizePass, false, true);
+
+			m_shadowMap->UnbindAsTexture(5);
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+		   this->DecodeR32UI(m_encodedVoxelVolume, m_voxelVolume);
 			this->GenerateTexture3DMipmap(m_voxelVolume);
 		}
 	}
@@ -352,7 +413,6 @@ void Renderer::RenderVoxel(const Scene* scene)
 
 		glBindVertexArray(m_texture3DVAO);
 		glDrawArrays(GL_POINTS, 0, VoxelNum);
-
 		glBindVertexArray(0);
 		m_voxelVolume->Unbind(0);
 	}
@@ -450,8 +510,29 @@ void Renderer::GenerateTexture3DMipmap(Texture3D* target)
 				}
 
 				m_texture3DReductionRGBA->Dispatch(workGroupNum, workGroupNum, workGroupNum);
+				glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			}
+
+			glBindImageTexture(0, 0, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+			glBindImageTexture(1, 0, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
 		}
+	}
+}
+
+void Renderer::DecodeR32UI(Texture3D* src, Texture3D* dest)
+{
+	if (m_decodeR32UIToRGBA8 != nullptr && src != nullptr && dest != nullptr)
+	{
+		m_decodeR32UIToRGBA8->Bind();
+
+		glBindImageTexture(0, src->GetID(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+		glBindImageTexture(1, dest->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+		m_decodeR32UIToRGBA8->Dispatch(src->GetWidth()/8, src->GetHeight()/8, src->GetDepth()/8);
+		glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+		glBindImageTexture(0, 0, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+		glBindImageTexture(1, 0, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
 	}
 }
 

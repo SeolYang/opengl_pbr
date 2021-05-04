@@ -74,9 +74,13 @@
     <None Include="Resources\Shaders\VoxelConeTracingVS.vert" />
     <None Include="Resources\Shaders\VoxelizationFS.glsl" />
     <None Include="Resources\Shaders\VoxelizationGS.glsl" />
+    <None Include="Resources\Shaders\VoxelizationR32UIFS.frag" />
     <None Include="Resources\Shaders\VoxelizationVS.glsl" />
     <None Include="Resources\Shaders\WorldPosFS.glsl" />
     <None Include="Resources\Shaders\WorldPosVS.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Resources\Shaders\DecodeR32UIToRGBA8CS.comp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
