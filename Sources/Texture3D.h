@@ -24,7 +24,16 @@ public:
 
    void Clear(GLfloat clearColor[4]);
 
+   unsigned int GetWidth() const { return m_width; }
+   unsigned int GetHeight() const { return m_height; }
+   unsigned int GetDepth() const { return m_depth; }
+   unsigned int GetMaxMipLevel() const { return m_maxMipLevel; }
+
 private:
    unsigned int m_id = 0;
+   unsigned int m_width = 0;
+   unsigned int m_height = 0;
+   unsigned int m_depth = 0;
+   unsigned int m_maxMipLevel = 0;
    
 };
