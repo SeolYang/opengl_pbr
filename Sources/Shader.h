@@ -9,6 +9,7 @@
 class Shader
 {
 public:
+	Shader(const std::string& csPath);
 	Shader(const std::string& vsPath, const std::string& fsPath);
 	Shader(const std::string& vsPath, const std::string& gsPath, const std::string& fsPath);
 
@@ -23,6 +24,8 @@ public:
 	void SetMat4f(const std::string& name, glm::mat4 value);
 
 	unsigned int FindLoc(const std::string& name);
+
+	void Dispatch(unsigned int numGroupX, unsigned int numGroupY, unsigned int numGroupZ);
 
 private:
 	unsigned int m_id;

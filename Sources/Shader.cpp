@@ -6,6 +6,55 @@
 #include <iostream>
 
 constexpr unsigned int INVALID_LOC = 0xFFFFFFFF;
+
+Shader::Shader(const std::string& csPath)
+{
+	std::string csRaw;
+	std::ifstream csFile;
+
+	csFile.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+	try
+	{
+		csFile.open(csPath);
+		std::stringstream vsStream;
+		vsStream << csFile.rdbuf();
+		csFile.close();
+
+		csRaw = vsStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "Failed to open shader files " << e.what() << std::endl;
+	}
+
+	const char* vsCode = csRaw.c_str();
+	unsigned int cs;
+	int success = 0;
+	char compileLog[512];
+
+	cs = glCreateShader(GL_COMPUTE_SHADER);
+	glShaderSource(cs, 1, &vsCode, nullptr);
+	glCompileShader(cs);
+	glGetShaderiv(cs, GL_COMPILE_STATUS, &success);
+	if (success == 0)
+	{
+		glGetShaderInfoLog(cs, 512, nullptr, compileLog);
+		std::cout << "Failed to compile compute shader: " << compileLog << std::endl;
+	}
+
+	m_id = glCreateProgram();
+	glAttachShader(m_id, cs);
+	glLinkProgram(m_id);
+	glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+	if (success == 0)
+	{
+		glGetProgramInfoLog(m_id, 512, nullptr, compileLog);
+		std::cout << "Failed to link shader program: " << compileLog << std::endl;
+	}
+
+	glDeleteShader(cs);
+}
+
 /* @TODO	셰이더 로드시 중복되는 코드 함수로 빼내기 */
 Shader::Shader(
 	const std::string& vsPath,
@@ -248,4 +297,9 @@ unsigned int Shader::FindLoc(const std::string& name)
 	}
 
 	return loc;
+}
+
+void Shader::Dispatch(unsigned int numGroupX, unsigned int numGroupY, unsigned int numGroupZ)
+{
+	glDispatchCompute(numGroupX, numGroupY, numGroupZ);
 }
