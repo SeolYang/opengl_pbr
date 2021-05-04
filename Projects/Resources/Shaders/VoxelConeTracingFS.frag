@@ -154,6 +154,7 @@ uniform float alphaThreshold_VCT = 1.0f;
 uniform int specularSampleNum_VCT = 4;
 uniform float attenuationFactor_VCT = 0.3f;
 uniform float attenuationThreshold_VCT = 0.0015f;
+uniform float initialStep_VCT = 1.25f;
 
 uniform int enableDirectDiffuse = 1;
 uniform int enableIndirectDiffuse = 1;
@@ -191,7 +192,7 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	occlusion = 0.0f;
 
 	float voxelSize = voxelGridWorldSize / voxelDim;
-	float dist = 1.25f*voxelSize;
+	float dist = initialStep_VCT*voxelSize;
 	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
 	vec3 origin = worldPosFrag + (dist*normal);
 
