@@ -152,9 +152,9 @@ uniform float maxDist_VCT = 100.0f;
 uniform float step_VCT = 0.5f;
 uniform float alphaThreshold_VCT = 1.0f;
 uniform int specularSampleNum_VCT = 4;
-uniform float attenuationFactor_VCT = 0.3f;
-uniform float attenuationThreshold_VCT = 0.0015f;
-uniform float initialStep_VCT = 1.25f;
+uniform float attenuationFactor_VCT = 0.01f;
+uniform float attenuationThreshold_VCT = 0.0005f;
+uniform float initialStep_VCT = 4.0f;
 uniform float indirectDiffusePower_VCT = 4.0f;
 uniform float indirectSpecularPower_VCT = 2.0f;
 
@@ -202,6 +202,7 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	// @TODO Distance base Attenuation
 	while (attenuation > attenuationThreshold_VCT && dist < maxDist_VCT && alpha < alphaThreshold_VCT)
 	{
+		//attenuation = min(1.0/(attenuationFactor_VCT*dist*dist), 1.0);
 		attenuation = min(1.0/(attenuationFactor_VCT*dist), 1.0);
 		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
 		float lodLevel = log2(coneDiameter / voxelSize);
@@ -391,7 +392,7 @@ void main()
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
 	vec3 indirectDiffuse = indirectDiffusePower_VCT * IndirectDiffuse(N, occlusion).rgb;
-	occlusion = 2.0f * min(1.0, 1.5 * occlusion);
+	occlusion = min(1.0, 1.2 * occlusion);
 	indirectDiffuse =  occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 
 	directDiffuse = (enableDirectDiffuse == 1) ? directDiffuse : vec3(0.0f);
@@ -415,6 +416,6 @@ void main()
 		fragColor = (debugAmbientOcclusion == 1) ? vec4(vec3(occlusion), 1.0f) : vec4(emissive + directLight + indirectLight, albedo.a);
 	}
 
-	fragColor.xyz = fragColor.xyz/(fragColor.xyz+vec3(1.0));
+	//fragColor.xyz = fragColor.xyz/(fragColor.xyz+vec3(1.0));
 	fragColor.xyz = pow(fragColor.xyz, vec3(1.0/2.4));
 }
