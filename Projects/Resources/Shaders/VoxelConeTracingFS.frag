@@ -4,6 +4,7 @@ in vec4 shadowPosFrag;
 in vec2 texCoordsFrag;
 in vec3 worldNormalFrag;
 in mat3 tbnFrag;
+in mat3 tnbFrag;
 
 out vec4 fragColor;
 
@@ -190,9 +191,9 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	occlusion = 0.0f;
 
 	float voxelSize = voxelGridWorldSize / voxelDim;
-	float dist = voxelSize;
+	float dist = 1.25f*voxelSize;
 	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
-	vec3 origin = worldPosFrag + (2.0*normal*voxelSize);
+	vec3 origin = worldPosFrag + (dist*normal);
 
 	float attenuation = 1.0f;
 
@@ -226,7 +227,7 @@ vec4 ConeTraceRefraction(vec3 normal, vec3 direction, float tanHalfAngle, out fl
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = voxelSize;
 	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
-	vec3 origin = worldPosFrag + (2.0f*N*voxelSize);
+	vec3 origin = worldPosFrag + (dist*N);
 
 	// @TODO Distance base Attenuation
 	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
@@ -332,10 +333,9 @@ void main()
 		discard;
 	}
 
-	tangentToWorld = inverse(tbnFrag);
+	tangentToWorld = tnbFrag;
 
 	float ao = texture(aoMap, texCoordsFrag).r;
-
 
 	float metallic = metallicFactor;
 	float roughness = roughnessFactor;
@@ -381,14 +381,14 @@ void main()
 	//vec3 F_indirect = F_reflect;
 	//vec3 F_indirect = (FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness)+F_reflect)/2.0;
 	vec3 F_indirect = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
-	vec3 indirectSpecular = IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
+	vec3 indirectSpecular = 2.0f * IndirectSpecular(specularSampleNum_VCT, roughness, N, V, F_indirect);
 	vec3 kS_indirect = F_indirect;
 	vec3 kD_indirect = vec3(1.0) - kS_indirect;
 	kD_indirect *= (1.0-metallic);
 
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
-	vec3 indirectDiffuse = 2.0f*IndirectDiffuse(N, occlusion).rgb;
+	vec3 indirectDiffuse = 4.0f*IndirectDiffuse(N, occlusion).rgb;
 	occlusion = 2.0f * min(1.0, 1.5 * occlusion);
 	indirectDiffuse =  occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 

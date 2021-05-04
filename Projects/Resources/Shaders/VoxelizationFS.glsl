@@ -148,7 +148,6 @@ void main()
 		return;
 	}
 
-	vec3 voxel = ScaleAndBias(worldPosFrag);
 	ivec3 dimension = imageSize(voxelVolume);
 	ivec3 voxelCamPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, dimension.x * gl_FragCoord.z);
 	ivec3 voxelPos;

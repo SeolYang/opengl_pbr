@@ -118,7 +118,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 
-	//glEnable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -279,7 +279,7 @@ void Renderer::Voxelize(const Scene* scene)
 	{
 		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
 		{
-			glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
 			//glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, -3.5f);
 			
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -291,7 +291,8 @@ void Renderer::Voxelize(const Scene* scene)
 			m_voxelizePass->Bind();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glEnable(GL_DEPTH_TEST);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_CULL_FACE);
 
 			// Vertex Shader Uniforms
 			m_voxelizePass->SetMat4f("shadowViewMat", m_shadowViewMat);
@@ -307,16 +308,15 @@ void Renderer::Voxelize(const Scene* scene)
 			m_shadowMap->BindAsTexture(5);
 
 			glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
+			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
 			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
-			RenderScene(scene, m_voxelizePass, false, false);
+			RenderScene(scene, m_voxelizePass, false, true);
 
 			m_shadowMap->UnbindAsTexture(5);
-			glGenerateTextureMipmap(m_voxelVolume->GetID());
 
-			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
+			glGenerateTextureMipmap(m_voxelVolume->GetID());
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 		}
 	}
 }

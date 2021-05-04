@@ -15,6 +15,7 @@ out vec4 shadowPosFrag;
 out vec2 texCoordsFrag;
 out vec3 worldNormalFrag;
 out mat3 tbnFrag;
+out mat3 tnbFrag;
 
 void main()
 {
@@ -22,14 +23,16 @@ void main()
 	worldPosFrag = worldPosition.xyz;
 	texCoordsFrag = aTexcoord;
 
-	vec3 normal = normalize(mat3(transpose(inverse(worldMatrix))) * aNormal.xyz);
+	mat3 normalMatrix = mat3(transpose(inverse(worldMatrix)));
+	vec3 normal = normalize(normalMatrix * aNormal.xyz);
 	worldNormalFrag = normal;
 
-	vec3 tangent = normalize(worldMatrix * vec4(aTangent, 0.0)).xyz;
-	tangent = normalize(tangent - dot(tangent, normal) * normal);
+	vec3 tangent = normalize(normalMatrix * aTangent.xyz).xyz;
+	tangent = normalize(tangent - dot(tangent, normal) * normal); // Gram-Schmit 
 	vec3 bitangent = normalize(cross(normal, tangent).xyz);
 
 	tbnFrag = mat3(tangent, bitangent, normal);
+	tnbFrag = mat3(tangent, normal, bitangent);
 
 	shadowPosFrag = shadowProjMat * shadowViewMat * worldPosition;
 	shadowPosFrag.xyz = shadowPosFrag.xyz * 0.5f + vec3(0.5f);
