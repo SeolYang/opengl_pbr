@@ -258,7 +258,8 @@ vec4 IndirectDiffuse(vec3 normal, out float occlusionOut)
 	{
 		// tan(pi/6) = 0.577 (pi/6 rad = 30 degrees)
 		float occlusion = 0.0f;
-		color += coneWeights[cone] * ConeTrace(normal, tangentToWorld*coneDirections[cone], 0.577, occlusion);
+		vec3 L = tangentToWorld*coneDirections[cone];
+		color += coneWeights[cone] * ConeTrace(normal, L, 0.577, occlusion)*max(dot(normal, L), 0.0f);
 		occlusionOut += coneWeights[cone] * occlusion;
 	}
 
@@ -283,7 +284,7 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 		if (NoL > 0.0)
 		{
 			float specularOcc = 0.0;
-			vec3 tracedColor = ConeTrace(N, L, mix(0.01, 0.8, roughness*roughness), specularOcc).rgb;
+			vec3 tracedColor = ConeTrace(N, L, mix(0.03, 0.75, roughness*roughness), specularOcc).rgb;
 
 			float G = GeometrySmithIndirect(N, V, L, roughness);
 			float Fc = pow(1.0-VoH, 5);
@@ -348,7 +349,7 @@ void main()
 		roughness = texture(metallicRoughnessMap, texCoordsFrag).g;
 	}
 
-	vec3 normal = worldNormalFrag;
+	vec3 normal = normalize(worldNormalFrag);
 	if (bUseNormalMap == 1)
 	{
 		normal = texture(normalMap, texCoordsFrag).rgb;
@@ -356,7 +357,7 @@ void main()
 		normal = normalize(tbnFrag * normal);
 	}
 
-	vec3 N = normalize(normal);
+	vec3 N = normal;
 	vec3 V = normalize(camPos - worldPosFrag);
 	vec3 L = normalize(-light.Direction);
 	vec3 H = normalize(V + L);
