@@ -131,7 +131,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -354,6 +354,16 @@ void Renderer::EncodedVoxelize(const Scene* scene)
 		}
 		else if (m_encodedVoxelVolume != nullptr && m_bNeedVoxelize)
 		{
+			if (bEnableConservativeRasterization)
+			{
+				glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
+				glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, 0.5f);
+			}
+			else
+			{
+				glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
+			}
+
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 			const unsigned int clearValue = 0;
@@ -384,6 +394,7 @@ void Renderer::EncodedVoxelize(const Scene* scene)
 
 			m_shadowMap->UnbindAsTexture(5);
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 
 			this->DecodeR32UI(m_encodedVoxelVolume, m_voxelVolume);
 			m_bVoxelized = true;

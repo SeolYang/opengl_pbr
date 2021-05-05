@@ -174,13 +174,12 @@ bool TestApp::Init()
 	const ModelLoadParams quadLoadParams{
 		.CalcTangentSpace = true,
 		.ConvertToLeftHanded = true,
-		.GenSmoothNormals = true,
-		.GenUVs = true,
+		.GenSmoothNormals = false,
+		.GenUVs = false,
 		.PreTransformVertices = false,
 		.Triangulate = true
 	};
 	m_quad = scene->LoadModel("Quad", "Resources/Models/quad.obj", quadLoadParams);
-	//m_quad->bCastShadow = false;
 	m_quad->bDoubleSided = true;
 	m_quad->SetPosition(glm::vec3(45.0f, 5.5f, 1.5f));
 	m_quad->SetRotation(glm::rotate(glm::quat(), glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -199,15 +198,15 @@ bool TestApp::Init()
 		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
 		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
 	}
-	quadMat->SetEmissiveIntensity(1.0f);
+	quadMat->SetEmissiveIntensity(1.25f);
 
 	m_mainLight = scene->CreateLight("Main");
 	// Direct Sunlight
 	m_mainLight->SetIntensity(glm::vec3{ 5.0f });
 	// Clear Blue Sky
-	//m_mainLight->SetIntensity(10.0f * glm::vec3{0.25098f, 0.611765f, 1.0f});
+	//m_mainLight->SetIntensity(5.0f * glm::vec3{0.25098f, 0.611765f, 1.0f});
 	// 100W Tungsten
-	//m_mainLight->SetIntensity(10.0f * glm::vec3(1.0f, 0.945f, 0.6667f));
+	//m_mainLight->SetIntensity(5.0f * glm::vec3(1.0f, 0.945f, 0.6667f));
 	this->UpdateLightRotation();
 
 	m_cam = scene->GetMainCamera();
@@ -317,6 +316,10 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 		switch (key)
 		{
 		default:
+			break;
+
+		case GLFW_KEY_F3:
+			renderer->bEnableConservativeRasterization = !renderer->bEnableConservativeRasterization;
 			break;
 
 		case GLFW_KEY_1:
