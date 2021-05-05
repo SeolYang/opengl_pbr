@@ -277,6 +277,13 @@ void TestApp::Update(float dt)
 		m_sphere->SetPosition(m_sphereOrbitRad * (glm::vec3(0.0f, 1.0f, 0.0f) + (0.5f * glm::vec3(1.5f * elapsedTimeCos, elapsedTimeSin, 2.0f * elapsedTimeCos * elapsedTimeSin))));
 	}
 
+	if (m_lightRotationDirX != 0.0f || m_lightRotationDirY != 0.0f)
+	{
+		m_lightRotationX += m_lightRotationDirX * m_lightRotationSpeed * dt;
+		m_lightRotationY += m_lightRotationDirY * m_lightRotationSpeed * dt;
+		this->UpdateLightRotation();
+	}
+
 	if (m_bEnableCamPath && m_cam != nullptr)
 	{
 		const glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -409,23 +416,19 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 
 		case GLFW_KEY_RIGHT:
-			m_lightRotationX += 5.0f;
-			this->UpdateLightRotation();
+			m_lightRotationDirX = 1.0f;
 			break;
 
 		case GLFW_KEY_LEFT:
-			m_lightRotationX -= 5.0f;
-			this->UpdateLightRotation();
+			m_lightRotationDirX = -1.0f;
 			break;
 
 		case GLFW_KEY_DOWN:
-			m_lightRotationY -= 10.0f;
-			this->UpdateLightRotation();
+			m_lightRotationDirY = -1.0f;
 			break;
 
 		case GLFW_KEY_UP:
-			m_lightRotationY += 10.0f;
-			this->UpdateLightRotation();
+			m_lightRotationDirY = 1.0f;
 			break;
 
 		case GLFW_KEY_E:
@@ -458,6 +461,27 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 		}
 	}
+	else if (action == GLFW_RELEASE)
+	{
+	   switch(key)
+	   {
+		case GLFW_KEY_RIGHT:
+			m_lightRotationDirX = 0.0f;
+			break;
+
+		case GLFW_KEY_LEFT:
+			m_lightRotationDirX = 0.0f;
+			break;
+
+		case GLFW_KEY_DOWN:
+			m_lightRotationDirY = 0.0f;
+			break;
+
+		case GLFW_KEY_UP:
+			m_lightRotationDirY = 0.0f;
+			break;
+	   }
+	}
 }
 
 void TestApp::UpdateLightRotation()
@@ -468,7 +492,5 @@ void TestApp::UpdateLightRotation()
 	const glm::quat lightYRot = glm::rotate(glm::quat(),
 		glm::radians(m_lightRotationY), glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-	m_mainLight->SetRotation(lightXRot* lightYRot);
-
-	std::cout << "Light rotation X : " << m_lightRotationX << " Y : " << m_lightRotationY << std::endl;
+	m_mainLight->SetRotation(lightXRot*lightYRot);
 }

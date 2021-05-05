@@ -42,6 +42,9 @@ private:
 	float m_elapsedTime = 0.0f;
 	float m_lightRotationX = 100.0f;
 	float m_lightRotationY = -20.0f;
+	float m_lightRotationSpeed = 10.0f;
+	float m_lightRotationDirX = 0.0f;
+	float m_lightRotationDirY = 0.0f;
 
 	float m_sphereOrbitRad = 10.0f;
 
