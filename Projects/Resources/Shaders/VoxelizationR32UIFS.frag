@@ -64,7 +64,7 @@ void ImageAtomicRGBA8Avg(layout(r32ui) volatile coherent uimage3D image, ivec3 c
     uint prevStoredVal = 0;
     uint curStoredVal;
 	int iter = 0;
-	const int maxIterations = 100;
+	const int maxIterations = 255;
 
     while((curStoredVal = imageAtomicCompSwap(image, coords, prevStoredVal, newVal)) != prevStoredVal && iter < maxIterations)
     {

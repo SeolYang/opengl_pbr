@@ -42,7 +42,7 @@ private:
 	float m_elapsedTime = 0.0f;
 	float m_lightRotationX = 100.0f;
 	float m_lightRotationY = -20.0f;
-	float m_lightRotationSpeed = 10.0f;
+	float m_lightRotationSpeed = 30.0f;
 	float m_lightRotationDirX = 0.0f;
 	float m_lightRotationDirY = 0.0f;
 
@@ -53,5 +53,10 @@ private:
 
 	CameraPath m_camPath;
 	bool m_bEnableCamPath = false;
+
+	bool m_bLightRotate = false;
+	float m_lightElapsedTime = 0.0f;
+	float m_lightRotateSpeed = 2.0f;
+	float m_lightRotateRadius = 5.0f;
 
 };

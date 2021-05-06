@@ -17,7 +17,7 @@
 #include <random>
 #include <algorithm>
 #include <filesystem>
-#include <glm/gtx/spline.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "Texture2D.h"
 
@@ -202,7 +202,7 @@ bool TestApp::Init()
 
 	m_mainLight = scene->CreateLight("Main");
 	// Direct Sunlight
-	m_mainLight->SetIntensity(glm::vec3{ 5.0f });
+	m_mainLight->SetIntensity(glm::vec3{ 3.0f });
 	// Clear Blue Sky
 	//m_mainLight->SetIntensity(5.0f * glm::vec3{0.25098f, 0.611765f, 1.0f});
 	// 100W Tungsten
@@ -268,20 +268,31 @@ bool TestApp::Init()
 
 void TestApp::Update(float dt)
 {
-	m_elapsedTime += dt;
-	float elapsedTimeCos = std::cos(m_elapsedTime);
-	float elapsedTimeSin = std::sin(m_elapsedTime);
-
 	if (m_sphere->IsActivated())
 	{
+		m_elapsedTime += dt;
+		const float elapsedTimeCos = std::cos(m_elapsedTime);
+		const float elapsedTimeSin = std::sin(m_elapsedTime);
 		m_sphere->SetPosition(m_sphereOrbitRad * (glm::vec3(0.0f, 1.0f, 0.0f) + (0.5f * glm::vec3(1.5f * elapsedTimeCos, elapsedTimeSin, 2.0f * elapsedTimeCos * elapsedTimeSin))));
 	}
-
-	if (m_lightRotationDirX != 0.0f || m_lightRotationDirY != 0.0f)
+	if (m_bLightRotate)
 	{
-		m_lightRotationX += m_lightRotationDirX * m_lightRotationSpeed * dt;
-		m_lightRotationY += m_lightRotationDirY * m_lightRotationSpeed * dt;
-		this->UpdateLightRotation();
+		m_lightElapsedTime += dt * 0.08f;
+		constexpr float altitudeAngle = glm::radians(20.0f);
+		const float azimuthAngle = m_lightElapsedTime*2.0f*PI;
+		glm::vec3 lightPos = glm::vec3(std::sin(altitudeAngle) * std::cos(azimuthAngle), std::cos(altitudeAngle), std::sin(altitudeAngle) * std::sin(azimuthAngle));
+		m_mainLight->SetPosition(lightPos);
+		m_sphere->SetActive(true);
+		m_sphere->SetPosition(lightPos * 5.0f + glm::vec3(0.0f, 5.0f, 0.0f));
+	}
+	else
+	{
+		if (m_lightRotationDirX != 0.0f || m_lightRotationDirY != 0.0f)
+		{
+			m_lightRotationX += m_lightRotationDirX * m_lightRotationSpeed * dt;
+			m_lightRotationY += m_lightRotationDirY * m_lightRotationSpeed * dt;
+			this->UpdateLightRotation();
+		}
 	}
 
 	if (m_bEnableCamPath && m_cam != nullptr)
@@ -416,11 +427,11 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 
 		case GLFW_KEY_RIGHT:
-			m_lightRotationDirX = 1.0f;
+			m_lightRotationDirX = -1.0f;
 			break;
 
 		case GLFW_KEY_LEFT:
-			m_lightRotationDirX = -1.0f;
+			m_lightRotationDirX = 1.0f;
 			break;
 
 		case GLFW_KEY_DOWN:
@@ -456,9 +467,10 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			break;
 
 		case GLFW_KEY_L:
-			m_lightRotationX = m_lightRotationY = 0.0f;
-			this->UpdateLightRotation();
+			m_bLightRotate = !m_bLightRotate;
+			m_mainLight->bUseRotation = !m_bLightRotate;
 			break;
+
 		}
 	}
 	else if (action == GLFW_RELEASE)

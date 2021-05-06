@@ -66,10 +66,10 @@ public:
 	bool bEnableDirectSpecular = true;
 	bool bEnableIndirectSpecular = true;
 	bool bDebugAmbientOcclusion = false;
-	bool bEnableConservativeRasterization = false;
+	bool bEnableConservativeRasterization = true;
 
-	float VCTMaxDistance = 128.0f;
-	float VCTStep = 0.5f;
+	float VCTMaxDistance = 150.0f;
+	float VCTStep = 0.5;
 	float VCTAlphaThreshold = 0.98f;
 	unsigned int VCTSpecularSampleNum = 2;
 

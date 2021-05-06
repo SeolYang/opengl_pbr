@@ -152,9 +152,8 @@ uniform float maxDist_VCT = 100.0f;
 uniform float step_VCT = 0.5f;
 uniform float alphaThreshold_VCT = 1.0f;
 uniform int specularSampleNum_VCT = 4;
-uniform float attenuationFactor_VCT = 0.01f;
-uniform float attenuationThreshold_VCT = 0.0005f;
-uniform float initialStep_VCT = 4.0f;
+uniform float attenuationFactor_VCT = 0.1f;
+uniform float initialStep_VCT = 4.f;
 uniform float indirectDiffusePower_VCT = 4.0f;
 uniform float indirectSpecularPower_VCT = 2.0f;
 
@@ -175,9 +174,31 @@ vec3 coneDirections[6] = vec3[](
 	vec3(-0.823639, 0.5, 0.267617));
 
 //float coneWeights[6] = float[](0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f);
-//float coneWeights[6] = float[](PI/4.0f, 3.0*PI/20.0, 3.0*PI/20.0, 3.0*PI/20.0, 3.0*PI/20.0, 3.0*PI/20.0);
-float coneWeights[6] = float[](0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f);
+//const float coneWeights[6] = float[](5.0/20.0f, 3.0/20.0, 3.0/20.0, 3.0/20.0, 3.0/20.0, 3.0/20.0);
+const float coneWeights[6] = float[](1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f);
 
+//const int NumOfCones = 16;
+//const vec3 coneDirections[16] = {
+//    vec3(0.57735, 0.57735, 0.57735),
+//    vec3(0.57735, -0.57735, -0.57735),
+//    vec3(-0.57735, 0.57735, -0.57735),
+//    vec3(-0.57735, -0.57735, 0.57735),
+//    vec3(-0.903007, -0.182696, -0.388844),
+//    vec3(-0.903007, 0.182696, 0.388844),
+//    vec3(0.903007, -0.182696, 0.388844),
+//    vec3(0.903007, 0.182696, -0.388844),
+//    vec3(-0.388844, -0.903007, -0.182696),
+//    vec3(0.388844, -0.903007, 0.182696),
+//    vec3(0.388844, 0.903007, -0.182696),
+//    vec3(-0.388844, 0.903007, 0.182696),
+//    vec3(-0.182696, -0.388844, -0.903007),
+//    vec3(0.182696, 0.388844, -0.903007),
+//    vec3(-0.182696, 0.388844, 0.903007),
+//    vec3(0.182696, -0.388844, 0.903007)
+//};
+//
+//const float coneWeights = (1.0f/16.0f);
+//
 vec4 SampleVoxelVolume(vec3 worldPos, float lod)
 {
 	vec3 offset = vec3(1.0f/voxelDim, 1.0f/voxelDim,  0.0f);
@@ -198,12 +219,11 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	vec3 origin = worldPosFrag + (dist*normal);
 
 	float attenuation = 1.0f;
-
 	// @TODO Distance base Attenuation
-	while (attenuation > attenuationThreshold_VCT && dist < maxDist_VCT && alpha < alphaThreshold_VCT)
+	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
 	{
 		//attenuation = min(1.0/(attenuationFactor_VCT*dist*dist), 1.0);
-		attenuation = min(1.0/(attenuationFactor_VCT*dist), 1.0);
+		//attenuation = 1.0/(dist*dist);
 		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
 		float lodLevel = log2(coneDiameter / voxelSize);
 		vec4 voxelColor = SampleVoxelVolume(origin+(dist*direction), lodLevel);
@@ -229,7 +249,6 @@ vec4 ConeTraceRefraction(vec3 normal, vec3 direction, float tanHalfAngle, out fl
 
 	float voxelSize = voxelGridWorldSize / voxelDim;
 	float dist = voxelSize;
-	//vec3 origin = worldPosFrag + (worldNormalFrag*voxelSize);
 	vec3 origin = worldPosFrag + (dist*N);
 
 	// @TODO Distance base Attenuation
@@ -252,19 +271,22 @@ vec4 ConeTraceRefraction(vec3 normal, vec3 direction, float tanHalfAngle, out fl
 
 vec4 IndirectDiffuse(vec3 normal, out float occlusionOut)
 {
-	vec4 color = vec4(0.0f);
+	vec4 radiance = vec4(0.0f);
 	occlusionOut = 0.0f;
 	for (int cone = 0; cone < NumOfCones; ++cone)
 	{
 		// tan(pi/6) = 0.577 (pi/6 rad = 30 degrees)
+		// tan(pi/16) = 0.198912 ~ 0.2
 		float occlusion = 0.0f;
-		vec3 L = tangentToWorld*coneDirections[cone];
-		color += coneWeights[cone] * ConeTrace(normal, L, 0.577, occlusion)*max(dot(normal, L), 0.0f);
-		occlusionOut += coneWeights[cone] * occlusion;
+		vec3 L = normalize(tangentToWorld*coneDirections[cone]);
+		//vec4 tracedRadiance = ConeTrace(normal, L, 0.2, occlusion)*max(dot(normal, L), 0.0f);
+		vec4 tracedRadiance = ConeTrace(normal, L, 0.577, occlusion)*max(dot(normal, L), 0.0f);
+		radiance += tracedRadiance*coneWeights[cone];
+		occlusionOut += occlusion*coneWeights[cone];
 	}
 
 	occlusionOut = 1.0-occlusionOut;
-	return color;
+	return radiance;
 }
 
 vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, vec3 specularColor)
@@ -337,7 +359,7 @@ void main()
 		discard;
 	}
 
-	tangentToWorld = tnbFrag;
+	tangentToWorld = transpose(inverse(tnbFrag))  ;
 
 	float ao = texture(aoMap, texCoordsFrag).r;
 
@@ -393,7 +415,7 @@ void main()
 	/* Indirect Diffuse */
 	float occlusion = 0.0f;
 	vec3 indirectDiffuse = indirectDiffusePower_VCT * IndirectDiffuse(N, occlusion).rgb;
-	occlusion = min(1.0, 1.2 * occlusion);
+	occlusion = 2.0f * min(1.0, 1.5 * occlusion);
 	indirectDiffuse =  occlusion * (kD_indirect * indirectDiffuse * (albedo.rgb/PI));
 
 	directDiffuse = (enableDirectDiffuse == 1) ? directDiffuse : vec3(0.0f);
@@ -417,6 +439,6 @@ void main()
 		fragColor = (debugAmbientOcclusion == 1) ? vec4(vec3(occlusion), 1.0f) : vec4(emissive + directLight + indirectLight, albedo.a);
 	}
 
-	//fragColor.xyz = fragColor.xyz/(fragColor.xyz+vec3(1.0));
-	fragColor.xyz = pow(fragColor.xyz, vec3(1.0/2.4));
+	fragColor.xyz = fragColor.xyz/(fragColor.xyz+vec3(1.0));
+	fragColor.xyz = pow(fragColor.xyz, vec3(1.0/2.2));
 }

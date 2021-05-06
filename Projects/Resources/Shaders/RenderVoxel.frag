@@ -8,6 +8,6 @@ void main() {
 		discard;
 
 	color = vec4(fragColor.rgb, 1.0f);
-	//color.xyz = color.xyz/(color.xyz+vec3(1.0));
-	color.xyz = pow(color.xyz, vec3(1.0/2.4));
+	color.xyz = color.xyz/(color.xyz+vec3(1.0));
+	color.xyz = pow(color.xyz, vec3(1.0/2.2));
 }

@@ -175,7 +175,7 @@ void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCas
 
 		if (auto lights = scene->GetLights(); !lights.empty())
 		{
-			shader->SetVec3f("light.Direction", lights[0]->Forward());
+			shader->SetVec3f("light.Direction", lights[0]->LightDirection());
 			shader->SetVec3f("light.Intensity", lights[0]->GetIntensity());
 		}
 
@@ -246,7 +246,7 @@ void Renderer::DeferredRender(const Scene* scene)
 		   const std::vector<Light*>& lights = scene->GetLights();
 			if (!lights.empty())
 			{
-				m_lightingPass->SetVec3f("light.Direction", lights[0]->Forward());
+				m_lightingPass->SetVec3f("light.Direction", lights[0]->LightDirection());
 				m_lightingPass->SetVec3f("light.Intensity", lights[0]->GetIntensity());
 			}
 
@@ -278,8 +278,9 @@ void Renderer::Shadow(const Scene* scene)
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			m_shadowViewMat = glm::lookAt(-lights[0]->Forward(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			m_shadowProjMat = glm::ortho<float>(-120.0f, 120.0f, -120.0f, 120.0f, -500.0f, 500.0f);
+			m_shadowViewMat = glm::lookAt(-lights[0]->LightDirection(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//m_shadowProjMat = glm::ortho<float>(-120.0f, 120.0f, -120.0f, 120.0f, -500.0f, 500.0f);
+			m_shadowProjMat = glm::ortho<float>(-VoxelGridWorldSize, VoxelGridWorldSize, -VoxelGridWorldSize, VoxelGridWorldSize, -500.0f, 500.0f);
 			m_shadowPass->SetMat4f("shadowViewMatrix", m_shadowViewMat);
 			m_shadowPass->SetMat4f("shadowProjMatrix", m_shadowProjMat);
 
@@ -296,9 +297,6 @@ void Renderer::Voxelize(const Scene* scene)
 	{
 		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
 		{
-			//glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
-			//glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, -3.5f);
-			
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 			m_bFirstVoxelize = false;
@@ -334,9 +332,7 @@ void Renderer::Voxelize(const Scene* scene)
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
-			//glDisable(GL_CONSERVATIVE_RASTERIZATION_NV);
 
-			//glGenerateTextureMipmap(m_voxelVolume->GetID());
 			this->GenerateTexture3DMipmap(m_voxelVolume);
 		}
 	}
@@ -357,7 +353,7 @@ void Renderer::EncodedVoxelize(const Scene* scene)
 			if (bEnableConservativeRasterization)
 			{
 				glEnable(GL_CONSERVATIVE_RASTERIZATION_NV);
-				glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, 0.5f);
+				glConservativeRasterParameterfNV(GL_CONSERVATIVE_RASTER_DILATE_NV, 0.2f);
 			}
 			else
 			{
@@ -441,7 +437,7 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 	{
 		auto lights = scene->GetLights();
 		auto lightIntensity = lights[0]->GetIntensity();
-		const auto lightDirection = -glm::normalize(lights[0]->Forward());
+		const auto lightDirection = -glm::normalize(lights[0]->LightDirection());
 		const float UoL = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), lightDirection);
 		lightIntensity *= UoL;
 		glEnable(GL_CULL_FACE);
