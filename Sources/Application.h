@@ -17,6 +17,7 @@ public:
 	int Run();
 	void Stop() { m_bIsRunning = false; }
 
+	void SetScene(Scene* scene) { m_scene = scene; }
 	Scene* GetScene() const { return m_scene; }
 	Renderer* GetRenderer() const { return m_renderer; }
 	GLFWwindow* GetWindow() const { return m_window; }

@@ -27,6 +27,7 @@
     <ClInclude Include="..\Sources\Scene.h" />
     <ClInclude Include="..\Sources\Shader.h" />
     <ClInclude Include="..\Sources\ShadowMap.h" />
+    <ClInclude Include="..\Sources\SponzaScene.h" />
     <ClInclude Include="..\Sources\TestApp.h" />
     <ClInclude Include="..\Sources\Texture2D.h" />
     <ClInclude Include="..\Sources\Texture3D.h" />
@@ -48,6 +49,7 @@
     <ClCompile Include="..\Sources\Renderer.cpp" />
     <ClCompile Include="..\Sources\Scene.cpp" />
     <ClCompile Include="..\Sources\Shader.cpp" />
+    <ClCompile Include="..\Sources\SponzaScene.cpp" />
     <ClCompile Include="..\Sources\TestApp.cpp" />
     <ClCompile Include="..\Sources\Texture2D.cpp" />
     <ClCompile Include="..\Sources\Texture3D.cpp" />

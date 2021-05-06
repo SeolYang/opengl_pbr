@@ -132,6 +132,8 @@ public:
       m_horizontalAngle = angle;
    }
 
+   void SetTarget(Camera* camera) { m_target = camera; }
+
 public:
    float MouseSensitivity = 0.25f;
    float CameraSpeed = 1.0f;

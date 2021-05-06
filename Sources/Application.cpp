@@ -3,9 +3,6 @@
 #include "Scene.h"
 #include "Viewport.h"
 
-#include "GL/gl3w.h"
-#include "GLFW/glfw3.h"
-
 #include <chrono>
 #include <iostream>
 
@@ -22,11 +19,6 @@ Application::Application(const std::string& title, unsigned int width, unsigned 
 
 Application::~Application()
 {
-	if (m_scene != nullptr)
-	{
-		delete m_scene;
-		m_scene = nullptr;
-	}
 	if (m_renderer != nullptr)
 	{
 		delete m_renderer;
@@ -36,7 +28,6 @@ Application::~Application()
 
 bool Application::InitBase()
 {
-	m_scene = new Scene();
 	m_renderer = new Renderer();
 
 	if (!m_renderer->Init(m_windowWidth, m_windowHeight))
@@ -127,10 +118,15 @@ int Application::Run()
 		glfwPollEvents();
 
 		Update(deltaTime);
-		m_renderer->Render(m_scene);
 
+		if (m_scene != nullptr)
+		{
+			m_scene->Update(deltaTime);
+			m_renderer->Render(m_scene);
+			m_scene->ResolveDirty();
+		}
+		
 		glfwSwapBuffers(m_window);
-		m_scene->ResolveDirty();
 
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<float> dt = (end - begin);
@@ -145,11 +141,11 @@ void Application::_WindowResizeCallback(GLFWwindow* window, int width, int heigh
 {
 	m_windowWidth = width;
 	m_windowHeight = height;
-	//m_renderer->Resize(width, height);
 	WindowResizeCallback(window, width, height);
 }
 
 void Application::_KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods)
 {
 	KeyCallback(window, key, scanCode, action, mods);
+	m_scene->KeyCallback(window, key, scanCode, action, mods);
 }

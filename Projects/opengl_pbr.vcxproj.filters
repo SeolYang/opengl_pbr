@@ -17,51 +17,33 @@
     <Filter Include="Shaders\R32UI">
       <UniqueIdentifier>{52c07aba-6f2c-481e-b8bb-73712f7ab127}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Rendering">
+      <UniqueIdentifier>{efa6b856-212b-45d4-9ce3-ee2c008733ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Rendering\Scenes">
+      <UniqueIdentifier>{4adc3196-6679-4583-aaf5-f2c465914303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Rendering\Textures">
+      <UniqueIdentifier>{24e06fa7-7e77-4e83-8188-3d2c6a3bd3cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Rendering\Buffers">
+      <UniqueIdentifier>{cd2a2ca6-b21e-4d6c-b49c-01d082bec3b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Rendering\Objects">
+      <UniqueIdentifier>{a300f0ac-7e11-46fe-bf9b-f673ebc04753}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Sources\Application.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Camera.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Light.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Material.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Mesh.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\Object.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Scene.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\Model.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Texture2D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Shader.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Renderer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Viewport.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Rendering.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\TestApp.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\GBuffer.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="..\Thirdparty\gl3w\includes\GL\glcorearb.h">
@@ -73,73 +55,112 @@
     <ClInclude Include="..\Thirdparty\gl3w\includes\KHR\khrplatform.h">
       <Filter>Thirdparty\gl3w</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Vertex.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\Controller.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Texture3D.h">
-      <Filter>Sources</Filter>
+    <ClInclude Include="..\Sources\Renderer.h">
+      <Filter>Sources\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\FBO.h">
-      <Filter>Sources</Filter>
+    <ClInclude Include="..\Sources\Rendering.h">
+      <Filter>Sources\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Shader.h">
+      <Filter>Sources\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Vertex.h">
+      <Filter>Sources\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Viewport.h">
+      <Filter>Sources\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Scene.h">
+      <Filter>Sources\Rendering\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\ShadowMap.h">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Rendering\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Texture2D.h">
+      <Filter>Sources\Rendering\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Texture3D.h">
+      <Filter>Sources\Rendering\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\FBO.h">
+      <Filter>Sources\Rendering\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GBuffer.h">
+      <Filter>Sources\Rendering\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Light.h">
+      <Filter>Sources\Rendering\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Camera.h">
+      <Filter>Sources\Rendering\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Material.h">
+      <Filter>Sources\Rendering\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Mesh.h">
+      <Filter>Sources\Rendering\Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\CameraPath.h">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Rendering\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\SponzaScene.h">
+      <Filter>Sources\Rendering\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\main.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\Sources\Scene.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Camera.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Light.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\Sources\Model.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Texture2D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Material.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Mesh.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Shader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Application.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\Sources\Renderer.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Viewport.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\Sources\TestApp.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\GBuffer.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">
       <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
+    <ClCompile Include="..\Sources\Renderer.cpp">
+      <Filter>Sources\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Shader.cpp">
+      <Filter>Sources\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Viewport.cpp">
+      <Filter>Sources\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Scene.cpp">
+      <Filter>Sources\Rendering\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Texture2D.cpp">
+      <Filter>Sources\Rendering\Textures</Filter>
+    </ClCompile>
     <ClCompile Include="..\Sources\Texture3D.cpp">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Rendering\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GBuffer.cpp">
+      <Filter>Sources\Rendering\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Camera.cpp">
+      <Filter>Sources\Rendering\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Light.cpp">
+      <Filter>Sources\Rendering\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Material.cpp">
+      <Filter>Sources\Rendering\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Mesh.cpp">
+      <Filter>Sources\Rendering\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\SponzaScene.cpp">
+      <Filter>Sources\Rendering\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
