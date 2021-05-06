@@ -17,6 +17,7 @@ public:
 		m_name(name)
 	{
 	}
+	~Object() = default;
 
 	std::string GetName() const { return m_name; }
 

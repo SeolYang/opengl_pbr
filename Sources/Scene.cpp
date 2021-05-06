@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Model.h"
+#include "Plane.h"
 
 #include <iostream>
 
@@ -62,6 +63,14 @@ Model* Scene::LoadModel(const std::string& name, const std::string& filePath, co
 {
 	m_bIsDirty = true;
 	Model* newModel = new Model(name, filePath, params);
+	m_models.push_back(newModel);
+	return newModel;
+}
+
+Model* Scene::CreatePlane(const std::string& name)
+{
+	m_bIsDirty = true;
+	Model* newModel = new Plane(name);
 	m_models.push_back(newModel);
 	return newModel;
 }

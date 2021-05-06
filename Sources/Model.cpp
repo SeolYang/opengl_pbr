@@ -11,6 +11,12 @@
 
 #include <iostream>
 
+Model::Model(const std::string& name) :
+Object(name),
+m_mode(GL_TRIANGLES)
+{
+}
+
 Model::Model(const std::string& name, std::string filePath, const ModelLoadParams& params) :
 	Object(name),
    m_mode(GL_TRIANGLES),

@@ -32,20 +32,20 @@
     <Filter Include="Sources\Rendering\Objects">
       <UniqueIdentifier>{a300f0ac-7e11-46fe-bf9b-f673ebc04753}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Rendering\Scenes\Predefined">
+      <UniqueIdentifier>{17e95d6a-5783-449e-8784-83f24fb8353b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Framework">
+      <UniqueIdentifier>{bd6b7f9d-c853-4c5a-ac5a-ac580f3e4e0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Application">
+      <UniqueIdentifier>{575f8f64-6088-41ce-be1e-e4fc06784dba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Framework\Primitives">
+      <UniqueIdentifier>{b81d25ed-2e38-4ea7-a4df-e45915728fb9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Sources\Application.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Object.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Model.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\TestApp.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Thirdparty\gl3w\includes\GL\glcorearb.h">
       <Filter>Thirdparty\gl3w</Filter>
     </ClInclude>
@@ -55,19 +55,10 @@
     <ClInclude Include="..\Thirdparty\gl3w\includes\KHR\khrplatform.h">
       <Filter>Thirdparty\gl3w</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Controller.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\Renderer.h">
       <Filter>Sources\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\Rendering.h">
-      <Filter>Sources\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Shader.h">
-      <Filter>Sources\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sources\Vertex.h">
       <Filter>Sources\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\Viewport.h">
@@ -106,30 +97,42 @@
     <ClInclude Include="..\Sources\CameraPath.h">
       <Filter>Sources\Rendering\Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\CornellBoxScene.h">
+      <Filter>Sources\Rendering\Scenes\Predefined</Filter>
+    </ClInclude>
     <ClInclude Include="..\Sources\SponzaScene.h">
-      <Filter>Sources\Rendering\Scenes</Filter>
+      <Filter>Sources\Rendering\Scenes\Predefined</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Controller.h">
+      <Filter>Sources\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Model.h">
+      <Filter>Sources\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Object.h">
+      <Filter>Sources\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\TestApp.h">
+      <Filter>Sources\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Application.h">
+      <Filter>Sources\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Vertex.h">
+      <Filter>Sources\Rendering\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Shader.h">
+      <Filter>Sources\Rendering\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Plane.h">
+      <Filter>Sources\Framework\Primitives</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Sources\main.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Model.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Application.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\TestApp.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">
       <Filter>Thirdparty\gl3w</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Renderer.cpp">
-      <Filter>Sources\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Shader.cpp">
       <Filter>Sources\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\Viewport.cpp">
@@ -159,8 +162,29 @@
     <ClCompile Include="..\Sources\Mesh.cpp">
       <Filter>Sources\Rendering\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Sources\CornellBoxScene.cpp">
+      <Filter>Sources\Rendering\Scenes\Predefined</Filter>
+    </ClCompile>
     <ClCompile Include="..\Sources\SponzaScene.cpp">
-      <Filter>Sources\Rendering\Scenes</Filter>
+      <Filter>Sources\Rendering\Scenes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Model.cpp">
+      <Filter>Sources\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Application.cpp">
+      <Filter>Sources\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\TestApp.cpp">
+      <Filter>Sources\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Shader.cpp">
+      <Filter>Sources\Rendering\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\main.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Plane.cpp">
+      <Filter>Sources\Framework\Primitives</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

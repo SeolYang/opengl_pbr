@@ -1,14 +1,10 @@
 #define NOMINMAX
 #include "SponzaScene.h"
-#include "Scene.h"
 #include "Model.h"
 #include "Camera.h"
 #include "Material.h"
 #include "Light.h"
-#include "Viewport.h"
-#include "Renderer.h"
 #include "Controller.h"
-#include "Material.h"
 #include "Texture2D.h"
 
 #include <iostream>

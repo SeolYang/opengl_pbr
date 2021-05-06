@@ -2,11 +2,6 @@
 #include "Scene.h"
 #include "CameraPath.h"
 
-class Model;
-class Camera;
-class Controller;
-class Material;
-class Light;
 class SponzaScene : public Scene
 {
 public:

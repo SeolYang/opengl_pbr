@@ -4,11 +4,13 @@
 
 #include "glm/vec3.hpp"
 
-class Model;
 class Camera;
 class Light;
-struct GLFWwindow;
+class Controller;
+class Material;
+class Model;
 struct ModelLoadParams;
+struct GLFWwindow;
 class Scene
 {
 public:
@@ -26,6 +28,8 @@ public:
 	Light* CreateLight(const std::string& name);
 	Camera* CreateCamera(const std::string& name);
 	Model* LoadModel(const std::string& name, const std::string& filePath, const ModelLoadParams& params);
+
+	Model* CreatePlane(const std::string& name);
 
 	Camera* SetMainCamera(unsigned int idx) { m_mainCameraIdx = idx; }
 	Camera* GetMainCamera() const { return m_cameras[m_mainCameraIdx]; }

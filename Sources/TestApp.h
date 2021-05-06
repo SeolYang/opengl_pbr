@@ -3,6 +3,8 @@
 
 class Controller;
 class SponzaScene;
+class SanMiguelScene;
+class CornellBoxScene;
 class TestApp : public Application
 {
 public:
@@ -25,5 +27,7 @@ private:
 	/* Scenes */
 	Scene* m_mainScene = nullptr;
 	SponzaScene* m_sponzaScene = nullptr;
+	CornellBoxScene* m_cornellBoxScene = nullptr;
+	SanMiguelScene* m_sanMiguelScene = nullptr;
 
 };

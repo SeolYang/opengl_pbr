@@ -35,12 +35,16 @@ public:
 class Model : public Object
 {
 public:
+	Model(const std::string& name);
 	Model(const std::string& name, std::string filePath, const ModelLoadParams& params);
 	~Model();
 
 	std::string GetFilePath() const { return m_filePath; }
 	Material* GetMaterial(size_t idx) const { return m_materials[idx]; }
 	const std::vector<Material*>& GetMaterials() const { return m_materials; }
+
+	std::vector<Material*>& GetMaterials() { return m_materials; }
+	std::vector<Mesh*>& GetMeshes() { return m_meshes; }
 
 	void Render(Shader* shader);
 

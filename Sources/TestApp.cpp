@@ -5,6 +5,7 @@
 #include "Viewport.h"
 
 #include "SponzaScene.h"
+#include "CornellBoxScene.h"
 
 #include <iostream>
 
@@ -14,17 +15,22 @@ TestApp::~TestApp()
 {
 	delete m_controller;
 	delete m_sponzaScene;
+	delete m_cornellBoxScene;
 }
 
 bool TestApp::Init()
 {
 	glfwSetInputMode(GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	m_sponzaScene = new SponzaScene();
-	m_sponzaScene->Construct();
-	this->SetScene(m_sponzaScene);
+	//m_sponzaScene = new SponzaScene();
+	//m_sponzaScene->Construct();
+	//this->SetScene(m_sponzaScene);
+	//m_mainScene = m_sponzaScene;
 
-	m_mainScene = m_sponzaScene;
+	m_cornellBoxScene = new CornellBoxScene();
+	m_cornellBoxScene->Construct();
+	this->SetScene(m_cornellBoxScene);
+	m_mainScene = m_cornellBoxScene;
 
 	Camera* sceneMainCamera = m_mainScene->GetMainCamera();
 	unsigned int width = this->GetWidth();
@@ -35,7 +41,7 @@ bool TestApp::Init()
 
 	m_controller = new Controller(sceneMainCamera, this->GetWindow());
 	m_controller->CameraSpeed = 15.0f;
-	m_controller->SetHorizontalAngle(glm::radians(-90.0f));
+	//m_controller->SetHorizontalAngle(glm::radians(-90.0f));
 	return true;
 }
 
