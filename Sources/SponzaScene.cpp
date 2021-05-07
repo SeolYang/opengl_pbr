@@ -161,15 +161,7 @@ void SponzaScene::Construct()
 	refractiveBunnyMat->bRefract = true;
 	refractiveBunnyMat->IOR = 1.2f;
 
-	const ModelLoadParams quadLoadParams{
-		.CalcTangentSpace = true,
-		.ConvertToLeftHanded = true,
-		.GenSmoothNormals = false,
-		.GenUVs = false,
-		.PreTransformVertices = false,
-		.Triangulate = true
-	};
-	m_quad = this->LoadModel("Quad", "Resources/Models/quad.obj", quadLoadParams);
+	m_quad = this->CreatePlane("EmissivePlane");
 	m_quad->bDoubleSided = true;
 	m_quad->SetPosition(glm::vec3(45.0f, 5.5f, 1.5f));
 	m_quad->SetRotation(glm::rotate(glm::quat(), glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -188,7 +180,7 @@ void SponzaScene::Construct()
 		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
 		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
 	}
-	quadMat->SetEmissiveIntensity(1.25f);
+	quadMat->SetEmissiveIntensity(2.0f);
 
 	m_mainLight = this->CreateLight("Main");
 	// Direct Sunlight
@@ -247,8 +239,6 @@ void SponzaScene::Construct()
 
 void SponzaScene::Update(float dt)
 {
-	m_sphere->SetActive(m_bLightRotate);
-
 	if (m_bLightRotate)
 	{
 		m_lightElapsedTime += dt * 0.08f;
@@ -349,6 +339,7 @@ void SponzaScene::KeyCallback(GLFWwindow* window, int key, int scanCode, int act
 		case GLFW_KEY_L:
 			m_bLightRotate = !m_bLightRotate;
 			m_mainLight->bUseRotation = !m_bLightRotate;
+			m_sphere->SetActive(m_bLightRotate);
 			break;
 
 		}
