@@ -26,25 +26,25 @@ void Plane::Construct()
 
    vertices[0] = VertexPosTexNT(
          glm::vec3(-1.0f, 1.0f, 0.0f),
-         glm::vec2(0.0f, 1.0f),
+         glm::vec2(0.0f, 0.0f),
          normal,
          tangent);
 
    vertices[1] = VertexPosTexNT(
       glm::vec3(-1.0f, -1.0f, 0.0f),
-      glm::vec2(0.0f, 0.0f),
+      glm::vec2(0.0f, 1.0f),
       normal,
       tangent);
 
    vertices[2] = VertexPosTexNT(
       glm::vec3(1.0f, 1.0f, 0.0f),
-      glm::vec2(1.0f, 1.0f),
+      glm::vec2(1.0f, 0.0f),
       normal,
       tangent);
 
    vertices[3] = VertexPosTexNT(
       glm::vec3(1.0f, -1.0f, 0.0f),
-      glm::vec2(1.0f, 0.0f),
+      glm::vec2(1.0f, 1.0f),
       normal,
       tangent);
 
