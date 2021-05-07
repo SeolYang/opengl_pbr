@@ -44,6 +44,9 @@
     <Filter Include="Sources\Framework\Primitives">
       <UniqueIdentifier>{b81d25ed-2e38-4ea7-a4df-e45915728fb9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Visualization">
+      <UniqueIdentifier>{4e265591-d79d-4608-89b7-1d7001197509}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Thirdparty\gl3w\includes\GL\glcorearb.h">
@@ -239,15 +242,6 @@
     <None Include="Resources\Shaders\ShadowFS.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Resources\Shaders\RenderVoxel.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Resources\Shaders\RenderVoxel.geom">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Resources\Shaders\RenderVoxel.frag">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="Resources\Shaders\Texture3DReductionRGBA8CS.comp">
       <Filter>Shaders</Filter>
     </None>
@@ -256,6 +250,24 @@
     </None>
     <None Include="Resources\Shaders\VoxelizationR32UIFS.frag">
       <Filter>Shaders\R32UI</Filter>
+    </None>
+    <None Include="Resources\Shaders\RenderVoxel.vert">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\RenderVoxel.frag">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\RenderVoxel.geom">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.vert">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.geom">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.frag">
+      <Filter>Shaders\Visualization</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -11,5 +11,5 @@ void main() {
 	pos.y = gl_VertexID / (volumeDim*volumeDim);
 
 	color = texture(voxelVolume, pos/volumeDim);
-	gl_Position = vec4(pos - volumeDim*0.5f, 1.0f);
+	gl_Position = vec4(pos - (volumeDim*0.5f), 1.0f);
 }

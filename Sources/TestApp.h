@@ -1,6 +1,12 @@
 #pragma once
 #include "Application.h"
 
+enum class EPredefinedScene
+{
+   Sponza,
+	CornellBox
+};
+
 class Controller;
 class SponzaScene;
 class SanMiguelScene;
@@ -20,6 +26,9 @@ protected:
 	bool Init() override;
 	void Update(float dt) override;
 	void KeyCallback(GLFWwindow* window, int key, int scanCode, int action, int mods) override;
+
+private:
+	void ChangeSceneTo(EPredefinedScene scene);
 
 private:
 	Controller* m_controller = nullptr;

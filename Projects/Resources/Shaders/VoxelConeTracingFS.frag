@@ -148,12 +148,12 @@ vec3 ImportanceSampleGGX(vec2 Xi, float roughness, vec3 N)
 }
 
 /* Voxel Cone Tracing(VCT Params) */
-uniform float maxDist_VCT = 100.0f;
+uniform float maxDist_VCT = 300.0f;
 uniform float step_VCT = 0.5f;
 uniform float alphaThreshold_VCT = 1.0f;
 uniform int specularSampleNum_VCT = 4;
 uniform float attenuationFactor_VCT = 0.1f;
-uniform float initialStep_VCT = 4.f;
+uniform float initialStep_VCT = 6.5f;
 uniform float indirectDiffusePower_VCT = 4.0f;
 uniform float indirectSpecularPower_VCT = 2.0f;
 
@@ -173,9 +173,9 @@ vec3 coneDirections[6] = vec3[](
 	vec3(-0.509037, 0.5, -0.700629),
 	vec3(-0.823639, 0.5, 0.267617));
 
-//float coneWeights[6] = float[](0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f);
+float coneWeights[6] = float[](0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f);
 //const float coneWeights[6] = float[](5.0/20.0f, 3.0/20.0, 3.0/20.0, 3.0/20.0, 3.0/20.0, 3.0/20.0);
-const float coneWeights[6] = float[](1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f);
+//const float coneWeights[6] = float[](1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f, 1.0/6.0f);
 
 //const int NumOfCones = 16;
 //const vec3 coneDirections[16] = {
@@ -222,7 +222,7 @@ vec4 ConeTrace(vec3 normal, vec3 direction, float tanHalfAngle, out float occlus
 	// @TODO Distance base Attenuation
 	while (dist < maxDist_VCT && alpha < alphaThreshold_VCT)
 	{
-		//attenuation = min(1.0/(attenuationFactor_VCT*dist*dist), 1.0);
+		attenuation = min(1.0/(attenuationFactor_VCT*dist), 1.0);
 		//attenuation = 1.0/(dist*dist);
 		float coneDiameter = max(voxelSize, 2.0f*tanHalfAngle*dist);
 		float lodLevel = log2(coneDiameter / voxelSize);
@@ -280,7 +280,7 @@ vec4 IndirectDiffuse(vec3 normal, out float occlusionOut)
 		float occlusion = 0.0f;
 		vec3 L = normalize(tangentToWorld*coneDirections[cone]);
 		//vec4 tracedRadiance = ConeTrace(normal, L, 0.2, occlusion)*max(dot(normal, L), 0.0f);
-		vec4 tracedRadiance = ConeTrace(normal, L, 0.577, occlusion)*max(dot(normal, L), 0.0f);
+		vec4 tracedRadiance = ConeTrace(normal, L, 0.577, occlusion);
 		radiance += tracedRadiance*coneWeights[cone];
 		occlusionOut += occlusion*coneWeights[cone];
 	}
@@ -359,7 +359,7 @@ void main()
 		discard;
 	}
 
-	tangentToWorld = transpose(inverse(tnbFrag))  ;
+	tangentToWorld = tnbFrag;
 
 	float ao = texture(aoMap, texCoordsFrag).r;
 
