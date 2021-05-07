@@ -34,6 +34,7 @@ public:
 	Camera* SetMainCamera(unsigned int idx) { m_mainCameraIdx = idx; }
 	Camera* GetMainCamera() const { return m_cameras[m_mainCameraIdx]; }
 
+	void SetToDirty() { m_bIsDirty = true; }
 	bool IsSceneDirty(bool bIncludeCam = false) const;
 	void ResolveDirty(bool bIncludeCam = false);
 
