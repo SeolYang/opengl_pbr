@@ -4,7 +4,7 @@
 
 // Voxel Volume Texture Size
 constexpr unsigned int VoxelUnitSize = 512;
-constexpr float VoxelGridWorldSize = 150;
+constexpr float VoxelGridWorldSize = 512;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
 constexpr unsigned int ShadowMapRes = 4096;
@@ -42,8 +42,7 @@ public:
 	void SetRenderMode(ERenderMode mode) { m_renderMode = mode; }
 	ERenderMode GetRenderMode() const { return m_renderMode; }
 
-	void SetVoxelizeEveryFrame(bool bEnable) { m_bAlwaysComputeVoxel = bEnable; }
-	bool IsVoxelizeEveryFrame() const { return m_bAlwaysComputeVoxel; }
+	void PrintVCTParams() const;
 
 private:
 	void RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting = false, bool bForceCullFace = false);
@@ -60,18 +59,25 @@ private:
 	void GenerateTexture3DMipmap(Texture3D* target);
 	void DecodeR32UI(Texture3D* src, Texture3D* dest);
 
+	void DebugConeDirections(const Scene* scene);
+
 public:
 	bool bEnableDirectDiffuse = true;
 	bool bEnableIndirectDiffuse = true;
 	bool bEnableDirectSpecular = true;
 	bool bEnableIndirectSpecular = true;
 	bool bDebugAmbientOcclusion = false;
-	bool bEnableConservativeRasterization = true;
+	bool bDebugConeDirection = false;
+	bool bAlwaysVoxelize = false;
+	bool bEnableConservativeRasterization = false;
 
 	float VCTMaxDistance = 150.0f;
 	float VCTStep = 0.5;
 	float VCTAlphaThreshold = 0.98f;
+	float VCTInitialStep = 3.5f;
 	unsigned int VCTSpecularSampleNum = 2;
+
+	float DebugConeLength = 1.5f;
 
 private:
 	ERenderMode m_renderMode = ERenderMode::VCT;
@@ -88,7 +94,6 @@ private:
 	glm::mat4 m_shadowProjMat = glm::mat4();
 
 	// Voxel Cone Tracing
-	bool m_bAlwaysComputeVoxel = false;
 	bool m_bFirstVoxelize = true;
 	Texture3D*	m_encodedVoxelVolume = nullptr;
 	Texture3D*	m_voxelVolume = nullptr;
@@ -98,7 +103,6 @@ private:
 	glm::mat4 m_projY;
 	glm::mat4 m_projZ;
 
-	Shader* m_renderVoxelPass = nullptr;
 	GLuint m_texture3DVAO = 0;
 
 	Shader* m_vctPass = nullptr;
@@ -114,5 +118,9 @@ private:
 
 	Shader* m_texture3DReductionRGBA = nullptr;
 	Shader* m_decodeR32UIToRGBA8 = nullptr;
+
+	/* Debug */
+	Shader* m_renderVoxelPass = nullptr;
+	Shader* m_visualizeConeDirPass = nullptr;
 
 };

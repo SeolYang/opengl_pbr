@@ -140,6 +140,11 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 	m_texture3DReductionRGBA = new Shader("Resources/Shaders/Texture3DReductionRGBA8CS.comp");
 	m_decodeR32UIToRGBA8 = new Shader("Resources/Shaders/DecodeR32UIToRGBA8CS.comp");
 
+	m_visualizeConeDirPass = new Shader(
+		"Resources/Shaders/VisualizeDiffuseConeDirection.vert",
+		"Resources/Shaders/VisualizeDiffuseConeDirection.geom",
+		"Resources/Shaders/VisualizeDiffuseConeDirection.frag");
+
 	return true;
 }
 
@@ -162,6 +167,27 @@ void Renderer::Render(const Scene* scene)
 		DeferredRender(scene);
 		break;
 	}
+
+	if (bDebugConeDirection)
+	{
+		DebugConeDirections(scene);
+	}
+}
+
+void Renderer::PrintVCTParams() const
+{
+	std::cout << "----   Voxel Cone Tracing Params   ----" << std::endl;
+	std::cout << "VCT_MAX_DISTANCE : " << VCTMaxDistance << std::endl;
+	std::cout << "VCT_STEP_SCALE : " << VCTStep << std::endl;
+	std::cout << "VCT_INITIAL_STEP : " << VCTInitialStep << std::endl;
+	std::cout << "VCT_ALPHA_THRESHOLD : " << VCTAlphaThreshold << std::endl;
+	std::cout << "VCT_SPECULAR_SAMPLES : " << VCTSpecularSampleNum << std::endl;
+	std::cout << "bAlwaysVoxelize : " << bAlwaysVoxelize << std::endl;
+	std::cout << "bEnableDirectDiffuse : " << bEnableDirectDiffuse << std::endl;
+	std::cout << "bEnableIndirectDiffuse : " << bEnableIndirectDiffuse << std::endl;
+	std::cout << "bEnableDirectSpecular : " << bEnableDirectSpecular << std::endl;
+	std::cout << "bEnableIndirectSpecular : " << bEnableIndirectSpecular << std::endl;
+	std::cout << std::endl;
 }
 
 void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting, bool bForceCullFace)
@@ -279,8 +305,7 @@ void Renderer::Shadow(const Scene* scene)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			m_shadowViewMat = glm::lookAt(-lights[0]->LightDirection(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			//m_shadowProjMat = glm::ortho<float>(-120.0f, 120.0f, -120.0f, 120.0f, -500.0f, 500.0f);
-			m_shadowProjMat = glm::ortho<float>(-VoxelGridWorldSize, VoxelGridWorldSize, -VoxelGridWorldSize, VoxelGridWorldSize, -500.0f, 500.0f);
+			m_shadowProjMat = glm::ortho<float>(-120.0f, 120.0f, -120.0f, 120.0f, -500.0f, 500.0f);
 			m_shadowPass->SetMat4f("shadowViewMatrix", m_shadowViewMat);
 			m_shadowPass->SetMat4f("shadowProjMatrix", m_shadowProjMat);
 
@@ -295,7 +320,7 @@ void Renderer::Voxelize(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
-		if (m_bFirstVoxelize || scene->IsSceneDirty() || m_bAlwaysComputeVoxel)
+		if (m_bFirstVoxelize || scene->IsSceneDirty() || bAlwaysVoxelize)
 		{
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -323,7 +348,6 @@ void Renderer::Voxelize(const Scene* scene)
 			m_shadowMap->BindAsTexture(5);
 
 			glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-			//glBindImageTexture(0, m_voxelVolume->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
 			glViewport(0, 0, VoxelUnitSize, VoxelUnitSize);
 			RenderScene(scene, m_voxelizePass, false, true);
 
@@ -342,7 +366,7 @@ void Renderer::EncodedVoxelize(const Scene* scene)
 {
 	if (scene != nullptr)
 	{
-		m_bNeedVoxelize |= (scene->IsSceneDirty() || m_bAlwaysComputeVoxel);
+		m_bNeedVoxelize |= (scene->IsSceneDirty() || bAlwaysVoxelize);
 		if (m_bVoxelized)
 		{
 			this->GenerateTexture3DMipmap(m_voxelVolume);
@@ -442,7 +466,7 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 		lightIntensity *= UoL;
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
+		//glEnable(GL_BLEND);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(lightIntensity.x, lightIntensity.y, lightIntensity.z, 1.0f);
@@ -466,6 +490,7 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 		m_vctPass->SetFloat("maxDist_VCT", VCTMaxDistance);
 		m_vctPass->SetFloat("step_VCT", VCTStep);
 		m_vctPass->SetFloat("alphaThreshold_VCT", VCTAlphaThreshold);
+		m_vctPass->SetFloat("initialStep_VCT", VCTInitialStep);
 		m_vctPass->SetInt("specularSampleNum_VCT", VCTSpecularSampleNum);
 
 		/* Debug flags */
@@ -546,6 +571,21 @@ void Renderer::DecodeR32UI(Texture3D* src, Texture3D* dest)
 
 		glBindImageTexture(0, 0, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
 		glBindImageTexture(1, 0, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	}
+}
+
+void Renderer::DebugConeDirections(const Scene* scene)
+{
+	if (scene != nullptr)
+	{
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		m_visualizeConeDirPass->Bind();
+		m_visualizeConeDirPass->SetFloat("directionLength", DebugConeLength);
+		RenderScene(scene, m_visualizeConeDirPass);
 	}
 }
 
