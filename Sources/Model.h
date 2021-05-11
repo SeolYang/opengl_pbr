@@ -50,6 +50,7 @@ public:
 	void Render(Shader* shader);
 
 	void SetMode(GLenum mode = GL_TRIANGLES) { m_mode = mode; }
+	GLenum GetMode() const { return m_mode; }
 
 	AABB GetBoundingBox(bool worldSpace = true) const
 	{

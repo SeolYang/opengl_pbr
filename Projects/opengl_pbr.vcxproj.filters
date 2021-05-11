@@ -133,6 +133,9 @@
     <ClInclude Include="..\Sources\AABB.h">
       <Filter>Sources\Framework</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\Frustum.h">
+      <Filter>Sources\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">

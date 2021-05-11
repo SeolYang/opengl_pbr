@@ -238,6 +238,18 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			}
 			break;
 
+		case GLFW_KEY_TAB:
+			renderer->bEnableViewFrustumCulling = !renderer->bEnableViewFrustumCulling;
+			if (renderer->bEnableViewFrustumCulling)
+			{
+				std::cout << "Renderer : Enable View Frustum Culling!" << std::endl;
+			}
+			else
+			{
+				std::cout << "Renderer : Disable View Frustum Culling!" << std::endl;
+			}
+			break;
+
 		}
 	}
 }

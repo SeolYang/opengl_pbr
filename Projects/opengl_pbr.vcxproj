@@ -17,6 +17,7 @@
     <ClInclude Include="..\Sources\CameraPath.h" />
     <ClInclude Include="..\Sources\Controller.h" />
     <ClInclude Include="..\Sources\FBO.h" />
+    <ClInclude Include="..\Sources\Frustum.h" />
     <ClInclude Include="..\Sources\GBuffer.h" />
     <ClInclude Include="..\Sources\Light.h" />
     <ClInclude Include="..\Sources\Material.h" />

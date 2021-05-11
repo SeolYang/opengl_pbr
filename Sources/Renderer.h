@@ -28,6 +28,7 @@ class Texture2D;
 class Texture3D;
 class FBO;
 class ShadowMap;
+class Frustum;
 class Renderer
 {
 public:
@@ -45,7 +46,7 @@ public:
 	void PrintVCTParams() const;
 
 private:
-	void RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting = false, bool bForceCullFace = false);
+	void RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting = false, bool bForceCullFace = false, bool bEnableFrustumCulling = false);
 	void DeferredRender(const Scene* scene);
 
 	void Shadow(const Scene* scene);
@@ -63,6 +64,7 @@ private:
 	void DebugBoundingBoxes(const Scene* scene);
 
 public:
+	bool bEnableViewFrustumCulling = true;
 	bool bEnableDirectDiffuse = true;
 	bool bEnableIndirectDiffuse = true;
 	bool bEnableDirectSpecular = true;
@@ -84,6 +86,8 @@ public:
 
 private:
 	ERenderMode m_renderMode = ERenderMode::VCT;
+	Frustum* m_frustum = nullptr;
+
 	// Deferred Rendering
 	GBuffer*	m_gBuffer = nullptr;
 	Shader*	m_geometryPass = nullptr;

@@ -11,9 +11,12 @@
 #include "Texture3D.h"
 #include "FBO.h"
 #include "ShadowMap.h"
+#include "Frustum.h"
 
 Renderer::~Renderer()
 {
+	delete m_frustum;
+
 	if (m_gBuffer != nullptr)
 	{
 		delete m_gBuffer;
@@ -45,6 +48,8 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 {
 	m_winWidth = width;
 	m_winHeight = height;
+
+	m_frustum = new Frustum();
 
 	m_gBuffer = new GBuffer(width, height);
 	if (!m_gBuffer->Init())
@@ -156,6 +161,9 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 
 void Renderer::Render(const Scene* scene)
 {
+	const auto camera = scene->GetMainCamera();
+	m_frustum->Construct(camera->GetViewMatrix(), camera->GetProjMatrix());
+
 	Shadow(scene);
 	//Voxelize(scene);
 	EncodedVoxelize(scene);
@@ -201,13 +209,16 @@ void Renderer::PrintVCTParams() const
 	std::cout << std::endl;
 }
 
-void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting, bool bForceCullFace)
+void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCasting, bool bForceCullFace, bool bEnableFrustumCulling)
 {
 	if (const Camera* camera = scene->GetMainCamera(); 
 		(camera != nullptr && camera->IsActivated()))
 	{
-		shader->SetMat4f("viewMatrix", camera->GetViewMatrix());
-		shader->SetMat4f("projMatrix", camera->GetProjMatrix());
+		const glm::mat4 view = camera->GetViewMatrix();
+		const glm::mat4 proj = camera->GetProjMatrix();
+		const glm::mat4 viewProj = proj * view;
+		shader->SetMat4f("viewMatrix", view);
+		shader->SetMat4f("projMatrix", proj);
 		shader->SetVec3f("camPos", camera->GetPosition());
 
 		if (auto lights = scene->GetLights(); !lights.empty())
@@ -222,22 +233,34 @@ void Renderer::RenderScene(const Scene* scene, Shader* shader, bool bIsShadowCas
 			{
 				if (model->IsActivated())
 				{
-					if (!bIsShadowCasting || model->bCastShadow)
+					if (!bEnableFrustumCulling || m_frustum->IsVisible(model->GetBoundingBox()))
 					{
-						if (!bForceCullFace)
+						if (!bIsShadowCasting || model->bCastShadow)
 						{
-							if (model->bDoubleSided)
+							if (!bForceCullFace)
 							{
-								glDisable(GL_CULL_FACE);
+								if (model->bDoubleSided)
+								{
+									glDisable(GL_CULL_FACE);
+								}
+								else
+								{
+									glEnable(GL_CULL_FACE);
+								}
 							}
-							else
-							{
-								glEnable(GL_CULL_FACE);
-							}
-						}
 
-						shader->SetMat4f("worldMatrix", model->GetWorldMatrix());
-						model->Render(shader);
+							const auto worldMatrix = model->GetWorldMatrix();
+							const auto mode = model->GetMode();
+							shader->SetMat4f("worldMatrix", worldMatrix);
+							for (auto mesh : model->GetMeshes())
+							{
+								if(!bEnableFrustumCulling || m_frustum->IsVisible(mesh->GetBoundingBox().Transformed(worldMatrix)))
+								{
+									mesh->Render(shader, mode);
+								}
+							}
+							//model->Render(shader);
+						}
 					}
 				}
 			}
@@ -511,7 +534,7 @@ void Renderer::VoxelConeTracing(const Scene* scene)
 		m_vctPass->SetInt("enableIndirectSpecular", bEnableIndirectSpecular ? 1 : 0);
 		m_vctPass->SetInt("debugAmbientOcclusion", bDebugAmbientOcclusion ? 1 : 0);
 
-		RenderScene(scene, m_vctPass);
+		RenderScene(scene, m_vctPass, false, false, bEnableViewFrustumCulling);
 
 		m_voxelVolume->Unbind(6);
 		m_shadowMap->UnbindAsTexture(5);

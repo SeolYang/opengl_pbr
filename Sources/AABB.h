@@ -50,6 +50,19 @@ public:
 			(vertex.z > Max.z ? vertex.z : Max.z) };
 	}
 
+	void Transform(const glm::mat4& transformation)
+	{
+		Min = glm::vec3(transformation * glm::vec4(Min, 1.0));
+		Max = glm::vec3(transformation * glm::vec4(Max, 1.0));
+	}
+
+	AABB Transformed(const glm::mat4& transformation) const
+	{
+		AABB newAABB = (*this);
+		newAABB.Transform(transformation);
+		return newAABB;
+	}
+
 public:
 	glm::vec3 Min = glm::vec3(std::numeric_limits<float>::infinity());
 	glm::vec3 Max = glm::vec3(-std::numeric_limits<float>::infinity());
