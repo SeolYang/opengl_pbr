@@ -48,6 +48,9 @@ void Plane::Construct()
       normal,
       tangent);
 
-   auto quad = new Mesh(vertices, indices, newMat, AABB(glm::vec3(-1.0f, -1.0f, -0.000001f), glm::vec3(1.0f, 1.0f, 0.000001f)));
+   AABB aabb = AABB(glm::vec3(-1.0f, -1.0f, -0.001f), glm::vec3(1.0f, 1.0f, 0.001f));
+   auto quad = new Mesh(vertices, indices, newMat, aabb);
    meshes.push_back(quad);
+
+   this->m_boundingBox = aabb;
 }

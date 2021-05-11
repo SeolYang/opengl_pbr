@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <numeric>
 
 struct AABB
 {
@@ -50,7 +51,7 @@ public:
 	}
 
 public:
-	glm::vec3 Min = glm::vec3(FLT_MAX);
-	glm::vec3 Max = glm::vec3(-FLT_MAX);
+	glm::vec3 Min = glm::vec3(std::numeric_limits<float>::infinity());
+	glm::vec3 Max = glm::vec3(-std::numeric_limits<float>::infinity());
 
 };

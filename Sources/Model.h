@@ -51,12 +51,17 @@ public:
 
 	void SetMode(GLenum mode = GL_TRIANGLES) { m_mode = mode; }
 
-	AABB GetBoundingBox() const
+	AABB GetBoundingBox(bool worldSpace = true) const
 	{
-		const auto worldMatrix = GetWorldMatrix();
-		return AABB(
-			glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Min, 1.0f)),
-			glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Max, 1.0f)));
+		if (worldSpace)
+		{
+			const auto worldMatrix = GetWorldMatrix();
+			return AABB(
+				glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Min, 1.0f)),
+				glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Max, 1.0f)));
+		}
+
+		return m_boundingBox;
 	}
 
 private:
@@ -68,12 +73,14 @@ public:
 	bool bCastShadow = true;
 	bool bDoubleSided = false;
 
+protected:
+	AABB m_boundingBox;
+
 private:
 	std::string m_filePath;
 	std::string m_folderPath;
 	std::vector<Material*> m_materials;
 	std::vector<Mesh*> m_meshes;
 	GLenum m_mode;
-	AABB m_boundingBox;
 
 };

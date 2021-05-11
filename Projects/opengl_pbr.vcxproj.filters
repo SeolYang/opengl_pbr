@@ -272,6 +272,15 @@
     <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.frag">
       <Filter>Shaders\Visualization</Filter>
     </None>
+    <None Include="Resources\Shaders\VisualizeBoundingBox.vert">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeBoundingBox.geom">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
+    <None Include="Resources\Shaders\VisualizeBoundingBox.frag">
+      <Filter>Shaders\Visualization</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\Shaders\DecodeR32UIToRGBA8CS.comp">

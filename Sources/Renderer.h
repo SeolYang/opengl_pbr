@@ -60,6 +60,7 @@ private:
 	void DecodeR32UI(Texture3D* src, Texture3D* dest);
 
 	void DebugConeDirections(const Scene* scene);
+	void DebugBoundingBoxes(const Scene* scene);
 
 public:
 	bool bEnableDirectDiffuse = true;
@@ -70,6 +71,8 @@ public:
 	bool bDebugConeDirection = false;
 	bool bAlwaysVoxelize = false;
 	bool bEnableConservativeRasterization = false;
+	bool bDebugBoundingBox = false;
+	glm::vec3 BoundingBoxDebugColor = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	float VCTMaxDistance = 150.0f;
 	float VCTStep = 0.5;
@@ -104,6 +107,7 @@ private:
 	glm::mat4 m_projZ;
 
 	GLuint m_texture3DVAO = 0;
+	GLuint m_boundingBoxPointVAO = 0;
 
 	Shader* m_vctPass = nullptr;
 
@@ -122,5 +126,6 @@ private:
 	/* Debug */
 	Shader* m_renderVoxelPass = nullptr;
 	Shader* m_visualizeConeDirPass = nullptr;
+	Shader* m_visualizeBoundingBoxPass = nullptr;
 
 };

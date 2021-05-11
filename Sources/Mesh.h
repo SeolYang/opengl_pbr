@@ -19,6 +19,11 @@ public:
 			glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Max, 1.0f)));
 	}
 
+	AABB GetBoundingBox() const
+	{
+		return m_boundingBox;
+	}
+
 private:
 	Material*	 m_material;
 	unsigned int m_vbo;

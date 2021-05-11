@@ -77,6 +77,9 @@
     <None Include="Resources\Shaders\ShadowVS.vert" />
     <None Include="Resources\Shaders\Texture3DReductionRGBA16FCS.comp" />
     <None Include="Resources\Shaders\Texture3DReductionRGBA8CS.comp" />
+    <None Include="Resources\Shaders\VisualizeBoundingBox.frag" />
+    <None Include="Resources\Shaders\VisualizeBoundingBox.geom" />
+    <None Include="Resources\Shaders\VisualizeBoundingBox.vert" />
     <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.frag" />
     <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.geom" />
     <None Include="Resources\Shaders\VisualizeDiffuseConeDirection.vert" />

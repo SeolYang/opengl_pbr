@@ -109,6 +109,7 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 		"Resources/Shaders/RenderVoxel.frag");
 
 	glGenVertexArrays(1, &m_texture3DVAO);
+	glGenVertexArrays(1, &m_boundingBoxPointVAO);
 
 	m_vctPass = new Shader(
 		"Resources/Shaders/VoxelConeTracingVS.vert",
@@ -145,6 +146,11 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 		"Resources/Shaders/VisualizeDiffuseConeDirection.geom",
 		"Resources/Shaders/VisualizeDiffuseConeDirection.frag");
 
+	m_visualizeBoundingBoxPass = new Shader(
+		"Resources/Shaders/VisualizeBoundingBox.vert",
+		"Resources/Shaders/VisualizeBoundingBox.geom",
+		"Resources/Shaders/VisualizeBoundingBox.frag");
+
 	return true;
 }
 
@@ -171,6 +177,11 @@ void Renderer::Render(const Scene* scene)
 	if (bDebugConeDirection)
 	{
 		DebugConeDirections(scene);
+	}
+
+	if (bDebugBoundingBox)
+	{
+		DebugBoundingBoxes(scene);
 	}
 }
 
@@ -586,6 +597,46 @@ void Renderer::DebugConeDirections(const Scene* scene)
 		m_visualizeConeDirPass->Bind();
 		m_visualizeConeDirPass->SetFloat("directionLength", DebugConeLength);
 		RenderScene(scene, m_visualizeConeDirPass);
+	}
+}
+
+void Renderer::DebugBoundingBoxes(const Scene* scene)
+{
+	if (scene != nullptr)
+	{
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		m_visualizeBoundingBoxPass->Bind();
+		m_visualizeBoundingBoxPass->SetVec3f("boundingBoxColor", BoundingBoxDebugColor);
+
+		Camera* camera = scene->GetMainCamera();
+		m_visualizeBoundingBoxPass->SetMat4f("viewMatrix", camera->GetViewMatrix());
+		m_visualizeBoundingBoxPass->SetMat4f("projMatrix", camera->GetProjMatrix());
+		for (auto model : scene->GetModels())
+		{
+			const AABB modelBoundingBox = model->GetBoundingBox(false);
+			m_visualizeBoundingBoxPass->SetMat4f("worldMatrix", model->GetWorldMatrix());
+			m_visualizeBoundingBoxPass->SetVec3f("boundingBoxMin", modelBoundingBox.Min);
+			m_visualizeBoundingBoxPass->SetVec3f("boundingBoxMax", modelBoundingBox.Max);
+
+			glBindVertexArray(m_boundingBoxPointVAO);
+			glDrawArrays(GL_POINTS, 0, 1);
+			glBindVertexArray(0);
+
+			for (auto mesh : model->GetMeshes())
+			{
+				const AABB meshBoundingBox = mesh->GetBoundingBox();
+				m_visualizeBoundingBoxPass->SetVec3f("boundingBoxMin", meshBoundingBox.Min);
+				m_visualizeBoundingBoxPass->SetVec3f("boundingBoxMax", meshBoundingBox.Max);
+
+				glBindVertexArray(m_boundingBoxPointVAO);
+				glDrawArrays(GL_POINTS, 0, 1);
+				glBindVertexArray(0);
+			}
+		}
 	}
 }
 

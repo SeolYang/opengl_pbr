@@ -92,7 +92,7 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			ChangeSceneTo(EPredefinedScene::CornellBox);
 			break;
 
-		case GLFW_KEY_N:
+		case GLFW_KEY_F9:
 			renderer->bDebugConeDirection = !renderer->bDebugConeDirection;
 			if (renderer->bDebugConeDirection)
 			{
@@ -101,6 +101,18 @@ void TestApp::KeyCallback(GLFWwindow * window, int key, int scanCode, int action
 			else
 			{
 				std::cout << "Renderer : Disabled Diffuse Cones Direction Debug" << std::endl;
+			}
+			break;
+
+		case GLFW_KEY_F10:
+			renderer->bDebugBoundingBox = !renderer->bDebugBoundingBox;
+			if (renderer->bDebugConeDirection)
+			{
+				std::cout << "Renderer : Enabled Bounding box Debug" << std::endl;
+			}
+			else
+			{
+				std::cout << "Renderer : Disabled Bounding box Debug" << std::endl;
 			}
 			break;
 
