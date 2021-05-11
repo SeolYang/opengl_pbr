@@ -3,12 +3,13 @@
 #include "Shader.h"
 #include "Rendering.h"
 
-Mesh::Mesh(std::vector<VertexPosTexNT> vertices, std::vector<unsigned int> indices, Material* material) :
+Mesh::Mesh(std::vector<VertexPosTexNT> vertices, std::vector<unsigned int> indices, Material* material, AABB boundingBox) :
 m_material(material),
 m_vbo(0),
 m_vao(0),
 m_ebo(0),
-m_count(indices.size())
+m_count(indices.size()),
+m_boundingBox(boundingBox)
 {
 	glGenBuffers(1, &m_vbo);
 	glGenBuffers(1, &m_ebo);

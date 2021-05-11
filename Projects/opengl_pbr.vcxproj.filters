@@ -130,6 +130,9 @@
     <ClInclude Include="..\Sources\Plane.h">
       <Filter>Sources\Framework\Primitives</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\AABB.h">
+      <Filter>Sources\Framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c">

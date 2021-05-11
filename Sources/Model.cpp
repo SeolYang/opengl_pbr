@@ -80,6 +80,8 @@ void Model::ProcessMesh(const aiScene* scene, const aiMesh* mesh)
 {
    if (scene != nullptr && mesh != nullptr)
    {
+		AABB meshBoundingBox;
+
 		std::vector<VertexPosTexNT> vertices(mesh->mNumVertices);
 		std::vector<unsigned int> indices(mesh->mNumFaces * 3);
 
@@ -93,6 +95,14 @@ void Model::ProcessMesh(const aiScene* scene, const aiMesh* mesh)
 			auto& vertex = vertices[idx];
 			const auto& aiPos = mesh->mVertices[idx];
 			vertex.Position = glm::vec3(aiPos.x, aiPos.y, aiPos.z);
+
+			// Model Bounding Box
+			this->m_boundingBox.UpdateMin(vertex.Position);
+			this->m_boundingBox.UpdateMax(vertex.Position);
+
+			// Mesh Bounding Box
+			meshBoundingBox.UpdateMin(vertex.Position);
+			meshBoundingBox.UpdateMax(vertex.Position);
 
 			if (bHasUVCoords)
 			{
@@ -209,7 +219,7 @@ void Model::ProcessMesh(const aiScene* scene, const aiMesh* mesh)
 			}
 		}
 
-		const auto newMesh = new Mesh(vertices, indices, newMat);
+		const auto newMesh = new Mesh(vertices, indices, newMat, meshBoundingBox);
 		m_meshes.push_back(newMesh);
 		m_materials.push_back(newMat);
    }

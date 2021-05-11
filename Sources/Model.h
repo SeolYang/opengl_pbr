@@ -1,6 +1,7 @@
 #pragma once
 #include "Object.h"
 #include "Rendering.h"
+#include "AABB.h"
 
 #include <vector>
 
@@ -50,6 +51,14 @@ public:
 
 	void SetMode(GLenum mode = GL_TRIANGLES) { m_mode = mode; }
 
+	AABB GetBoundingBox() const
+	{
+		const auto worldMatrix = GetWorldMatrix();
+		return AABB(
+			glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Min, 1.0f)),
+			glm::vec3(worldMatrix * glm::vec4(m_boundingBox.Max, 1.0f)));
+	}
+
 private:
 	void LoadModel(const ModelLoadParams& params);
 	void ProcessNode(const aiScene* scene, const aiNode* node);
@@ -65,5 +74,6 @@ private:
 	std::vector<Material*> m_materials;
 	std::vector<Mesh*> m_meshes;
 	GLenum m_mode;
+	AABB m_boundingBox;
 
 };
