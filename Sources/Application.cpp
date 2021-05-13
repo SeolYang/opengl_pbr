@@ -74,6 +74,7 @@ bool Application::InitWindows()
 	}
 
 	glfwMakeContextCurrent(m_window);
+	glfwSwapInterval(0);
 
 	/* Initialize Callbacks */
 	glfwSetWindowUserPointer(m_window, this);
