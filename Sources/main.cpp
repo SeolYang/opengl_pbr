@@ -7,7 +7,8 @@
 
 int main()
 {
-	Application* app = new TestApp("Test", 1280, 720, false);
+	//Application* app = new TestApp("Test", 1280, 720, false);
+	Application* app = new TestApp("Test", 1920, 1080, ERROR_PER_USER_TRUST_QUOTA_EXCEEDED);
 
 	int res = app->Run();
 	delete app;
