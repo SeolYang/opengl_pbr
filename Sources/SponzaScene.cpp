@@ -53,6 +53,25 @@ void SponzaScene::Construct()
 	helmet->SetRotation(glm::rotate(glm::quat(), glm::radians(135.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	helmet->GetMaterial(0)->SetEmissiveIntensity(5.0f);
 
+	const ModelLoadParams buddhaLoadParams{
+	.CalcTangentSpace = true,
+	.ConvertToLeftHanded = false,
+	.GenSmoothNormals = true,
+	.GenUVs = true,
+	.PreTransformVertices = true,
+	.Triangulate = true
+	};
+	auto buddha = this->LoadModel("Buddah", "Resources/Models/Buddha/buddha.obj", buddhaLoadParams);
+	buddha->SetPosition(glm::vec3(14.5f, 4.0f, 1.5f));
+	buddha->SetScale(glm::vec3(10.5f));
+	buddha->SetRotation(glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	auto buddhaMat = buddha->GetMaterial(0);
+	buddhaMat->SetForceFactor(EMaterialTexture::BaseColor, true);
+	buddhaMat->SetForceFactor(EMaterialTexture::MetallicRoughness, true);
+	buddhaMat->SetMetallicFactor(1.0f);
+	buddhaMat->SetRoughnessFactor(0.5f);
+	buddhaMat->SetBaseColorFactor(glm::vec4(1.0f));
+
 	const ModelLoadParams sphereLoadParams{
 		.CalcTangentSpace = true,
 		.ConvertToLeftHanded = false,
@@ -180,7 +199,7 @@ void SponzaScene::Construct()
 		quadMat->SetForceFactor(EMaterialTexture::Emissive, true);
 		quadMat->SetEmissiveFactor(glm::vec3(1.0f));
 	}
-	quadMat->SetEmissiveIntensity(2.0f);
+	quadMat->SetEmissiveIntensity(1.0f);
 
 	m_mainLight = this->CreateLight("Main");
 	// Direct Sunlight
