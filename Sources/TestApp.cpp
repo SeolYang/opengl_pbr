@@ -261,7 +261,7 @@ void TestApp::ChangeSceneTo(EPredefinedScene scene)
 	{
 	case EPredefinedScene::Sponza:
 		m_mainScene = m_sponzaScene;
-		renderer->DebugConeLength = 0.1f;
+		renderer->DebugConeLength = 0.6f;
 		renderer->VCTInitialStep = 3.5f;
 		std::cout << "Application : Changed Main Scene to Sponza" << std::endl;
 		break;

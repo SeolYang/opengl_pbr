@@ -7,7 +7,7 @@ constexpr unsigned int VoxelUnitSize = 512;
 constexpr float VoxelGridWorldSize = 512;
 constexpr unsigned int VoxelNum = VoxelUnitSize * VoxelUnitSize * VoxelUnitSize;
 constexpr float VoxelSize = (VoxelGridWorldSize / static_cast<float>(VoxelUnitSize));
-constexpr unsigned int ShadowMapRes = 4096;
+constexpr unsigned int ShadowMapRes = 8192;
 
 enum class ERenderMode
 {

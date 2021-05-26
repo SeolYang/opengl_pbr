@@ -280,7 +280,7 @@ vec4 IndirectDiffuse(vec3 normal, out float occlusionOut)
 		float occlusion = 0.0f;
 		vec3 L = normalize(tangentToWorld*coneDirections[cone]);
 		//vec4 tracedRadiance = ConeTrace(normal, L, 0.2, occlusion)*max(dot(normal, L), 0.0f);
-		vec4 tracedRadiance = ConeTrace(normal, L, 0.577, occlusion);
+		vec4 tracedRadiance = ConeTrace(normal, L, 0.577, occlusion)*max(dot(normal, L), 0.0f);
 		radiance += tracedRadiance*coneWeights[cone];
 		occlusionOut += occlusion*coneWeights[cone];
 	}
@@ -306,7 +306,7 @@ vec3 IndirectSpecular(const uint numSamples, float roughness, vec3 N, vec3 V, ve
 		if (NoL > 0.0)
 		{
 			float specularOcc = 0.0;
-			vec3 tracedColor = ConeTrace(N, L, mix(0.03, 0.75, roughness*roughness), specularOcc).rgb;
+			vec3 tracedColor = ConeTrace(N, L, mix(0.03, 0.75, roughness), specularOcc).rgb;
 
 			float G = GeometrySmithIndirect(N, V, L, roughness);
 			float Fc = pow(1.0-VoH, 5);
