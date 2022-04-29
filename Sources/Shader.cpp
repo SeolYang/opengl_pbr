@@ -115,7 +115,7 @@ Shader::Shader(
 	if (success == 0)
 	{
 		glGetShaderInfoLog(fs, 512, nullptr, compileLog);
-		std::cout << "Failed to compile fragment shader: " << compileLog << std::endl;
+		std::cout << "Failed to compile fragment shader: " << vsPath << " => " << compileLog << std::endl;
 	}
 
 	m_id = glCreateProgram();

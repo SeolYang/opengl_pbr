@@ -57,7 +57,7 @@ uint ConvertVec4ToRGBA8(vec4 val)
            (uint(val.x) & 0x000000FF);
 }
 
-void ImageAtomicRGBA8Avg(layout(r32ui) volatile coherent uimage3D image, ivec3 coords, vec4 value)
+void ImageAtomicRGBA8Avg(ivec3 coords, vec4 value)
 {
     value.rgb *= 255.0;                 // optimize following calculations
     uint newVal = ConvertVec4ToRGBA8(value);
@@ -66,7 +66,7 @@ void ImageAtomicRGBA8Avg(layout(r32ui) volatile coherent uimage3D image, ivec3 c
 	int iter = 0;
 	const int maxIterations = 255;
 
-    while((curStoredVal = imageAtomicCompSwap(image, coords, prevStoredVal, newVal)) != prevStoredVal && iter < maxIterations)
+    while((curStoredVal = imageAtomicCompSwap(voxelVolume, coords, prevStoredVal, newVal)) != prevStoredVal && iter < maxIterations)
     {
         prevStoredVal = curStoredVal;
         vec4 rval = ConvertRGBA8ToVec4(curStoredVal);
@@ -145,5 +145,5 @@ void main()
 
 	voxelPos.z = dimension.x - voxelPos.z - 1;
 
-	ImageAtomicRGBA8Avg(voxelVolume, voxelPos, color);
+	ImageAtomicRGBA8Avg(voxelPos, color);
 }

@@ -284,6 +284,9 @@
     <None Include="Resources\Shaders\VisualizeBoundingBox.frag">
       <Filter>Shaders\Visualization</Filter>
     </None>
+    <None Include="Resources\Shaders\CopyVoxelVolume.comp">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\Shaders\DecodeR32UIToRGBA8CS.comp">

@@ -63,6 +63,7 @@
     <ClCompile Include="..\Thirdparty\gl3w\includes\GL\gl3w.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Shaders\CopyVoxelVolume.comp" />
     <None Include="Resources\Shaders\GeometryPass.fs" />
     <None Include="Resources\Shaders\GeometryPass.vs" />
     <None Include="Resources\Shaders\LightingPass.fs" />
@@ -107,13 +108,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>

@@ -103,10 +103,10 @@ bool Renderer::Init(unsigned int width, unsigned int height)
 		"Resources/Shaders/VoxelizationGS.glsl",
 		"Resources/Shaders/VoxelizationR32UIFS.frag");
 
-	m_voxelizePass = new Shader(
-		"Resources/Shaders/VoxelizationVS.glsl",
-		"Resources/Shaders/VoxelizationGS.glsl",
-		"Resources/Shaders/VoxelizationFS.glsl");
+	//m_voxelizePass = new Shader(
+	//	"Resources/Shaders/VoxelizationVS.glsl",
+	//	"Resources/Shaders/VoxelizationGS.glsl",
+	//	"Resources/Shaders/VoxelizationFS.glsl");
 
 	m_renderVoxelPass = new Shader(
 		"Resources/Shaders/RenderVoxel.vert",
