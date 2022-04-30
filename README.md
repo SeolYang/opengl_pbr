@@ -10,6 +10,7 @@ As last, i want to thanks to Cyril Crassin who published one of greatest piece a
 ## Features
 * Simple Scene
 * Model Loader
+* Build hierarchy bounding box cluster
 * CPU side Frustum culling with AABB
 * Scene Voxelization
 * GI based on Voxel Cone Tracing (include AO)
