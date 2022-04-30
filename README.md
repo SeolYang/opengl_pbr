@@ -5,7 +5,7 @@ This project was study driven project for OpenGL, Voxelization, VCT, and others.
 And also there are many limitation caused by lack of understand about textures format, compute shader and scene voxelization scheme.
 I hope, break out these limitations in next project through this project. And also, i learned about importantness of cross validation and solid understanding through this project(also in project_mile which is previous project of this one).
 
-As last, i want to thanks to Cyril Crassin who published one of greatest piece about GI and voxelization schemes.
+As last, I would like to thanks especially to Cyril Crassin who published one of greatest piece about GI and voxelization schemes.
 
 ## Features
 * Simple Scene
